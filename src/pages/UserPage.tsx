@@ -1,5 +1,7 @@
-import React from 'react'
-import QuickAccessButton from '../common/QuickAccessButton'
+import React, { useEffect, useState } from "react";
+import { useAuth0 }           from "@auth0/auth0-react";
+import { getUserByEmail, createUser, User } from "../services/userService";
+import QuickAccessButton from "../common/QuickAccessButton";
 import SectionTitle      from '../common/SectionTitle'
 import InfoCard          from '../common/InfoCard'
 import EmptyState        from '../common/EmptyState'
@@ -13,7 +15,10 @@ import HeadsetIcon from '../assets/Support.svg?react'
 import UserIcon from '../assets/Person.svg?react'
 
 const UserPage: React.FC = () => {
-  const userName = 'María'
+  const { user, isAuthenticated, logout } = useAuth0();
+  const [profile, setProfile] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
 
   // un par de actividades extra
   const upcomingActivities = [
@@ -35,11 +40,49 @@ const UserPage: React.FC = () => {
       { name: 'Cuidado del hogar',     desc: 'Visitas dos veces por semana' }
   ]
 
+  useEffect(() => {
+    if (isAuthenticated && user?.email) {
+      (async () => {
+        try {
+          const existing = await getUserByEmail(user.email!);
+          setProfile(existing);
+        } catch (err: any) {
+          if (err.status === 404) {
+            // Si no existe, lo crea con datos mínimos
+            const created = await createUser({
+              nombre: user.name || user.email!,
+              email: user.email!,
+              fecha_de_nacimiento: "1990-01-01",
+              region_de_residencia: "Metropolitana",
+              comuna_de_residencia: "Ñuñoa",
+              direccion_particular: "Calle Falsa 123"
+            });
+            setProfile(created);
+          }
+        } finally {
+          setLoading(false);
+        }
+      })();
+    }
+  }, [isAuthenticated, user]);
+
+  if (loading) return <p className="text-center mt-10">Cargando perfil…</p>;
+
+  // Usa profile?.nombre en lugar del nombre hardcoded
+  const userName = profile?.nombre || "Usuario";
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="w-full px-6 py-8 space-y-8">
         {/* Saludo */}
         <h1 className="text-4xl font-bold text-primary">Hola, {userName}!</h1>
+        <button
+          onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
+          className="mt-2 px-4 py-2 bg-red-500 text-white font-medium rounded-md hover:bg-red-600 transition"
+        >
+          Cerrar sesión
+        </button>
+
 
         {/* Botones rápidos */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
