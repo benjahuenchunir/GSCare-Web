@@ -1,3 +1,4 @@
+
 export interface User {
   id: number;
   nombre: string;
@@ -40,3 +41,13 @@ export async function createUser(data: {
   return await res.json();
 }
 
+export async function updateUserProfile(data: User): Promise<User> {
+  const res = await fetch(`${API_URL}/usuarios/${data.id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) throw new Error("Error updating user");
+  return await res.json();
+}
