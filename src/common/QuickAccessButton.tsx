@@ -1,15 +1,19 @@
-import React from 'react'
+import React from "react";
 
-interface Props {
-  icon: React.ReactNode
-  label: string
+type Props = {
+  icon: React.ReactNode;
+  label: string;
+  onClick?: () => void;
+};
+
+export default function QuickAccessButton({ icon, label, onClick }: Props) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full bg-white rounded-lg shadow p-4 flex flex-col items-center justify-center gap-2 hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-primary1"
+    >
+      {icon}
+      <span className="text-sm font-medium text-gray-800">{label}</span>
+    </button>
+  );
 }
-
-const QuickAccessButton: React.FC<Props> = ({ icon, label }) => (
-  <button className="flex flex-col items-center p-4 bg-white shadow rounded-lg hover:bg-gray-50 transition">
-    {icon}
-    <span className="mt-2 text-base font-medium text-neutral-800">{label}</span>
-  </button>
-)
-
-export default QuickAccessButton

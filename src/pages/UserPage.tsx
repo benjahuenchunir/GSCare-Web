@@ -1,25 +1,26 @@
 import React, { useEffect, useState } from "react";
-import { useAuth0 }           from "@auth0/auth0-react";
+import { useAuth0 } from "@auth0/auth0-react";
+import { useNavigate } from "react-router-dom";
 import { getUserByEmail, User } from "../services/userService";
 import QuickAccessButton from "../common/QuickAccessButton";
-import SectionTitle      from '../common/SectionTitle'
-import InfoCard          from '../common/InfoCard'
-import EmptyState        from '../common/EmptyState'
+import SectionTitle from '../common/SectionTitle';
+import InfoCard from '../common/InfoCard';
+import EmptyState from '../common/EmptyState';
 
-// Ejemplo de import de SVG (requiere vite-plugin-svgr)
-import ClockIcon    from '../assets/Clock2.svg?react'
-import LocationIcon from '../assets/Location.svg?react'
-import CalendarIcon from '../assets/Calendar2.svg?react'
-import HandshakeIcon from '../assets/Heart2.svg?react'
-import HeadsetIcon from '../assets/Support.svg?react'
-import UserIcon from '../assets/Person.svg?react'
+// Iconos SVG
+import ClockIcon from '../assets/Clock2.svg?react';
+import LocationIcon from '../assets/Location.svg?react';
+import CalendarIcon from '../assets/Calendar2.svg?react';
+import HandshakeIcon from '../assets/Heart2.svg?react';
+import HeadsetIcon from '../assets/Support.svg?react';
+import UserIcon from '../assets/Person.svg?react';
 
 const UserPage: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth0();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Datos hardcodeados para consejos del día
   const consejos = [
     { text: 'Bebe agua cada 2 horas para mantenerte hidratado 💧' },
     { text: 'Camina al menos 20 minutos hoy para mantener tu salud activa 🚶‍♂️' },
@@ -31,7 +32,6 @@ const UserPage: React.FC = () => {
     { text: 'Escucha música que te haga sentir bien y disfruta del momento 🎶' }
   ];
 
-  // un par de actividades extra
   const upcomingActivities = [
     { title: 'Yoga',             time: '10:00 AM – 11:00 AM', location: 'Centro comunitario – Sala 2B', tag: 'Hoy' },
     { title: 'Pilates',          time: '11:30 AM – 12:30 PM', location: 'Gimnasio local – Sala 1',      tag: 'Mañana' },
@@ -40,9 +40,9 @@ const UserPage: React.FC = () => {
   ];
 
   const activeServices = [
-      { name: 'Monitoreo de Salud',    desc: 'Reporte de chequeos diarios' },
-      { name: 'Actividades grupales',  desc: 'Reuniones sociales semanales' },
-      { name: 'Cuidado del hogar',     desc: 'Visitas dos veces por semana' }
+    { name: 'Monitoreo de Salud',    desc: 'Reporte de chequeos diarios' },
+    { name: 'Actividades grupales',  desc: 'Reuniones sociales semanales' },
+    { name: 'Cuidado del hogar',     desc: 'Visitas dos veces por semana' }
   ];
 
   useEffect(() => {
@@ -61,8 +61,8 @@ const UserPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="w-full px-6 py-8 space-y-8">
-        {/* Saludo */}
         <h1 className="text-4xl font-bold text-primary">Hola, {userName}!</h1>
+
         <button
           onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
           className="mt-2 px-4 py-2 bg-red-500 text-white font-medium rounded-md hover:bg-red-600 transition"
@@ -75,13 +75,15 @@ const UserPage: React.FC = () => {
           <QuickAccessButton icon={<CalendarIcon className="w-8 h-8 text-primary" />} label="Mi agenda" />
           <QuickAccessButton icon={<HandshakeIcon className="w-8 h-8 text-secondary" />} label="Mis servicios" />
           <QuickAccessButton icon={<HeadsetIcon className="w-8 h-8 text-accent3" />} label="Soporte" />
-          <QuickAccessButton icon={<UserIcon className="w-8 h-8 text-accent2" />} label="Mi perfil" />
+          <QuickAccessButton
+            icon={<UserIcon className="w-8 h-8 text-accent2" />}
+            label="Mi perfil"
+            onClick={() => navigate("/edit-profile")}
+            />
         </div>
 
-        {/* 🚩 Grid Actividades / Consejos */}
+        {/* Actividades y Consejos */}
         <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-6">
-
-          {/* ➡️ Actividades como columna vertical */}
           <div className="space-y-4">
             <SectionTitle title="Siguientes Actividades" />
             <div className="bg-white p-4 rounded-lg h-80 overflow-y-auto space-y-4">
@@ -93,7 +95,6 @@ const UserPage: React.FC = () => {
                     key={i}
                     className="w-full bg-[#e7f5f3] px-5 py-4 rounded-lg flex justify-between items-center shadow-sm"
                   >
-                    {/* Parte izquierda */}
                     <div className="flex flex-col gap-2">
                       <h4 className="text-xl font-bold text-black text-left">{a.title}</h4>
                       <div className="flex items-center text-lg text-gray-800 gap-2">
@@ -105,8 +106,6 @@ const UserPage: React.FC = () => {
                         <span>{a.location}</span>
                       </div>
                     </div>
-
-                    {/* Parte derecha: Fecha en recuadro */}
                     <div className="flex flex-col items-end text-sm">
                       <span className="mt-1 px-4 py-1 bg-[#62CBC9] text-black font-semibold rounded-md">
                         {a.tag}
@@ -118,7 +117,7 @@ const UserPage: React.FC = () => {
             </div>
           </div>
 
-          {/* ⬇️ Consejos para hoy */}
+          {/* Consejos para hoy */}
           <div className="space-y-4">
             <SectionTitle title="Consejos para hoy" />
             <div className="bg-white p-4 rounded-lg h-80 overflow-y-auto flex flex-col justify-start space-y-3">
@@ -136,7 +135,6 @@ const UserPage: React.FC = () => {
               )}
             </div>
           </div>
-
         </div>
 
         {/* Servicios activos */}
@@ -154,7 +152,7 @@ const UserPage: React.FC = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default UserPage;

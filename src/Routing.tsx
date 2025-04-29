@@ -6,7 +6,7 @@ import UserPage from "./pages/UserPage";
 import AuthHandler from "./pages/AuthHandler";
 import CompleteProfilePage from "./pages/CompleteProfilePage";
 import ProtectedRoute from "./components/ProtectedRoute";
-
+import UserEditProfile from "./pages/UserEditInfo";
 
 export default function Routing() {
     return (
@@ -27,6 +27,13 @@ export default function Routing() {
                  <ProtectedRoute>
                     <CompleteProfilePage />
                 </ProtectedRoute> } />
+
+            {/* ruta de editar perfil */}
+            <Route path="/edit-profile" element={
+                <ProtectedRoute>
+                    <UserEditProfile />
+                </ProtectedRoute> } />
+
 
             
         </Routes>
