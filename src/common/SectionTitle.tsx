@@ -1,12 +1,12 @@
-import React from 'react'
+// src/common/SectionTitle.tsx
+import React from "react";
 
-interface Props {
-  title: string
-  className?: string
+interface SectionTitleProps {
+  title: string;
 }
 
-const SectionTitle: React.FC<Props> = ({ title, className = '' }) => (
-  <h2 className={`text-2xl font-semibold text-gray-800 ${className}`}>{title}</h2>
-)
+const SectionTitle: React.FC<SectionTitleProps> = ({ title }) => (
+  <h2 className="text-2xl font-bold text-primary1 mb-4">{title}</h2>
+);
 
-export default SectionTitle
+export default SectionTitle;

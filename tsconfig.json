@@ -1,8 +1,7 @@
 {
 	"files": [],
 	"compilerOptions": {
-		"composite": true,
-		"types": ["vite/client"]
+		"composite": true
 	},
 	"references": [
 		{ "path": "./tsconfig.app.json" },
