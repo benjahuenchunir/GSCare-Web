@@ -1,14 +1,14 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import App from "./App";
+import LandingPage from "./pages/LandingPage.tsx";
 
 export default function Routing() {
     return (
         <>
             <BrowserRouter>
                 <Routes>
-                    <Route path="/" element={<App />} />
+                <Route path="/" element={<LandingPage />} />
                 </Routes>
             </BrowserRouter>
         </>
-    )
+    );
 }
