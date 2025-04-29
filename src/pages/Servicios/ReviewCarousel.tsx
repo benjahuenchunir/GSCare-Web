@@ -28,6 +28,7 @@ const ReviewCarousel: React.FC<Props> = ({ reviews, carouselIndex, onNext, onPre
             nombre={review.Usuario.nombre}
             review={review.review}
             rating={review.rating}
+            createdAt={review.createdAt}
           />
         ))}
       </div>

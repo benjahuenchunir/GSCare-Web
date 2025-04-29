@@ -12,7 +12,7 @@ const AgendarBox: React.FC<Props> = ({ telefono, email, direccion, isAuthenticat
   const navigate = useNavigate();
 
   return (
-    <div className="bg-[#009982] shadow-inner rounded-lg p-6 border border-blue-200">
+    <div className="bg-[#36A2A1] shadow-inner rounded-lg p-6 border border-blue-200">
       <h2 className="text-2xl font-bold mb-4 text-white">¿Quieres agendar?</h2>
 
       {isAuthenticated ? (
@@ -31,7 +31,7 @@ const AgendarBox: React.FC<Props> = ({ telefono, email, direccion, isAuthenticat
         <div className="space-y-3 text-white">
           <p>Únete a nuestra comunidad para poder disfrutar de estos beneficios.</p>
           <button
-            className="mt-6 px-5 py-2 bg-white text-[#009982] rounded-full border border-[#009982]"
+            className="mt-6 px-5 py-2 bg-white text-[#00495C] rounded-full border border-[#00495C]"
             onClick={() => navigate("/login")}
           >
             Agenda tu visita

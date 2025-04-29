@@ -6,4 +6,5 @@ export interface Review {
     id: number;
     nombre: string;
   };
+  createdAt: string;
 }

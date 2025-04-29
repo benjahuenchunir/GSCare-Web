@@ -4,6 +4,8 @@ import { useParams } from "react-router-dom";
 import ServicioInfoCard from "./ServicioInfoCard";
 import ReviewCard from "./ReviewCard";
 import AgendarBox from "./AgendarBox";
+import BeneficiosBox from "./BeneficiosBox";
+import DisponibilidadBox from "./DisponibilidadBox";
 import { Review } from "./types";
 import Slider from "react-slick"; // Importa el slider
 
@@ -16,12 +18,24 @@ interface Servicio {
   telefono_de_contacto: string;
   email_de_contacto: string;
   imagen: string;
+  beneficios: string;
+  dias_disponibles: number[];
+  hora_inicio: string;
+  hora_termino: string;
+}
+
+interface Beneficio {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  icono: string;
 }
 
 const ServicePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [servicio, setServicio] = useState<Servicio | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [beneficios, setBeneficios] = useState<Beneficio[]>([]);
 
   const isAuthenticated = false;
 
@@ -44,14 +58,24 @@ const ServicePage: React.FC = () => {
       }
     };
 
+    const fetchBeneficios = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/beneficios/servicio/${id}`);
+        setBeneficios(res.data);
+      } catch (error) {
+        console.warn("Este servicio aún no tiene beneficios.");
+      }
+    };
+
     fetchServicio();
     fetchReviews();
+    fetchBeneficios();
   }, [id]);
 
   const chunkedReviews = (reviews: Review[], chunkSize: number) => {
     const result: Review[][] = [];
     for (let i = 0; i < reviews.length; i += chunkSize) {
-      result.push(reviews.slice(i, i + chunkSize));
+      result.push(reviews.slice(i + 0, i + chunkSize));
     }
     return result;
   };
@@ -76,9 +100,17 @@ const ServicePage: React.FC = () => {
         imagen={servicio.imagen}
       />
 
+      <BeneficiosBox beneficios={beneficios} />
+
+      <DisponibilidadBox
+        dias_disponibles={servicio.dias_disponibles}
+        hora_inicio={servicio.hora_inicio}
+        hora_termino={servicio.hora_termino}
+      />
+
       {reviews.length > 0 && (
         <div className="bg-white shadow-lg rounded-lg p-6">
-          <h2 className="text-2xl font-bold mb-6 text-[#006881]">¿Qué dicen nuestros clientes?</h2>
+          <h2 className="text-2xl font-bold mb-6 text-[#00495C] text-left">¿Qué dicen nuestros clientes?</h2>
 
           <Slider {...carouselSettings}>
             {chunks.map((chunk, index) => (
@@ -90,6 +122,7 @@ const ServicePage: React.FC = () => {
                       nombre={review.Usuario.nombre}
                       review={review.review}
                       rating={review.rating}
+                      createdAt={review.createdAt}
                     />
                   ))}
                 </div>
