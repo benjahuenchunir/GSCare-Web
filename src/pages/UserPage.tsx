@@ -16,7 +16,7 @@ import HeadsetIcon from '../assets/Support.svg?react';
 import UserIcon from '../assets/Person.svg?react';
 
 const UserPage: React.FC = () => {
-  const { user, isAuthenticated, logout } = useAuth0();
+  const { user, isAuthenticated } = useAuth0();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,13 +62,6 @@ const UserPage: React.FC = () => {
     <div className="min-h-screen bg-gray-100">
       <div className="w-full px-6 py-8 space-y-8">
         <h1 className="text-4xl font-bold text-primary">Hola, {userName}!</h1>
-
-        <button
-          onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
-          className="mt-2 px-4 py-2 bg-red-500 text-white font-medium rounded-md hover:bg-red-600 transition"
-        >
-          Cerrar sesión
-        </button>
 
         {/* Botones rápidos */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

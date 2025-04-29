@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/LandingPage.tsx";
 import Layout from "./Layout";
-import LoginPage     from "./pages/LoginPage";
+// import LoginPage     from "./pages/LoginPage";
 import UserPage from "./pages/UserPage";
 import AuthHandler from "./pages/AuthHandler";
 import CompleteProfilePage from "./pages/CompleteProfilePage";
