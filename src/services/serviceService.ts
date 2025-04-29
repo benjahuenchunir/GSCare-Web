@@ -23,29 +23,26 @@ export interface Servicio {
   beneficios: Beneficio[];
 }
 
-/**
- * Trae todos los beneficios disponibles (catalog).
- */
-export async function fetchBeneficios(): Promise<Beneficio[]> {
-  const res = await fetch(`${API_URL}/beneficios`);
-  if (!res.ok) throw new Error("Error fetching beneficios");
-  return res.json();
+export async function fetchServicios(): Promise<Servicio[]> {
+  const res = await fetch(`${API_URL}/servicios`);
+  if (!res.ok) throw new Error("Error fetching servicios");
+  return await res.json();
 }
 
-/**
- * Trae servicios, opcionalmente filtrados por nombre y/o beneficios.
- * Se asume que la API acepta `?nombre=` y `?beneficios=1&beneficios=3…`
- */
-export async function fetchServicios(params: {
-  nombre?: string;
-  beneficios?: number[];
-}): Promise<Servicio[]> {
-  const qs = new URLSearchParams();
-  if (params.nombre) qs.append("nombre", params.nombre);
-  if (params.beneficios?.length) {
-    params.beneficios.forEach((id) => qs.append("beneficios", String(id)));
+// Nuevo: trae sólo los beneficios de un servicio
+export async function fetchBeneficiosPorServicio(id: number): Promise<Beneficio[]> {
+  const res = await fetch(`${API_URL}/beneficios/servicio/${id}`);
+  if (!res.ok) {
+    // si no existen aún, devolvemos array vacío
+    if (res.status === 404) return [];
+    throw new Error("Error fetching beneficios");
   }
-  const res = await fetch(`${API_URL}/servicios?${qs.toString()}`);
-  if (!res.ok) throw new Error("Error fetching servicios");
-  return res.json();
+  return await res.json();
+}
+
+// Para poblar el filtro general de “beneficios”
+export async function fetchBeneficios(): Promise<Beneficio[]> {
+  const res = await fetch(`${API_URL}/beneficios`);
+  if (!res.ok) throw new Error("Error fetching catálogo de beneficios");
+  return await res.json();
 }

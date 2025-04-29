@@ -1,108 +1,149 @@
 // src/pages/ServicesListPage.tsx
 import React, { useState, useEffect } from "react";
-import { fetchServicios, fetchBeneficios, Servicio, Beneficio } from "../../services/serviceService";
+import { useNavigate } from "react-router-dom";
+import {
+  fetchServicios,
+  fetchBeneficios,
+  fetchBeneficiosPorServicio,
+  Servicio,
+  Beneficio
+} from "../../services/serviceService";
 import SectionTitle from "../../common/SectionTitle";
 import EmptyState from "../../common/EmptyState";
 
 const ServicesListPage: React.FC = () => {
-  const [servicios, setServicios] = useState<Servicio[]>([]);
-  const [beneficios, setBeneficios] = useState<Beneficio[]>([]);
+  const navigate = useNavigate();
+  const [servicios, setServicios] = useState<(Servicio & { beneficios: Beneficio[] })[]>([]);
+  const [beneficiosCat, setBeneficiosCat] = useState<Beneficio[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBenefits, setSelectedBenefits] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Cargo catálogo de beneficios al montar
+  // Cargo catálogo de beneficios (filtro)
   useEffect(() => {
-    fetchBeneficios()
-      .then(setBeneficios)
-      .catch(console.error);
+    fetchBeneficios().then(setBeneficiosCat).catch(console.error);
   }, []);
 
-  // Recargo servicios cada vez que cambia búsqueda o selección de beneficios
+  // Cargo servicios + sus beneficios
   useEffect(() => {
     setLoading(true);
-    fetchServicios({ nombre: searchTerm, beneficios: selectedBenefits })
-      .then((data) => {
-        console.log("Servicios:", data); // <--- agrega esto
-        setServicios(data);
+    fetchServicios()
+      .then(async list => {
+        const withB = await Promise.all(
+          list.map(async s => ({
+            ...s,
+            beneficios: await fetchBeneficiosPorServicio(s.id)
+          }))
+        );
+        setServicios(withB);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [searchTerm, selectedBenefits]);
+  }, []);
 
-  const toggleBenefit = (id: number) => {
-    setSelectedBenefits((prev) =>
-      prev.includes(id) ? prev.filter((b) => b !== id) : [...prev, id]
+  // Toggle selección de beneficio
+  const toggleBenefit = (id: number) =>
+    setSelectedBenefits(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
-  };
+
+  // Filtrado en cliente
+  const displayed = servicios
+    .filter(s =>
+      s.nombre.toLowerCase().includes(searchTerm.trim().toLowerCase())
+    )
+    .filter(s =>
+      selectedBenefits.length === 0
+        ? true
+        : s.beneficios.some(b => selectedBenefits.includes(b.id))
+    );
 
   return (
-    <div className="px-6 py-8">
-      <SectionTitle title="Servicios" />
+    <div className="px-6 py-8 bg-gray-50 min-h-screen">
+      <SectionTitle title="Servicios disponibles" />
 
-      {/* Filtros */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-        {/* Buscador */}
+      {/* Buscador centrado */}
+      <div className="flex justify-center mb-6">
         <input
           type="text"
-          placeholder="Buscar servicios..."
+          placeholder="Buscar servicios…"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full md:w-1/3 border rounded px-4 py-2"
+          onChange={e => setSearchTerm(e.target.value)}
+          className="w-full md:w-2/5 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#62CBC9]"
         />
+      </div>
 
-        {/* Selector de beneficios */}
-        <div className="flex flex-wrap gap-2">
-          {beneficios.map((b) => (
+      {/* Filtros pastel */}
+      <div className="flex overflow-x-auto gap-2 py-2 mb-8 px-2">
+        {beneficiosCat.map(b => {
+          const selected = selectedBenefits.includes(b.id);
+          return (
             <button
               key={b.id}
               onClick={() => toggleBenefit(b.id)}
-              className={`px-3 py-1 rounded-full border transition ${
-                selectedBenefits.includes(b.id)
-                  ? "bg-primary text-white"
-                  : "bg-white text-gray-700"
-              }`}
+              className={`
+                whitespace-nowrap text-base font-medium rounded-full border transition
+                ${selected
+                  ? "bg-[#62CBC9] text-white border-transparent"
+                  : "bg-[#E0F5F5] text-[#006881] border-[#62CBC9]"}
+                px-4 py-2
+              `}
             >
               {b.nombre}
             </button>
-          ))}
-        </div>
+          );
+        })}
       </div>
 
       {/* Lista de servicios */}
       {loading ? (
-        <p>Cargando servicios…</p>
-      ) : servicios.length === 0 ? (
+        <p className="text-center text-gray-600">Cargando servicios…</p>
+      ) : displayed.length === 0 ? (
         <EmptyState mensaje="No se encontraron servicios." />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {servicios.map((s) => (
+          {displayed.map(s => (
             <div
               key={s.id}
-              className="bg-white p-6 rounded-lg shadow hover:shadow-md transition"
+              className="relative bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition"
             >
-              <h3 className="text-xl font-semibold mb-2">{s.nombre}</h3>
-              <p className="text-gray-600 text-sm mb-4 line-clamp-3">{s.descripcion}</p>
+              <h3 className="text-2xl font-semibold text-[#009982] mb-2">
+                {s.nombre}
+              </h3>
+              <p className="text-gray-700 text-sm mb-4 line-clamp-3">
+                {s.descripcion}
+              </p>
 
-              {/* Beneficios como tags */}
-              <div className="flex flex-wrap gap-1 mb-4">
-                {Array.isArray(s.beneficios) ? (
-                  s.beneficios.map((b) => (
-                    <span key={b.id} className="text-xs bg-gray-200 px-2 py-1 rounded-full">
+              {/* Beneficios grandes */}
+              <div className="flex flex-wrap gap-2 mb-6">
+                {s.beneficios.length > 0 ? (
+                  s.beneficios.map(b => (
+                    <span
+                      key={b.id}
+                      className="bg-[#F5FCFB] text-[#006881] text-base px-3 py-1 rounded-lg"
+                    >
                       {b.nombre}
                     </span>
                   ))
                 ) : (
-                  <span className="text-xs text-gray-400 italic">Sin beneficios</span>
+                  <em className="text-gray-400 text-base">Sin beneficios</em>
                 )}
               </div>
 
-              <p className="text-sm mb-1">
-                <strong>Tel:</strong> {s.telefono_de_contacto}
+              <p className="text-gray-800 font-medium mb-1">
+                Tel: <span className="font-normal">{s.telefono_de_contacto}</span>
               </p>
-              <p className="text-sm">
-                <strong>Email:</strong> {s.email_de_contacto}
+              <p className="text-gray-800 font-medium mb-10">
+                Email: <span className="font-normal">{s.email_de_contacto}</span>
               </p>
+
+              {/* Botón “Más información” visible */}
+              <button
+                onClick={() => navigate(`/servicios/${s.id}`)}
+                className="absolute bottom-4 right-4 bg-[#009982] hover:bg-[#006E5E] text-white font-medium px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009982]"
+              >
+                Más información
+              </button>
             </div>
           ))}
         </div>
