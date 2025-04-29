@@ -1,7 +1,8 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./styles/index.css";
 import Routing from "./Routing.tsx";
+import "./styles/index.css";
+import "./styles/fonts.css"
 import { Auth0Provider } from "@auth0/auth0-react";
 
 createRoot(document.getElementById("root")!).render(

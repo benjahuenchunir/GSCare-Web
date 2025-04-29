@@ -1,0 +1,94 @@
+.hero {
+	font-family: "Poppins";
+	background-color: #E5E7EB;
+	width: 100%;
+	min-height: 100vh;
+
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+}
+
+.hero-content {
+	width: 45%;
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+    align-items: center;
+	gap: 1rem;
+	align-items: start;
+}
+
+.hero-header {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: 1rem;
+}
+
+.hero-title {
+    margin: 0;
+    color: #006881;
+	font-size: 2.25rem;
+	width: 83%;
+	text-align: left;
+}
+
+.hero-description {
+    margin: 0;
+    color: #4B5563;
+	font-size: 0.75rem;
+	text-align: left;
+	width: 65%;
+}
+
+.hero-actions {
+	display: flex;
+	flex-direction: row;
+	justify-content: start;
+	align-items: center;
+	gap: 1rem;
+	width: 100%;
+	height: fit-content;
+}
+
+.hero-button {
+	font-size: 0.75rem;
+	padding: 15px 40px;
+	border-radius: 8px;
+	border: none;
+	cursor: pointer;
+	transition: background-color 0.3s ease-in-out;
+}
+
+.hero-button-primary {
+	background-color: #FFC600;
+	color: #111827;
+}
+
+.hero-button-primary:hover {
+	background-color: #ffd900;
+}
+
+.hero-button-secondary {
+	background-color: #009982;
+	color: #FFFFFF;
+}
+
+.hero-button-secondary:hover {
+	background-color: #00b19c;
+}
+
+.hero-figure {
+    margin: 0;
+	width: 35%;
+	height: 100vh;
+	display: flex;
+	justify-content: start;
+	align-items: center;
+}
+
+.hero-image {
+    width: 100%;
+}

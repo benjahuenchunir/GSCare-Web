@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import App from "./App";
-
+import LandingPage from "./pages/LandingPage.tsx";
 import Layout from "./Layout";
 import LoginPage     from "./pages/LoginPage";
 import UserPage from "./pages/UserPage";
@@ -17,9 +16,8 @@ export default function Routing() {
         <Routes>
             <Route path="/" element={<Layout />}>
                 {/* Rutas públicas  */}
-                <Route path="/" element={<LoginPage />} />
+                <Route path="/" element={<LandingPage />} />
                 <Route path="/auth-handler" element={<AuthHandler />} />
-                <Route path="/app" element={<App />} />
                 <Route path="/servicios" element={<ServicesListPage />} />
                 <Route path="/servicios/:id" element={<ServicePage />} />
     
