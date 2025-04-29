@@ -13,7 +13,7 @@ const LoginPage: React.FC = () => {
 
   if (isAuthenticated) {
     // Si ya está logueado, redirige a /user
-    return <Navigate to="/user" replace />;
+    return <Navigate to="/auth-handler" replace />;
   }
 
   return (

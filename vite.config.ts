@@ -8,5 +8,8 @@ export default defineConfig({
 		react(), 
 		svgr()
 	],
+	optimizeDeps: {
+    include: ["@clregions/core"]
+  }
 });
 
