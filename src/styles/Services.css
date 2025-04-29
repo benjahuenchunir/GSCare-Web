@@ -1,4 +1,4 @@
-.services-section {
+.landing-page .services-section {
 	font-family: "Poppins";
 	color: #4b5563;
 	background-color: #ffffff;
@@ -12,7 +12,7 @@
     gap: 1.5rem;
 }
 
-.services-section-title {
+.landing-page .services-section-title {
     margin: 0;
     color: #006881;
 	font-size: 1.75rem;
@@ -20,7 +20,7 @@
 	text-align: center;
 }
 
-.services-grid {
+.landing-page .services-grid {
 	width: 90%;
     height: 80vh;
     display: grid;
@@ -29,7 +29,7 @@
     align-items: center;
 }
 
-.service-card {
+.landing-page .service-card {
     width: 95%;
     height: 90%;
     display: flex;
@@ -41,7 +41,7 @@
     border-radius: 8px;
 }
 
-.service-card-header {
+.landing-page .service-card-header {
     width: 100%;
     height: 4rem;
 
@@ -51,7 +51,7 @@
     align-items: start;
 }
 
-.service-card-title {
+.landing-page .service-card-title {
     margin: 0;
     font-size: 1.25rem;
     color: #006881;
@@ -59,20 +59,20 @@
     text-align: left;
 }
 
-.service-card-description {
+.landing-page .service-card-description {
     margin: 0;
     width: 92%;
     height: 3rem;
 }
 
-.card-description {
+.landing-page .card-description {
     margin: 0;
     width: 70%;
     font-size: 0.75rem;
     text-align: left;
 }
 
-.service-card-figure {
+.landing-page .service-card-figure {
     margin: 0;
     width: 20%;
     height: 100%;
@@ -82,11 +82,11 @@
     align-items: start;
 }
 
-.card-figure {
+.landing-page .card-figure {
     width: 60%;
 }
 
-.service-button {
+.landing-page .service-button {
     display: flex;
     flex-direction: row;
     justify-content: end;
@@ -94,7 +94,7 @@
     width: 90%;
 }
 
-.service-card-link {
+.landing-page .service-card-link {
     padding: 10px 20px;
     font-size: 0.75rem;
     display: flex;

@@ -1,18 +1,21 @@
-#root {
-	width: 100%;
-	margin: 0;
-	text-align: center;
-	display: flex;
-	flex-direction: column;
-	place-items: center;
-	min-height: 100vh;
-}
-
-.flex-container {
-	display: flex;
-}
-
-nav {
+/* src/styles/LandingPage.css */
+.landing-page {
+    width: 100%;
+    margin: 0;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    place-items: center;
+    min-height: 100vh;
+  }
+  
+  /* antes: .flex-container */
+  .landing-page .flex-container {
+    display: flex;
+  }
+  
+  /* antes: nav */
+  .landing-page nav {
     position: fixed;
     top: 0;
     left: 0;
@@ -21,4 +24,5 @@ nav {
     color: black;
     background-color: white;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
+  }
+  

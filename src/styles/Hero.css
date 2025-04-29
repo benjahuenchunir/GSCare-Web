@@ -1,4 +1,4 @@
-.hero {
+.landing-page .hero {
 	font-family: "Poppins";
 	background-color: #E5E7EB;
 	width: 100%;
@@ -9,7 +9,7 @@
 	align-items: center;
 }
 
-.hero-content {
+.landing-page .hero-content {
 	width: 45%;
 	height: 100vh;
 	display: flex;
@@ -20,14 +20,14 @@
 	align-items: start;
 }
 
-.hero-header {
+.landing-page .hero-header {
     display: flex;
     flex-direction: column;
     align-items: start;
     gap: 1rem;
 }
 
-.hero-title {
+.landing-page .hero-title {
     margin: 0;
     color: #006881;
 	font-size: 2.25rem;
@@ -35,7 +35,7 @@
 	text-align: left;
 }
 
-.hero-description {
+.landing-page .hero-description {
     margin: 0;
     color: #4B5563;
 	font-size: 0.75rem;
@@ -43,7 +43,7 @@
 	width: 65%;
 }
 
-.hero-actions {
+.landing-page .hero-actions {
 	display: flex;
 	flex-direction: row;
 	justify-content: start;
@@ -53,7 +53,7 @@
 	height: fit-content;
 }
 
-.hero-button {
+.landing-page .hero-button {
 	font-size: 0.75rem;
 	padding: 15px 40px;
 	border-radius: 8px;
@@ -62,25 +62,25 @@
 	transition: background-color 0.3s ease-in-out;
 }
 
-.hero-button-primary {
+.landing-page .hero-button-primary {
 	background-color: #FFC600;
 	color: #111827;
 }
 
-.hero-button-primary:hover {
+.landing-page .hero-button-primary:hover {
 	background-color: #ffd900;
 }
 
-.hero-button-secondary {
+.landing-page .hero-button-secondary {
 	background-color: #009982;
 	color: #FFFFFF;
 }
 
-.hero-button-secondary:hover {
+.landing-page .hero-button-secondary:hover {
 	background-color: #00b19c;
 }
 
-.hero-figure {
+.landing-page .hero-figure {
     margin: 0;
 	width: 35%;
 	height: 100vh;
@@ -89,6 +89,6 @@
 	align-items: center;
 }
 
-.hero-image {
+.landing-page .hero-image {
     width: 100%;
 }

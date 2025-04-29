@@ -5,14 +5,11 @@ import Footer from "../components/Footer";
 
 function LandingPage() {
 	return (
-		<>
-			<nav>
-				NavBar
-			</nav>
+		<div className='landing-page'>
 			<Hero />
 			<Services />
 			<Footer />
-		</>
+		</div>
 	);
 }
 
