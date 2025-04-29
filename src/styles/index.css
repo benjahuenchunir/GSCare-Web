@@ -1,3 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html {
+  font-family: 'Poppins', 'Lato', sans-serif;
+}
+
+:root {
+	background-color: #f3f4f6;
+}
