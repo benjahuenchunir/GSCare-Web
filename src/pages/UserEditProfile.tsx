@@ -2,12 +2,16 @@
 import React, { useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
-import { getUserProfile, updateUserProfile } from "../services/userService";
+import { getUserByEmail, updateUserProfile } from "../services/userService";
 import regionesData from "../assets/data/comunas-regiones.json";
 
 export default function EditProfilePage() {
   const { user } = useAuth0();
   const navigate = useNavigate();
+
+  // Internamente, guardas lo que no es editable por el usuario
+  const [userId, setUserId] = useState<number | null>(null);
+  const [userRol, setUserRol] = useState<string>("gratis");
 
   const [form, setForm] = useState({
     nombre: "",
@@ -24,7 +28,7 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     if (user?.email) {
-      getUserProfile(user.id).then(data => {
+      getUserByEmail(user.email!).then(data => {
         setForm({
           nombre: data.nombre || "",
           email: data.email,
@@ -33,6 +37,8 @@ export default function EditProfilePage() {
           comuna_de_residencia: data.comuna_de_residencia || "",
           direccion_particular: data.direccion_particular || ""
         });
+        setUserId(data.id);
+        setUserRol(data.rol);
       });
     }
   }, [user]);
@@ -66,8 +72,16 @@ export default function EditProfilePage() {
     }
 
     try {
-      await updateUserProfile(form);
-      navigate("/user", { replace: true });
+      if (userId !== null) {
+        await updateUserProfile({
+          id: userId,
+          rol: userRol,
+          ...form
+        });
+        navigate("/user", { replace: true });
+      } else {
+        throw new Error("ID de usuario no definido");
+      }
     } catch {
       setErrors({ general: "Error al guardar los cambios. Intenta más tarde." });
     }
