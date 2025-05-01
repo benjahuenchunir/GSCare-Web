@@ -51,3 +51,11 @@ export async function updateUserProfile(data: User): Promise<User> {
   if (!res.ok) throw new Error("Error updating user");
   return await res.json();
 }
+
+export async function deleteUserById(id: number): Promise<void> {
+  const res = await fetch(`${API_URL}/usuarios/${id}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error("Error deleting user");
+}
+

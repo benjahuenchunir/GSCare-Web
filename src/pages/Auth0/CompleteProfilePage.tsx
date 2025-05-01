@@ -1,21 +1,18 @@
-// src/pages/EditProfilePage.tsx
+// src/pages/CompleteProfilePage.tsx
+
 import React, { useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
-import { getUserByEmail, updateUserProfile } from "../services/userService";
-import regionesData from "../assets/data/comunas-regiones.json";
+import { createUser } from "../../services/userService";
+import regionesData from "../../assets/data/comunas-regiones.json"; // Tu JSON
 
-export default function EditProfilePage() {
+export default function CompleteProfilePage() {
   const { user } = useAuth0();
   const navigate = useNavigate();
 
-  // Internamente, guardas lo que no es editable por el usuario
-  const [userId, setUserId] = useState<number | null>(null);
-  const [userRol, setUserRol] = useState<string>("gratis");
-
   const [form, setForm] = useState({
     nombre: "",
-    email: "",
+    email: user?.email || "",
     fecha_de_nacimiento: "",
     region_de_residencia: "",
     comuna_de_residencia: "",
@@ -24,36 +21,26 @@ export default function EditProfilePage() {
 
   const [communeList, setCommuneList] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
   const regionList = regionesData.regions.map(region => region.name);
 
   useEffect(() => {
-    if (user?.email) {
-      getUserByEmail(user.email!).then(data => {
-        setForm({
-          nombre: data.nombre || "",
-          email: data.email,
-          fecha_de_nacimiento: data.fecha_de_nacimiento || "",
-          region_de_residencia: data.region_de_residencia || "",
-          comuna_de_residencia: data.comuna_de_residencia || "",
-          direccion_particular: data.direccion_particular || ""
-        });
-        setUserId(data.id);
-        setUserRol(data.rol);
-      });
+    if (form.region_de_residencia) {
+      const selectedRegion = regionesData.regions.find(
+        r => r.name === form.region_de_residencia
+      );
+      setCommuneList(
+        selectedRegion ? selectedRegion.communes.map(c => c.name) : []
+      );
+    } else {
+      setCommuneList([]);
     }
-  }, [user]);
-
-  useEffect(() => {
-    const selectedRegion = regionesData.regions.find(
-      r => r.name === form.region_de_residencia
-    );
-    setCommuneList(selectedRegion ? selectedRegion.communes.map(c => c.name) : []);
   }, [form.region_de_residencia]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm(f => ({ ...f, [name]: value }));
-    setErrors(e => ({ ...e, [name]: "" }));
+    setErrors(e => ({ ...e, [name]: "" })); // Limpia error específico al escribir
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,18 +59,10 @@ export default function EditProfilePage() {
     }
 
     try {
-      if (userId !== null) {
-        await updateUserProfile({
-          id: userId,
-          rol: userRol,
-          ...form
-        });
-        navigate("/user", { replace: true });
-      } else {
-        throw new Error("ID de usuario no definido");
-      }
+      await createUser(form);
+      navigate("/user", { replace: true });
     } catch {
-      setErrors({ general: "Error al guardar los cambios. Intenta más tarde." });
+      setErrors({ general: "Error al crear el usuario. Intenta más tarde." });
     }
   };
 
@@ -93,21 +72,26 @@ export default function EditProfilePage() {
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded-lg shadow max-w-md w-full space-y-4"
       >
-        <h2 className="text-2xl font-bold mb-6">Editar perfil</h2>
+        <h2 className="text-2xl font-bold mb-6">Completa tu perfil</h2>
 
-        {errors["general"] && <p className="text-red-600 mb-4">{errors["general"]}</p>}
+        {/* Error general */}
+        {errors["general"] && (
+          <p className="text-red-600 mb-4">{errors["general"]}</p>
+        )}
 
+        {/* Nombre (opcional) */}
         <label className="block">
-          Nombre completo *
+          Nombre completo (opcional)
           <input
             name="nombre"
             value={form.nombre}
             onChange={handleChange}
             className="mt-1 w-full border rounded px-3 py-2"
+            placeholder="Ej: Ana Pérez"
           />
-          {errors["nombre"] && <p className="text-sm text-red-600 mt-1">{errors["nombre"]}</p>}
         </label>
 
+        {/* Fecha de nacimiento */}
         <label className="block">
           Fecha de nacimiento *
           <input
@@ -122,6 +106,7 @@ export default function EditProfilePage() {
           )}
         </label>
 
+        {/* Región */}
         <label className="block">
           Región *
           <select
@@ -142,6 +127,7 @@ export default function EditProfilePage() {
           )}
         </label>
 
+        {/* Comuna */}
         <label className="block">
           Comuna *
           <select
@@ -152,7 +138,9 @@ export default function EditProfilePage() {
             className="mt-1 w-full border rounded px-3 py-2 bg-white disabled:bg-gray-100"
           >
             <option value="">
-              {communeList.length ? "Selecciona una comuna" : "Primero selecciona una región"}
+              {communeList.length
+                ? "Selecciona una comuna"
+                : "Primero selecciona una región"}
             </option>
             {communeList.map(comuna => (
               <option key={comuna} value={comuna}>
@@ -165,6 +153,7 @@ export default function EditProfilePage() {
           )}
         </label>
 
+        {/* Dirección particular */}
         <label className="block">
           Dirección particular *
           <input
@@ -172,17 +161,19 @@ export default function EditProfilePage() {
             value={form.direccion_particular}
             onChange={handleChange}
             className="mt-1 w-full border rounded px-3 py-2"
+            placeholder="Calle, número, etc."
           />
           {errors["direccion_particular"] && (
             <p className="text-sm text-red-600 mt-1">{errors["direccion_particular"]}</p>
           )}
         </label>
 
+        {/* Botón submit */}
         <button
           type="submit"
           className="w-full mt-6 px-6 py-3 bg-primary1 text-white font-semibold rounded-lg hover:bg-primary2 transition"
         >
-          Guardar cambios
+          Guardar y continuar
         </button>
       </form>
     </div>
