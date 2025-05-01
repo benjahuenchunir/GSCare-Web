@@ -8,7 +8,11 @@ const LoginButton: React.FC = () => {
     <button
       onClick={() => loginWithRedirect(
         {
-          authorizationParams: { ui_locales: "es" }
+          authorizationParams: {
+            screen_hint: "login",
+            ui_locales: "es",
+            redirect_uri: import.meta.env.VITE_AUTH0_CALLBACK_URL
+          }
         }
       )}
       className="w-48 px-6 py-3 bg-primary1 text-white font-semibold rounded-lg hover:bg-primary2 transition"

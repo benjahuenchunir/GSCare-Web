@@ -1,8 +1,8 @@
 import React from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { Navigate } from "react-router-dom";
-import LoginButton from "../components/LoginButton";
-import SignupButton from "../components/SignupButton";
+import LoginButton from "../../components/LoginButton";
+import SignupButton from "../../components/SignupButton";
 
 const LoginPage: React.FC = () => {
   const { logout, isAuthenticated, isLoading } = useAuth0();

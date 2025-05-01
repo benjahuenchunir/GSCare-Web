@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth0 }                   from "@auth0/auth0-react";
 import { useNavigate }                from "react-router-dom";
-import { getUserByEmail }             from "../services/userService";
+import { getUserByEmail }             from "../../services/userService";
 
 const AuthHandler: React.FC = () => {
   const { user, isAuthenticated, isLoading } = useAuth0();
