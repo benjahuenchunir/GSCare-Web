@@ -93,7 +93,7 @@ const ServicePage: React.FC = () => {
   if (!servicio) return <div className="p-4">Cargando servicio...</div>;
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-8">
+    <div className="max-w-5xl mx-auto p-6 space-y-8, pt-20">
       <ServicioInfoCard
         nombre={servicio.nombre}
         descripcion={servicio.descripcion}
@@ -109,7 +109,7 @@ const ServicePage: React.FC = () => {
       />
 
       {reviews.length > 0 && (
-        <div className="bg-white shadow-lg rounded-lg p-6">
+        <div className="bg-white shadow-lg rounded-lg p-6 mt-8">
           <h2 className="text-2xl font-bold mb-6 text-[#00495C] text-left">¿Qué dicen nuestros clientes?</h2>
 
           <Slider {...carouselSettings}>
@@ -132,12 +132,14 @@ const ServicePage: React.FC = () => {
         </div>
       )}
 
-      <AgendarBox
-        telefono={servicio.telefono_de_contacto}
-        email={servicio.email_de_contacto}
-        direccion={servicio.direccion_principal_del_prestador}
-        isAuthenticated={isAuthenticated}
-      />
+      <div className="mt-8">
+        <AgendarBox
+          telefono={servicio.telefono_de_contacto}
+          email={servicio.email_de_contacto}
+          direccion={servicio.direccion_principal_del_prestador}
+          isAuthenticated={isAuthenticated}
+        />
+      </div>
     </div>
   );
 };

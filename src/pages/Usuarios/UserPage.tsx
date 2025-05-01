@@ -61,92 +61,96 @@ const UserPage: React.FC = () => {
   const userName = profile?.nombre || "Usuario";
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="w-full px-6 py-8 space-y-8">
-        <h1 className="text-4xl font-bold text-primary">Hola, {userName}!</h1>
-
-        {/* Botones rápidos */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <QuickAccessButton icon={<CalendarIcon className="w-8 h-8 text-primary" />} label="Mi agenda" />
-          <QuickAccessButton icon={<HandshakeIcon className="w-8 h-8 text-secondary" />} label="Mis servicios" />
-          <QuickAccessButton icon={<HeadsetIcon className="w-8 h-8 text-accent3" />} label="Soporte" />
-          <QuickAccessButton
-            icon={<UserIcon className="w-8 h-8 text-accent2" />}
-            label="Mi perfil"
-            onClick={() => navigate("/edit-profile")}
-            />
-        </div>
-
-        {/* Actividades y Consejos */}
-        <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-6">
-          <div className="space-y-4">
-            <SectionTitle title="Siguientes Actividades" />
-            <div className="bg-white p-4 rounded-lg h-80 overflow-y-auto space-y-4">
-              {upcomingActivities.length === 0 ? (
-                <EmptyState mensaje="No tienes actividades agendadas por ahora." />
-              ) : (
-                upcomingActivities.map((a, i) => (
-                  <div
-                    key={i}
-                    className="w-full bg-[#e7f5f3] px-5 py-4 rounded-lg flex justify-between items-center shadow-sm"
-                  >
-                    <div className="flex flex-col gap-2">
-                      <h4 className="text-xl font-bold text-black text-left">{a.title}</h4>
-                      <div className="flex items-center text-lg text-gray-800 gap-2">
-                        <ClockIcon className="w-6 h-6 text-black fill-current" />
-                        <span>{a.time}</span>
-                      </div>
-                      <div className="flex items-center text-lg text-gray-800 gap-2">
-                        <LocationIcon className="w-6 h-6 text-black fill-current" />
-                        <span>{a.location}</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end text-sm">
-                      <span className="mt-1 px-4 py-1 bg-[#62CBC9] text-black font-semibold rounded-md">
-                        {a.tag}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+    <main className="flex-1 pt-10">
+      <div className="min-h-screen bg-gray-100">
+        <div className="w-full px-6 py-8 space-y-8">
+          <div className="flex justify-center mb-6">
+            <h1 className="text-4xl font-bold text-primary">Hola, {userName}!</h1>
           </div>
 
-          {/* Consejos para hoy */}
-          <div className="space-y-4">
-            <SectionTitle title="Consejos para hoy" />
-            <div className="bg-white p-4 rounded-lg h-80 overflow-y-auto flex flex-col justify-start space-y-3">
-              {consejos.length === 0 ? (
-                <EmptyState mensaje="No hay consejos por el momento." />
-              ) : (
-                consejos.map((c, i) => (
-                  <div
-                    key={i}
-                    className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3"
-                  >
-                    <p className="text-base font-medium text-gray-900">{c.text}</p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Servicios activos */}
-        <div className="space-y-4">
-          <SectionTitle title="Tus servicios activos" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {activeServices.map((s, i) => (
-              <InfoCard
-                key={i}
-                title={s.name}
-                content={<p className="text-sm text-gray-700">{s.desc}</p>}
+          {/* Botones rápidos */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <QuickAccessButton icon={<CalendarIcon className="w-8 h-8 text-primary" />} label="Mi agenda" />
+            <QuickAccessButton icon={<HandshakeIcon className="w-8 h-8 text-secondary" />} label="Mis servicios" />
+            <QuickAccessButton icon={<HeadsetIcon className="w-8 h-8 text-accent3" />} label="Soporte" />
+            <QuickAccessButton
+              icon={<UserIcon className="w-8 h-8 text-accent2" />}
+              label="Mi perfil"
+              onClick={() => navigate("/edit-profile")}
               />
-            ))}
+          </div>
+
+          {/* Actividades y Consejos */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-4">
+              <SectionTitle title="Siguientes Actividades" />
+              <div className="bg-white p-4 rounded-lg h-80 overflow-y-auto space-y-4">
+                {upcomingActivities.length === 0 ? (
+                  <EmptyState mensaje="No tienes actividades agendadas por ahora." />
+                ) : (
+                  upcomingActivities.map((a, i) => (
+                    <div
+                      key={i}
+                      className="w-full bg-[#e7f5f3] px-5 py-4 rounded-lg flex justify-between items-center shadow-sm"
+                    >
+                      <div className="flex flex-col gap-2">
+                        <h4 className="text-xl font-bold text-black text-left">{a.title}</h4>
+                        <div className="flex items-center text-lg text-gray-800 gap-2">
+                          <ClockIcon className="w-6 h-6 text-black fill-current" />
+                          <span>{a.time}</span>
+                        </div>
+                        <div className="flex items-center text-lg text-gray-800 gap-2">
+                          <LocationIcon className="w-6 h-6 text-black fill-current" />
+                          <span>{a.location}</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end text-sm">
+                        <span className="mt-1 px-4 py-1 bg-[#62CBC9] text-black font-semibold rounded-md">
+                          {a.tag}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Consejos para hoy */}
+            <div className="lg:col-span-1 space-y-4">
+              <SectionTitle title="Consejos para hoy" />
+              <div className="bg-white p-4 rounded-lg h-80 overflow-y-auto flex flex-col justify-start space-y-3">
+                {consejos.length === 0 ? (
+                  <EmptyState mensaje="No hay consejos por el momento." />
+                ) : (
+                  consejos.map((c, i) => (
+                    <div
+                      key={i}
+                      className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3"
+                    >
+                      <p className="text-base font-medium text-gray-900">{c.text}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Servicios activos */}
+          <div className="space-y-4">
+            <SectionTitle title="Tus servicios activos" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {activeServices.map((s, i) => (
+                <InfoCard
+                  key={i}
+                  title={s.name}
+                  content={<p className="text-sm text-gray-700">{s.desc}</p>}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 

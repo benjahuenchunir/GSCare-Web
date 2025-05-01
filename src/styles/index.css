@@ -8,3 +8,7 @@ html {
   font-family: 'Poppins', 'Lato', sans-serif;
   scroll-behavior: smooth;
 }
+
+:root {
+	background-color: #f3f4f6;
+}
