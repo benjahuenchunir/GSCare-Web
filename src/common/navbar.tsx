@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import LoginButton from "../components/LoginButton";
@@ -9,7 +8,7 @@ export default function Navbar() {
   return (
     <nav className="w-full fixed top-0 left-0 z-50 flex items-center justify-between px-8 py-4 bg-white shadow-md">
       {/* Logo + marca */}
-      <Link to="/" className="flex items-center space-x-2">
+      <Link to={isAuthenticated ? "/user" : "/"} className="flex items-center space-x-2">
         <img
           src="/assets/LogoSinTexto.png"
           alt="Logo GSCare"
