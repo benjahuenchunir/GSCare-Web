@@ -15,7 +15,7 @@ const SignupButton: React.FC = () => {
           }
         })
       }
-      className="w-48 mt-4 px-6 py-3 bg-secondary2 text-white font-semibold rounded-lg hover:bg-secondary1 transition"
+      className="w-48 px-6 py-5 bg-secondary2 text-xl text-white font-semibold rounded-lg hover:bg-secondary1 transition"
     >
       Crear cuenta
     </button>
