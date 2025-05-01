@@ -1,11 +1,12 @@
+// Página de formulario de edición de los datos del usuario ya registrado
 import React, { useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
-import { getUserByEmail, updateUserProfile, User } from "../services/userService";
-import regionesData from "../assets/data/comunas-regiones.json";
+import { getUserByEmail, updateUserProfile, deleteUserById, User } from "../../services/userService";
+import regionesData from "../../assets/data/comunas-regiones.json";
 
 export default function EditProfilePage() {
-  const { user } = useAuth0();
+  const { user, logout } = useAuth0();
   const navigate = useNavigate();
 
   const [form, setForm] = useState<User>({
@@ -76,6 +77,26 @@ export default function EditProfilePage() {
       navigate("/user"); // ✅ redirección al perfil del usuario
     } catch {
       setErrors({ general: "Error al guardar los cambios. Intenta más tarde." });
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (
+      window.confirm(
+        "¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer."
+      )
+    ) {
+      try {
+        await deleteUserById(form.id);
+        // cierra sesión y redirige al home
+        logout({
+          logoutParams: {
+            returnTo: window.location.origin,
+          },
+        });
+      } catch {
+        setErrors({ general: "No se pudo eliminar la cuenta. Intenta más tarde." });
+      }
     }
   };
 
@@ -187,6 +208,15 @@ export default function EditProfilePage() {
         >
           Guardar cambios
         </button>
+        <div className="mt-6 border-t pt-4 space-y-2">
+          <button
+            type="button"
+            onClick={handleDeleteAccount}
+            className="w-full px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition"
+          >
+            Eliminar cuenta
+          </button>
+         </div>
       </form>
     </div>
   );

@@ -1,25 +1,27 @@
 import React, { useEffect, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
-import { getUserByEmail, User } from "../services/userService";
-import QuickAccessButton from "../common/QuickAccessButton";
-import SectionTitle from '../common/SectionTitle';
-import InfoCard from '../common/InfoCard';
-import EmptyState from '../common/EmptyState';
+import { getUserByEmail, User } from "../../services/userService";
+import QuickAccessButton from "../../common/QuickAccessButton";
+import SectionTitle from '../../common/SectionTitle';
+import InfoCard from '../../common/InfoCard';
+import EmptyState from '../../common/EmptyState';
 
 // Iconos SVG
-import ClockIcon from '../assets/Clock2.svg?react';
-import LocationIcon from '../assets/Location.svg?react';
-import CalendarIcon from '../assets/Calendar2.svg?react';
-import HandshakeIcon from '../assets/Heart2.svg?react';
-import HeadsetIcon from '../assets/Support.svg?react';
-import UserIcon from '../assets/Person.svg?react';
+import ClockIcon from '../../assets/Clock2.svg?react';
+import LocationIcon from '../../assets/Location.svg?react';
+import CalendarIcon from '../../assets/Calendar2.svg?react';
+import HandshakeIcon from '../../assets/Heart2.svg?react';
+import HeadsetIcon from '../../assets/Support.svg?react';
+import UserIcon from '../../assets/Person.svg?react';
 
 const UserPage: React.FC = () => {
   const { user, isAuthenticated } = useAuth0();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  console.log(isAuthenticated);
 
   const consejos = [
     { text: 'Bebe agua cada 2 horas para mantenerte hidratado 💧' },
