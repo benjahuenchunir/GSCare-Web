@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import UserEditProfile from "./pages/Usuarios/UserEditInfo.tsx";
 import ServicesListPage from "./pages/Servicios/ServicesListPage";
 import ServicePage from "./pages/Servicios/servicePage";
+import ActivityPage from "./pages/Actividades/activitiesPage.tsx";
 
 export default function Routing() {
     return (
@@ -20,6 +21,7 @@ export default function Routing() {
                 <Route path="/auth-handler" element={<AuthHandler />} />
                 <Route path="/servicios" element={<ServicesListPage />} />
                 <Route path="/servicios/:id" element={<ServicePage />} />
+                <Route path="/actividades/:id" element={<ActivityPage />} />
     
                 {/* Ruta protegida */}
                 <Route path="/user" element={
