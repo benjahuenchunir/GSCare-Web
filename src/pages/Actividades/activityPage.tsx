@@ -1,4 +1,3 @@
-// ActivityPage.tsx
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
@@ -15,7 +14,8 @@ interface Actividad {
   comuna: string;
   fecha: string;
   hora: string;
-    imagen: string;
+  imagen: string;
+  categoria: string;
   id_creador_del_evento: number;
 }
 
@@ -25,7 +25,6 @@ const ActivityPage: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [yaInscrito, setYaInscrito] = useState(false);
-  const [idAsistencia, setIdAsistencia] = useState<number | null>(null);
   const { user, isAuthenticated, loginWithRedirect } = useAuth0();
 
   useEffect(() => {
@@ -39,22 +38,26 @@ const ActivityPage: React.FC = () => {
     };
 
     const checkInscripcion = async () => {
-      if (!user) return;
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/asistentes/usuario/${user.sub}`);
-        const asistencia = res.data.find((a: any) => a.id_evento_a_asistir === Number(id));
+        if (!user?.email) return;
+        const usuario = await getUserByEmail(user.email);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/asistentes/actividad/${id}`);
+        const asistencia = res.data.find((a: any) => a.id_usuario_asistente === usuario.id);
+
         if (asistencia) {
           setYaInscrito(true);
-          setIdAsistencia(asistencia.id);
         }
       } catch (error) {
-        console.warn("No se pudo verificar inscripción previa.");
+        console.warn("No se pudo verificar inscripción previa:", error);
       }
     };
 
     fetchActividad();
-    if (isAuthenticated) checkInscripcion();
-  }, [id, isAuthenticated, user]);
+
+    if (isAuthenticated && user?.email) {
+      checkInscripcion();
+    }
+  }, [id, isAuthenticated, user?.email]);
 
   const handleInscribirse = async () => {
     if (!actividad || !user) return;
@@ -67,13 +70,12 @@ const ActivityPage: React.FC = () => {
         setModalVisible(true);
         return;
       }
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/asistentes`, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/asistentes`, {
         id_evento_a_asistir: Number(id),
         id_usuario_asistente: usuario.id,
       });
       setModalVisible(true);
       setYaInscrito(true);
-      setIdAsistencia(res.data.id);
     } catch (error) {
       console.error("Error al inscribirse:", error);
       alert("Hubo un problema al intentar inscribirse.");
@@ -81,11 +83,18 @@ const ActivityPage: React.FC = () => {
   };
 
   const handleConfirmCancel = async () => {
-    if (!idAsistencia) return;
+    if (!user?.email || !id) return;
+
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/asistentes/${idAsistencia}`);
+      const usuario = await getUserByEmail(user.email);
+      await axios.delete(`${import.meta.env.VITE_API_URL}/asistentes`, {
+        data: {
+          id_evento_a_asistir: Number(id),
+          id_usuario_asistente: usuario.id,
+        },
+      });
+
       setYaInscrito(false);
-      setIdAsistencia(null);
       setShowConfirmModal(false);
     } catch (error) {
       console.error("Error al cancelar inscripción:", error);
@@ -97,15 +106,12 @@ const ActivityPage: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6 bg-white rounded-xl shadow-md mt-[1cm]">
-      {/* Bloque 1: Título y descripción */}
+      <ActividadInfoCard
+        nombre={actividad.nombre}
+        descripcion={actividad.descripcion}
+        imagen={actividad.imagen}
+      />
 
-        <ActividadInfoCard
-            nombre={actividad.nombre}
-            descripcion={actividad.descripcion}
-            imagen={actividad.imagen}
-        />
-
-      {/* Bloque 2a: Información del lugar */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-2xl font-bold text-[#00495C] mb-4">Información del lugar</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-800">
@@ -126,7 +132,6 @@ const ActivityPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Bloque 2b: Información de la hora */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-2xl font-bold text-[#00495C] mb-4">Información de la hora</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-800">
@@ -147,29 +152,45 @@ const ActivityPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Botón suscripción estilo bloque verde */}
       <div className="bg-[#009982] text-white rounded-lg p-6 text-center">
         <h3 className="text-2xl font-bold mb-2">¿Quieres participar?</h3>
         <p className="mb-4">Únete a esta actividad para mejorar tu bienestar y conectar con otros.</p>
-        <div className="flex justify-center">
-          <button
-            className="py-2 px-6 bg-white text-[#009982] rounded-lg font-semibold hover:bg-gray-200"
-            onClick={() => {
-              if (!isAuthenticated) {
-                loginWithRedirect({
-                  authorizationParams: {
-                    screen_hint: "login",
-                    ui_locales: "es",
-                    redirect_uri: import.meta.env.VITE_AUTH0_CALLBACK_URL,
-                  },
-                });
-                return;
-              }
-              handleInscribirse();
-            }}
-          >
-            Suscribirse
-          </button>
+        <div className="flex flex-col items-center gap-3 sm:flex-col sm:justify-center">
+          {yaInscrito ? (
+            <div className="flex flex-col items-center text-center gap-3">
+              <div className="py-2 px-6 bg-white text-[#009982] rounded-lg font-semibold border border-[#009982]">
+                Ya estás inscrito 😊
+              </div>
+              <p className="text-white text-sm">
+                ¿Quieres cancelar tu inscripción? Puedes hacerlo presionando el botón de abajo.
+              </p>
+              <button
+                onClick={() => setShowConfirmModal(true)}
+                className="py-2 px-6 bg-red-100 text-red-700 rounded-lg font-semibold hover:bg-red-200 border border-red-300"
+              >
+                Cancelar inscripción
+              </button>
+            </div>
+          ) : (
+            <button
+              className="py-2 px-6 bg-white text-[#009982] rounded-lg font-semibold hover:bg-gray-200"
+              onClick={() => {
+                if (!isAuthenticated) {
+                  loginWithRedirect({
+                    authorizationParams: {
+                      screen_hint: "login",
+                      ui_locales: "es",
+                      redirect_uri: import.meta.env.VITE_AUTH0_CALLBACK_URL,
+                    },
+                  });
+                  return;
+                }
+                handleInscribirse();
+              }}
+            >
+              Suscribirse
+            </button>
+          )}
         </div>
       </div>
 
