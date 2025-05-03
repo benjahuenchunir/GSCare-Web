@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import ServicioInfoCard from "./ServicioInfoCard";
@@ -8,6 +8,12 @@ import BeneficiosBox from "./BeneficiosBox";
 import DisponibilidadBox from "./DisponibilidadBox";
 import { Review } from "./types";
 import Slider from "react-slick"; // Importa el slider
+import { useAuth0 } from "@auth0/auth0-react";
+import { isUserSubscribed, 
+         subscribeToService, 
+        unsubscribeFromService 
+      } from "../../services/subscriptionService";
+import { UserContext } from "../../context/UserContext";
 
 interface Servicio {
   nombre: string;
@@ -33,11 +39,17 @@ interface Beneficio {
 
 const ServicePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const {isAuthenticated, loginWithRedirect } = useAuth0();
+  const { profile, loading: loadingProfile } = useContext(UserContext);
+
+  // Para datos del servicio
   const [servicio, setServicio] = useState<Servicio | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [beneficios, setBeneficios] = useState<Beneficio[]>([]);
 
-  const isAuthenticated = false;
+  // Para subscripciones
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [loadingSub, setLoadingSub] = useState(true);
 
   useEffect(() => {
     const fetchServicio = async () => {
@@ -90,10 +102,58 @@ const ServicePage: React.FC = () => {
     arrows: true,
   };
 
+  // 2.1 Check if user is subscribed
+  useEffect(() => {
+    if (loadingProfile) return;
+  
+    if (isAuthenticated && profile?.id) {
+      isUserSubscribed(Number(id), profile.id)
+        .then(setIsSubscribed)
+        .catch(console.error)
+        .finally(() => setLoadingSub(false));
+    } else {
+      setLoadingSub(false);
+    }
+  }, [isAuthenticated, loadingProfile, profile, id]);
+
+  // 2.2 Handler Suscribirse
+  const handleSubscribe = async () => {
+    if (!isAuthenticated) {
+      await loginWithRedirect({ appState: { returnTo: `/servicios/${id}` } });
+      return;
+    }
+    if (profile?.id) {
+      setLoadingSub(true);
+      try {
+        await subscribeToService(Number(id), profile.id);
+        setIsSubscribed(true);
+      } catch (e: any) {
+        alert(e.message);
+      } finally {
+        setLoadingSub(false);
+      }
+    }
+  };
+
+  // 2.3 Handler Desuscribirse
+  const handleUnsubscribe = async () => {
+    if (profile?.id) {
+      setLoadingSub(true);
+      try {
+        await unsubscribeFromService(Number(id), profile.id);
+        setIsSubscribed(false);
+      } catch (e: any) {
+        alert(e.message);
+      } finally {
+        setLoadingSub(false);
+      }
+    }
+  };
+
   if (!servicio) return <div className="p-4">Cargando servicio...</div>;
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-8, pt-20">
+    <div className="max-w-5xl mx-auto p-6 space-y-8 pt-20">
       <ServicioInfoCard
         nombre={servicio.nombre}
         descripcion={servicio.descripcion}
@@ -133,12 +193,15 @@ const ServicePage: React.FC = () => {
       )}
 
       <div className="mt-8">
-        <AgendarBox
-          telefono={servicio.telefono_de_contacto}
-          email={servicio.email_de_contacto}
-          direccion={servicio.direccion_principal_del_prestador}
-          isAuthenticated={isAuthenticated}
-        />
+      <AgendarBox
+        telefono={servicio.telefono_de_contacto}
+        email={servicio.email_de_contacto}
+        direccion={servicio.direccion_principal_del_prestador}
+        isSubscribed={isSubscribed}
+        loading={loadingSub}
+        onSubscribe={handleSubscribe}
+        onUnsubscribe={handleUnsubscribe}
+      />
       </div>
     </div>
   );
