@@ -41,13 +41,10 @@ export const UpcomingActivitiesSection: React.FC = () => {
     setLoading(true);
     // 1. Obtener servicios suscritos
     getUserSubscriptions(profile.id)
-      .then((servs) =>
-        getUserSubscriptions(profile.id)
         .then((servs) =>
           Promise.all(
             servs.map(async (s) => {
-              const servicio = s as ServicioConHorario; // aseguramos el tipo
-
+              const servicio = s as unknown as ServicioConHorario; // aseguramos el tipo
               const sessionDate = getNextSessionDate(
                 servicio.dias_disponibles,
                 servicio.hora_inicio
@@ -62,7 +59,6 @@ export const UpcomingActivitiesSection: React.FC = () => {
           )
         )
 
-      )
       .then((list) => {
         // 3. Filtrar nulos, ordenar y limitar a próximos 7 días
         const filtered = (list.filter((x): x is Upcoming => !!x) as Upcoming[])
