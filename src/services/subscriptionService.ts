@@ -1,4 +1,5 @@
 const API_URL = import.meta.env.VITE_API_URL;
+import { Servicio } from "./serviceService"; 
 
 export interface Suscripcion {
   id: number;
@@ -52,4 +53,33 @@ export async function unsubscribeFromService(
     const err = await res.json();
     throw new Error(err.message || "Error al cancelar suscripción");
   }
+}
+
+// 1.4 Obtener suscripciones de un usuario
+export async function getUserSubscriptions(
+  usuarioId: number
+): Promise<Servicio[]> {
+  // 1. Trae todos los servicios
+  const serviciosRes = await fetch(`${API_URL}/servicios`);
+  if (!serviciosRes.ok) {
+    throw new Error("Error fetching servicios");
+  }
+  const servicios: Servicio[] = await serviciosRes.json();
+
+  // 2. Para cada servicio, pide sus suscripciones y filtra
+  const results = await Promise.all(
+    servicios.map(async (s) => {
+      const susRes = await fetch(`${API_URL}/servicios/${s.id}/suscripciones`);
+      if (!susRes.ok) return null;
+      const sus: Suscripcion[] = await susRes.json();
+      // si el usuario está en la lista, devolvemos este servicio
+      if (sus.some(x => x.id_usuario === usuarioId)) {
+        return s;
+      }
+      return null;
+    })
+  );
+
+  // 3. Quitamos nulos y devolvemos sólo los suscritos
+  return results.filter((s): s is Servicio => s !== null);
 }

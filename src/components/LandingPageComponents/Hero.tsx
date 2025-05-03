@@ -1,5 +1,5 @@
-import SignupButton from "./SignupButton";
-import Logo from "../assets/imgs/logo.svg";
+import SignupButton from "../SignupButton";
+import Logo from "../../assets/imgs/logo.svg";
 
 export default function Hero() {
   return (

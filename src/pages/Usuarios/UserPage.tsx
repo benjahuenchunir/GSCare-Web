@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
+
 import { getUserByEmail, User } from "../../services/userService";
+
+import { SubscribedServicesSection } from "../../components/UserPageComponents/SubscribedServicesSection";
 import QuickAccessButton from "../../common/QuickAccessButton";
 import SectionTitle from '../../common/SectionTitle';
-import InfoCard from '../../common/InfoCard';
 import EmptyState from '../../common/EmptyState';
 
 // Iconos SVG
@@ -14,6 +16,7 @@ import CalendarIcon from '../../assets/Calendar2.svg?react';
 import HandshakeIcon from '../../assets/Heart2.svg?react';
 import HeadsetIcon from '../../assets/Support.svg?react';
 import UserIcon from '../../assets/Person.svg?react';
+
 
 const UserPage: React.FC = () => {
   const { user, isAuthenticated } = useAuth0();
@@ -69,9 +72,8 @@ const UserPage: React.FC = () => {
           </div>
 
           {/* Botones rápidos */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <QuickAccessButton icon={<CalendarIcon className="w-8 h-8 text-primary" />} label="Mi agenda" />
-            <QuickAccessButton icon={<HandshakeIcon className="w-8 h-8 text-secondary" />} label="Mis servicios" />
             <QuickAccessButton icon={<HeadsetIcon className="w-8 h-8 text-accent3" />} label="Soporte" />
             <QuickAccessButton
               icon={<UserIcon className="w-8 h-8 text-accent2" />}
@@ -137,17 +139,11 @@ const UserPage: React.FC = () => {
 
           {/* Servicios activos */}
           <div className="space-y-4">
-            <SectionTitle title="Tus servicios activos" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {activeServices.map((s, i) => (
-                <InfoCard
-                  key={i}
-                  title={s.name}
-                  content={<p className="text-sm text-gray-700">{s.desc}</p>}
-                />
-              ))}
+            <SectionTitle title="Mis servicios activos" />
+              <div className="bg-white p-6 rounded-lg shadow">
+                <SubscribedServicesSection />
+              </div>
             </div>
-          </div>
         </div>
       </div>
     </main>
