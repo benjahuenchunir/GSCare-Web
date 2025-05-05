@@ -59,27 +59,7 @@ export async function unsubscribeFromService(
 export async function getUserSubscriptions(
   usuarioId: number
 ): Promise<Servicio[]> {
-  // 1. Trae todos los servicios
-  const serviciosRes = await fetch(`${API_URL}/servicios`);
-  if (!serviciosRes.ok) {
-    throw new Error("Error fetching servicios");
-  }
-  const servicios: Servicio[] = await serviciosRes.json();
-
-  // 2. Para cada servicio, pide sus suscripciones y filtra
-  const results = await Promise.all(
-    servicios.map(async (s) => {
-      const susRes = await fetch(`${API_URL}/servicios/${s.id}/suscripciones`);
-      if (!susRes.ok) return null;
-      const sus: Suscripcion[] = await susRes.json();
-      // si el usuario está en la lista, devolvemos este servicio
-      if (sus.some(x => x.id_usuario === usuarioId)) {
-        return s;
-      }
-      return null;
-    })
-  );
-
-  // 3. Quitamos nulos y devolvemos sólo los suscritos
-  return results.filter((s): s is Servicio => s !== null);
+  const res = await fetch(`${API_URL}/usuarios/servicios?id_usuario=${usuarioId}`);
+  if (!res.ok) throw new Error("Error al obtener servicios suscritos");
+  return await res.json();
 }
