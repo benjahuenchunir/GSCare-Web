@@ -1,4 +1,4 @@
-import AboutUs from "./AboutUs"
+import AboutUs from "../AboutUs"
 import Address from "./Address"
 import SocialMedia from "./SocialMedia"
 import NewsLetter from "./Newsletter"

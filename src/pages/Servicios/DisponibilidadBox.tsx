@@ -16,7 +16,7 @@ interface DisponibilidadBoxProps {
         <h2 className="text-2xl font-bold mb-6 text-left" style={{ color: "#006881" }}>
           Disponibilidad del servicio
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           <div className="bg-[#F9FAFB] p-4 rounded-xl">
             <h3 className="text-lg font-bold mb-2 text-left" style={{ color: "#009982" }}>
@@ -30,13 +30,6 @@ interface DisponibilidadBoxProps {
               Horario
             </h3>
             <p className="text-gray-700 text-left">{hora_inicio.slice(0,5)} - {hora_termino.slice(0,5)}</p>
-          </div>
-  
-          <div className="bg-[#F9FAFB] p-4 rounded-xl">
-            <h3 className="text-lg font-bold mb-2 text-left" style={{ color: "#009982" }}>
-              Reserva
-            </h3>
-            <p className="text-gray-700 text-left">Contactar para agendar.</p>
           </div>
   
         </div>

@@ -1,6 +1,6 @@
-import Hero from "../components/Hero";
+import Hero from "../components/LandingPageComponents/Hero";
 import Services from "../components/Services";
-import Footer from "../components/Footer";
+import Footer from "../components/LandingPageComponents/Footer";
 
 function LandingPage() {
 	return (

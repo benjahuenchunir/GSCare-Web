@@ -5,6 +5,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Routing from "./Routing.tsx";
 import { Auth0Provider } from "@auth0/auth0-react";
+import { UserProvider } from "./context/UserContext.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -17,7 +18,9 @@ createRoot(document.getElementById("root")!).render(
       cacheLocation="localstorage"  // 👈 esto es la clave
       useRefreshTokens={true}
     >
-      <Routing />
+      <UserProvider>
+        <Routing />
+      </UserProvider>
     </Auth0Provider>
   </StrictMode>
 );

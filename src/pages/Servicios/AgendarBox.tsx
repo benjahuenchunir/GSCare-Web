@@ -1,45 +1,70 @@
+// src/pages/AgendarBox.tsx
 import React from "react";
-import { useNavigate } from "react-router-dom";
 
 interface Props {
   telefono: string;
   email: string;
   direccion: string;
-  isAuthenticated: boolean;
+  isSubscribed: boolean;
+  loading: boolean;
+  onSubscribe: () => void;
+  onUnsubscribe: () => void;
 }
 
-const AgendarBox: React.FC<Props> = ({ telefono, email, direccion, isAuthenticated }) => {
-  const navigate = useNavigate();
+const AgendarBox: React.FC<Props> = ({
+  telefono,
+  email,
+  direccion,
+  isSubscribed,
+  loading,
+  onSubscribe,
+  onUnsubscribe
+}) => (
+  <div className="bg-[#36A2A1] text-white rounded-lg p-8 text-center flex flex-col items-center gap-4">
+    <h3 className="text-2xl font-bold">¿Quieres agendar?</h3>
 
-  return (
-    <div className="bg-[#36A2A1] shadow-inner rounded-lg p-6 border border-blue-200">
-      <h2 className="text-2xl font-bold mb-4 text-white">¿Quieres agendar?</h2>
+    {!isSubscribed && (
+      <p className="max-w-lg text-white">
+        Únete a este servicio para recibir sus beneficios directamente en tu perfil.
+      </p>
+    )}
 
-      {isAuthenticated ? (
-        <div className="space-y-3 text-gray-700">
-          <p><strong>Teléfono:</strong> {telefono}</p>
-          <p><strong>Email:</strong> {email}</p>
-          <p><strong>Dirección:</strong> {direccion}</p>
-          <button
-            className="mt-4 px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            onClick={() => alert("Aquí podrías abrir un modal de reserva o redirigir a otra página")}
-          >
-            Agenda tu visita
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-3 text-white">
-          <p>Únete a nuestra comunidad para poder disfrutar de estos beneficios.</p>
-          <button
-            className="mt-6 px-5 py-2 bg-white text-[#00495C] rounded-full border border-[#00495C]"
-            onClick={() => navigate("/login")}
-          >
-            Agenda tu visita
-          </button>
-        </div>
-      )}
+    {/* Datos de contacto */}
+    <div className="bg-white text-[#00495C] rounded-md p-4 w-full max-w-md text-left space-y-2">
+      <p><strong>Teléfono:</strong> {telefono}</p>
+      <p><strong>Email:</strong> {email}</p>
+      <p><strong>Dirección:</strong> {direccion}</p>
     </div>
-  );
-};
+
+    {/* Botones */}
+    {loading ? (
+      <button disabled className="mt-4 px-6 py-2 bg-gray-400 text-white rounded-lg">
+        Cargando…
+      </button>
+    ) : isSubscribed ? (
+      <div className="flex flex-col items-center gap-3">
+        <div className="py-2 px-6 bg-white text-[#009982] rounded-lg font-semibold border border-white">
+          Ya estás suscrito 😊
+        </div>
+        <p className="text-white text-sm max-w-md">
+          ¿Quieres cancelar tu suscripción? Puedes hacerlo presionando el botón de abajo.
+        </p>
+        <button
+          onClick={onUnsubscribe}
+          className="py-2 px-6 bg-red-100 text-red-700 rounded-lg font-semibold hover:bg-red-200 border border-red-300"
+        >
+          Cancelar suscripción
+        </button>
+      </div>
+    ) : (
+      <button
+        onClick={onSubscribe}
+        className="mt-4 px-6 py-2 bg-white text-[#00495C] rounded-lg font-semibold hover:bg-gray-100"
+      >
+        Suscribirme
+      </button>
+    )}
+  </div>
+);
 
 export default AgendarBox;
