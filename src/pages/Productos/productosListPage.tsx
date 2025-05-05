@@ -1,22 +1,33 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchActividades, Actividad } from "../../services/actividadService";
+import axios from "axios";
 
-const ActividadesListPage: React.FC = () => {
+interface Producto {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  imagen: string;
+  categoria: string;
+  marca: string;
+  nombre_del_vendedor: string;
+}
+
+const ProductosListPage: React.FC = () => {
   const navigate = useNavigate();
-  const [actividades, setActividades] = useState<Actividad[]>([]);
+  const [productos, setProductos] = useState<Producto[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchActividades()
-      .then(setActividades)
+    axios
+      .get(`${import.meta.env.VITE_API_URL}/productos`)
+      .then(res => setProductos(res.data))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
-  const categoriasUnicas = Array.from(new Set(actividades.map(a => a.categoria)));
+  const categoriasUnicas = Array.from(new Set(productos.map(p => p.categoria)));
 
   const toggleCategoria = (categoria: string) => {
     setSelectedCategories(prev =>
@@ -26,26 +37,24 @@ const ActividadesListPage: React.FC = () => {
     );
   };
 
-  const filtered = actividades
-    .filter(a =>
-      a.nombre.toLowerCase().includes(searchTerm.trim().toLowerCase())
-    )
-    .filter(a =>
+  const filtrados = productos
+    .filter(p => p.nombre.toLowerCase().includes(searchTerm.toLowerCase()))
+    .filter(p =>
       selectedCategories.length === 0
         ? true
-        : selectedCategories.includes(a.categoria)
+        : selectedCategories.includes(p.categoria)
     );
 
   return (
-    <main className="flex-1 ">
+    <main className="flex-1">
       <div className="px-10 py-16 bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-secondary1 text-center mb-6">Actividades</h1>
+          <h1 className="text-3xl font-bold text-secondary1 text-center mb-6">Productos para Adultos Mayores</h1>
 
           <div className="flex justify-center mb-6">
             <input
               type="text"
-              placeholder="Buscar actividades…"
+              placeholder="Buscar productos…"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="w-full md:w-2/5 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#62CBC9]"
@@ -74,22 +83,22 @@ const ActividadesListPage: React.FC = () => {
           </div>
 
           {loading ? (
-            <p className="text-center text-gray-600">Cargando actividades…</p>
-          ) : filtered.length === 0 ? (
-            <p className="text-center text-gray-600">No se encontraron actividades.</p>
+            <p className="text-center text-gray-600">Cargando productos…</p>
+          ) : filtrados.length === 0 ? (
+            <p className="text-center text-gray-600">No se encontraron productos.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filtered.map(a => (
+              {filtrados.map(p => (
                 <div
-                  key={a.id}
-                  onClick={() => navigate(`/actividades/${a.id}`)}
+                  key={p.id}
+                  onClick={() => navigate(`/productos/${p.id}`)}
                   className="bg-white p-6 rounded-xl shadow-md hover:shadow-2xl hover:scale-[1.02] hover:bg-gray-100 hover:border-2 hover:border-[#009982] border border-transparent transition-all duration-200 ease-in-out cursor-pointer"
                 >
-                  <h3 className="text-2xl font-semibold text-[#009982] mb-2">{a.nombre}</h3>
-                  <p className="text-gray-700 text-sm mb-2">{a.descripcion}</p>
-                  <p className="text-gray-500 text-sm mb-1"><strong>Categoría:</strong> {a.categoria}</p>
-                  <p className="text-gray-500 text-sm mb-1"><strong>Fecha:</strong> {new Date(a.fecha).toLocaleString()}</p>
-                  <p className="text-gray-500 text-sm"><strong>Lugar:</strong> {a.lugar}</p>
+                  <img src={p.imagen} alt={p.nombre} className="w-full h-40 object-cover rounded-md mb-4" />
+                  <h3 className="text-xl font-semibold text-[#009982] mb-1">{p.nombre}</h3>
+                  <p className="text-gray-700 text-sm mb-2">{p.descripcion}</p>
+                  <p className="text-gray-500 text-sm"><strong>Marca:</strong> {p.marca}</p>
+                  <p className="text-gray-500 text-sm"><strong>Vendedor:</strong> {p.nombre_del_vendedor}</p>
                 </div>
               ))}
             </div>
@@ -100,4 +109,4 @@ const ActividadesListPage: React.FC = () => {
   );
 };
 
-export default ActividadesListPage;
+export default ProductosListPage;

@@ -58,7 +58,7 @@ const ServicesListPage: React.FC = () => {
     );
 
   return (
-    <main className="flex-1 pt-10">
+    <main className="flex-1 ">
       <div className="px-10 py-16 bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-center mb-6">

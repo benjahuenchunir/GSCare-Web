@@ -12,6 +12,8 @@ import ServicePage from "./pages/Servicios/servicePage";
 import GamesView from "./pages/GamesView.tsx";
 import ActivityPage from "./pages/Actividades/activityPage.tsx";
 import ActivitiesListPage from "./pages/Actividades/activitiesListPage.tsx";
+import ProductPage from "./pages/Productos/productosPage.tsx";
+import ProductsListPage from "./pages/Productos/productosListPage.tsx";
 
 export default function Routing() {
     return (
@@ -25,6 +27,9 @@ export default function Routing() {
                 <Route path="/servicios/:id" element={<ServicePage />} />
                 <Route path="/actividades" element={<ActivitiesListPage />} />
                 <Route path="/actividades/:id" element={<ActivityPage />} />
+                <Route path="/productos" element={<ProductsListPage />} />
+                <Route path="/productos/:id" element={<ProductPage />} />
+
                 {/* Ruta protegida */}
                 <Route path="/user" element={
                     <ProtectedRoute>
