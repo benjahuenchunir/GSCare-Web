@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import UserEditProfile from "./pages/Usuarios/UserEditInfo.tsx";
 import ServicesListPage from "./pages/Servicios/ServicesListPage";
 import ServicePage from "./pages/Servicios/servicePage";
+import GamesView from "./pages/GamesView.tsx";
 import ActivityPage from "./pages/Actividades/activityPage.tsx";
 import ActivitiesListPage from "./pages/Actividades/activitiesListPage.tsx";
 
@@ -24,7 +25,6 @@ export default function Routing() {
                 <Route path="/servicios/:id" element={<ServicePage />} />
                 <Route path="/actividades" element={<ActivitiesListPage />} />
                 <Route path="/actividades/:id" element={<ActivityPage />} />
-    
                 {/* Ruta protegida */}
                 <Route path="/user" element={
                     <ProtectedRoute>
@@ -41,9 +41,29 @@ export default function Routing() {
                     <ProtectedRoute>
                         <UserEditProfile />
                     </ProtectedRoute> } />
+
+                 {/* ruta para ver los juegos */}
+                <Route path="/games" element={
+                    <ProtectedRoute>
+                        <GamesView />
+                    </ProtectedRoute> } />
+
+                <Route path="/actividades" element={
+                    <ProtectedRoute>
+                        <div className="w-full h-screen flex items-center justify-center">
+                            <h1 className="text-[3rem] font-bold text-[#006881] w-full text-center m-0">Actividades</h1>
+                        </div>
+                    </ProtectedRoute> } />
+
+                <Route path="/productos" element={
+                    <ProtectedRoute>
+                        <div className="w-full h-screen flex items-center justify-center">
+                            <h1 className="text-[3rem] font-bold text-[#006881] w-full text-center m-0">Productos</h1>
+                        </div>
+                    </ProtectedRoute> } />
             </Route>
 
-            
+
         </Routes>
       </BrowserRouter>
     );

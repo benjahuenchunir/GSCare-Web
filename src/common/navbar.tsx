@@ -19,6 +19,20 @@ export default function Navbar() {
 
       {/* Enlaces + botón auth */}
       <div className="flex items-center space-x-8">
+        {
+          !isLoading && isAuthenticated && (
+            <>
+              <Link to="/user" className="text-gray-700 hover:text-gray-900 text-lg">
+                Ver mi perfil
+              </Link>
+
+              <Link to="/games" className="text-gray-700 hover:text-gray-900 text-lg">
+              Ver Juegos
+              </Link>
+            </>
+          )
+        }
+
         <Link to="/servicios" className="text-gray-700 hover:text-gray-900 text-lg">
           Servicios
         </Link>
