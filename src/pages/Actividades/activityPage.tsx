@@ -92,7 +92,7 @@ const ActivityPage: React.FC = () => {
       <ActividadInfoCard
         nombre={actividad.nombre}
         descripcion={actividad.descripcion}
-        imagen={actividad.imagen}
+        imagen={actividad.imagen ?? ""}
       />
 
       {/* Lugar */}
