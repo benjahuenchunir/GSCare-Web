@@ -1,3 +1,4 @@
+// src/components/SignupButton.tsx
 import React from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 
@@ -15,7 +16,7 @@ const SignupButton: React.FC = () => {
           }
         })
       }
-      className="w-48 px-6 py-5 bg-secondary2 text-xl text-white font-semibold rounded-lg hover:bg-secondary1 transition"
+      className="w-48 px-6 py-5 bg-secondary2 text-xl text-white font-semibold rounded-lg hover:bg-secondary2/90 transition flex justify-center items-center"
     >
       Crear cuenta
     </button>

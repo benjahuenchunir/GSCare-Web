@@ -5,7 +5,6 @@ import Logo from "../../assets/imgs/logo.svg";
 export default function Hero() {
   return (
     <section className="flex flex-col lg:flex-row items-center justify-center w-full min-h-screen bg-gray-200 font-[Poppins] px-6 py-10">
-      {/* Texto */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center gap-6 mb-10 lg:mb-0">
         <h1 className="text-[#006881] font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl leading-tight">
           Mejorando la Calidad de Vida de Nuestros Mayores
@@ -16,7 +15,7 @@ export default function Hero() {
         <div className="flex flex-col sm:flex-row gap-4 mt-4">
           <a
             href="#services"
-            className="inline-block text-lg sm:text-xl px-6 py-3 rounded-lg bg-[#FFC600] text-gray-900 hover:bg-yellow-300 transition"
+            className="w-48 px-6 py-5 bg-a7 text-xl text-white font-semibold rounded-lg hover:bg-primary3/90 transition flex justify-center items-center"
           >
             Explorar Servicios
           </a>
