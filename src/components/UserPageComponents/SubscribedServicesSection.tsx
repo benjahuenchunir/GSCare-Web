@@ -40,7 +40,7 @@ export const SubscribedServicesSection: React.FC = () => {
     if (!profile?.id) return;
     setLoading(true);
     getUserSubscriptions(profile.id)
-      .then(async (servs: Servicio[]) => {
+      .then(async servs => {
         const list = await Promise.all(
           servs.map(async svc => {
             const bs = await fetchBeneficiosPorServicio(svc.id);
@@ -52,8 +52,7 @@ export const SubscribedServicesSection: React.FC = () => {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [profile]);
-  
-  // Filtrado
+
   const filtered = services
     .filter(s => s.nombre.toLowerCase().includes(searchTerm.toLowerCase()))
     .filter(s =>
@@ -74,29 +73,30 @@ export const SubscribedServicesSection: React.FC = () => {
     infinite: false,
     dots: false,
     arrows: false,
-    afterChange: (index: number) => setCurrentSlide(index)
+    afterChange: (index: number) => setCurrentSlide(index),
   };
 
   return (
-    <div className="w-full flex gap-6">
+    <div className="flex flex-col lg:flex-row gap-6">
       {/* Sidebar filtros */}
-      <div className="w-1/5 bg-[#E0F5F5] p-4 rounded-lg shadow flex flex-col h-[450px]">
+      <div className="w-full lg:w-1/4 bg-[#E0F5F5] p-4 rounded-lg shadow flex flex-col
+                      max-h-[600px] lg:h-[450px] overflow-auto">
         <SectionTitle title="Filtros" />
         <input
           type="text"
           placeholder="Buscar servicio…"
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
-          className="w-full border border-[#62CBC9] rounded-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#62CBC9]"
+          className="w-full border border-[#62CBC9] rounded-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#62CBC9] mb-3"
         />
         <button
           onClick={() => setShowBenefitFilter(v => !v)}
-          className="w-full flex justify-between items-center mt-2 text-[#006881] font-medium"
+          className="w-full flex justify-between items-center text-[#006881] font-medium mb-2"
         >
           Beneficios <span>{showBenefitFilter ? "▾" : "▸"}</span>
         </button>
         {showBenefitFilter && (
-          <div className="flex flex-wrap gap-2 mt-2 overflow-y-auto grow">
+          <div className="flex flex-wrap gap-2">
             {allBenefits.map(b => {
               const sel = selectedBenefits.includes(b.id);
               return (
@@ -121,8 +121,8 @@ export const SubscribedServicesSection: React.FC = () => {
         )}
       </div>
 
-      {/* Carrusel con grid 2x2 */}
-      <div className="w-4/5">
+      {/* Carrusel con grid */}
+      <div className="w-full lg:w-3/4">
         {loading ? (
           <p className="text-center py-10">Cargando servicios…</p>
         ) : filtered.length === 0 ? (
@@ -132,18 +132,20 @@ export const SubscribedServicesSection: React.FC = () => {
             <Slider ref={sliderRef} {...settings}>
               {slides.map((group, idx) => (
                 <div key={idx} className="p-1">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {group.map(svc => (
                       <div
                         key={svc.id}
-                        className="bg-white rounded-2xl shadow-lg p-4 flex flex-col items-center justify-center text-center gap-3 border border-[#62CBC9] h-full"
+                        className="bg-white rounded-2xl shadow-lg p-4 flex flex-col 
+                                   items-center justify-center text-center gap-3 border border-[#62CBC9]"
                       >
                         <h3 className="text-xl font-bold text-[#009982]">{svc.nombre}</h3>
                         <div className="flex flex-wrap justify-center gap-2">
                           {svc.beneficios.map(b => (
                             <span
                               key={b.id}
-                              className="bg-[#F5FCFB] text-[#006881] text-sm px-3 py-1 rounded-full border border-[#62CBC9]"
+                              className="bg-[#F5FCFB] text-[#006881] text-sm px-3 py-1 
+                                         rounded-full border border-[#62CBC9]"
                             >
                               {b.nombre}
                             </span>
@@ -151,30 +153,27 @@ export const SubscribedServicesSection: React.FC = () => {
                         </div>
                         <button
                           onClick={() => navigate(`/servicios/${svc.id}`)}
-                          className="w-full bg-[#009982] hover:bg-[#006E5E] text-white font-semibold px-6 py-3 rounded-full mt-2"
+                          className="w-full bg-[#009982] hover:bg-[#006E5E] text-white 
+                                     font-semibold px-6 py-3 rounded-full mt-2"
                         >
                           Más información
                         </button>
-                      </div>                    
+                      </div>
                     ))}
-                    {group.length < 4 &&
-                      Array(4 - group.length)
-                        .fill(0)
-                        .map((_, i) => <div key={`empty-${i}`} />)}
                   </div>
                 </div>
               ))}
             </Slider>
 
-            {/* Controles manuales abajo */}
+            {/* Controles manuales */}
             <div className="flex items-center justify-center gap-4 mt-4">
               <button
                 onClick={() => sliderRef.current?.slickPrev()}
-                className="w-10 h-10 flex items-center justify-center text-2xl text-white bg-[#009982] hover:bg-[#006E5E] rounded-full shadow-lg"
+                className="w-10 h-10 flex items-center justify-center text-2xl text-white 
+                           bg-[#009982] hover:bg-[#006E5E] rounded-full shadow-lg"
               >
                 ‹
               </button>
-              {/* Dots personalizados */}
               {slides.map((_, i) => (
                 <button
                   key={i}
@@ -186,7 +185,8 @@ export const SubscribedServicesSection: React.FC = () => {
               ))}
               <button
                 onClick={() => sliderRef.current?.slickNext()}
-                className="w-10 h-10 flex items-center justify-center text-2xl text-white bg-[#009982] hover:bg-[#006E5E] rounded-full shadow-lg"
+                className="w-10 h-10 flex items-center justify-center text-2xl text-white 
+                           bg-[#009982] hover:bg-[#006E5E] rounded-full shadow-lg"
               >
                 ›
               </button>
