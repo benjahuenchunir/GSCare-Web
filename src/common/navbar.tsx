@@ -42,12 +42,12 @@ export default function Navbar() {
         <Link to="/actividades" className="text-gray-700 hover:text-gray-900 text-lg">
           Actividades
         </Link>
-        <Link to="/nosotros" className="text-gray-700 hover:text-gray-900 text-lg">
+        {/* <Link to="/nosotros" className="text-gray-700 hover:text-gray-900 text-lg">
           Nosotros
         </Link>
         <Link to="/testimonios" className="text-gray-700 hover:text-gray-900 text-lg">
           Testimonios
-        </Link>
+        </Link> */}
 
         {/* Si aún carga auth, no mostrar nada */}
         {!isLoading && (
