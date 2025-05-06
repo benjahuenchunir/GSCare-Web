@@ -1,16 +1,95 @@
+// src/services/actividadService.ts
 const API_URL = import.meta.env.VITE_API_URL;
 
 export interface Actividad {
   id: number;
   nombre: string;
   descripcion: string;
-  categoria: string; // Ahora es string
-  fecha: string;
+  categoria: string;
+  fecha: string;   // ISO date
+  hora: string;    // "HH:MM:SS"
   lugar: string;
+  comuna: string;
+  imagen: string | null;
+  id_creador_del_evento: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
+export interface Asistente {
+  id_evento_a_asistir: number;
+  id_usuario_asistente: number;
+}
+
+// 1. Lista todas las actividades
 export async function fetchActividades(): Promise<Actividad[]> {
   const res = await fetch(`${API_URL}/actividades`);
   if (!res.ok) throw new Error("Error al obtener las actividades");
   return await res.json();
+}
+
+// 2. Trae una actividad por ID
+export async function fetchActividadById(id: number): Promise<Actividad> {
+  const res = await fetch(`${API_URL}/actividades/${id}`);
+  if (!res.ok) throw new Error("Error al obtener la actividad");
+  return await res.json();
+}
+
+// 3. Obtener actividades a las que el usuario asiste
+export async function getUserActivities(
+  usuarioId: number
+): Promise<Actividad[]> {
+  const res = await fetch(
+    `${API_URL}/usuarios/actividades?id_usuario=${usuarioId}`
+  );
+  if (!res.ok) throw new Error("Error al obtener actividades del usuario");
+  return (await res.json()) as Actividad[];
+}
+
+// 4. Obtener lista de asistentes de una actividad
+export async function getAssistantsByActivity(
+  actividadId: number
+): Promise<Asistente[]> {
+  const res = await fetch(`${API_URL}/asistentes/actividad/${actividadId}`);
+  if (!res.ok) throw new Error("Error al obtener asistentes");
+  return await res.json();
+}
+
+// 5. Inscribir (asistir) a una actividad
+export async function attendActivity(
+  actividadId: number,
+  usuarioId: number
+): Promise<Asistente> {
+  const res = await fetch(`${API_URL}/asistentes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      id_evento_a_asistir: actividadId,
+      id_usuario_asistente: usuarioId
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Error al inscribirse");
+  }
+  return await res.json();
+}
+
+// 6. Cancelar asistencia
+export async function cancelAttendance(
+  actividadId: number,
+  usuarioId: number
+): Promise<void> {
+  const res = await fetch(`${API_URL}/asistentes`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      id_evento_a_asistir: actividadId,
+      id_usuario_asistente: usuarioId
+    })
+  });
+  if (!(res.ok || res.status === 204)) {
+    const err = await res.json();
+    throw new Error(err.message || "Error al cancelar inscripción");
+  }
 }

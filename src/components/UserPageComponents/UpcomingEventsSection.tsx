@@ -1,0 +1,149 @@
+// src/components/UserPageComponents/UpcomingEventsSection.tsx
+import React, { useContext, useEffect, useState } from "react";
+import { useAuth0 } from "@auth0/auth0-react";
+
+import { getUserSubscriptions } from "../../services/subscriptionService";
+import { getNextSessionDate, formatSessionTag } from "../../utils/dateHelper";
+import { getUserActivities, Actividad } from "../../services/actividadService";
+import { UserContext } from "../../context/UserContext";
+import EmptyState from "../../common/EmptyState";
+
+// Iconos SVG
+import ClockIcon    from "../../assets/Clock2.svg?react";
+import LocationIcon from "../../assets/Location.svg?react";
+
+type EventItem =
+  | {
+      type: "service";
+      id: number;
+      nombre: string;
+      direccion: string;
+      sessionDate: Date;
+      tag: string;
+    }
+  | {
+      type: "activity";
+      id: number;
+      nombre: string;
+      lugar: string;
+      sessionDate: Date;
+      tag: string;
+    };
+
+export const UpcomingEventsSection: React.FC = () => {
+  const { profile } = useContext(UserContext)!;
+  const { isAuthenticated } = useAuth0();
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isAuthenticated || !profile?.id) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+
+    // 1) Flujo de servicios periódicos
+    const pServices = getUserSubscriptions(profile.id).then((servs) =>
+      Promise.all<(EventItem | null)>(
+        servs.map(async (svc) => {
+          // parseamos CSV a número
+          const diasArr = (svc.dias_disponibles || "")
+            .split(",")
+            .map((d) => parseInt(d, 10))
+            .filter((n) => !isNaN(n));
+
+          const sd = getNextSessionDate(diasArr, svc.hora_inicio!);
+          if (!sd) return null;
+
+          return {
+            type: "service",
+            id: svc.id,
+            nombre: svc.nombre,
+            direccion: svc.direccion_principal_del_prestador,
+            sessionDate: sd,
+            tag: formatSessionTag(sd),
+          };
+        })
+      ).then((arr) => arr.filter((x): x is EventItem => x !== null))
+    );
+
+    // 2) Flujo de actividades puntuales
+    const pActivities = getUserActivities(profile.id).then((acts) =>
+      acts.map<EventItem>((a: Actividad) => {
+        const fecha = new Date(a.fecha);
+        const [h, m] = a.hora.split(":").map(Number);
+        fecha.setHours(h, m, 0, 0);
+
+        return {
+          type: "activity",
+          id: a.id,
+          nombre: a.nombre,
+          lugar: `${a.lugar}, ${a.comuna}`,
+          sessionDate: fecha,
+          tag: formatSessionTag(fecha),
+        };
+      })
+    );
+
+    // 3) Unimos, filtramos próximos 7 días y ordenamos
+    Promise.all([pServices, pActivities])
+      .then(([svcs, acts]) => {
+        const merged = [...svcs, ...acts]
+          .filter((e) => {
+            const diff = e.sessionDate.getTime() - Date.now();
+            return diff >= 0 && diff <= 14 * 24 * 60 * 60 * 1000;
+          })
+          .sort((a, b) => a.sessionDate.getTime() - b.sessionDate.getTime());
+        setEvents(merged);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [isAuthenticated, profile]);
+
+  if (loading) return <p className="text-center py-10">Cargando próximos eventos…</p>;
+  if (events.length === 0)
+    return <EmptyState mensaje="No tienes eventos en la próxima semana." />;
+
+  return (
+    <div className="space-y-4">
+      {events.map((e, i) => (
+        <div
+          key={i}
+          className={`w-full px-5 py-4 rounded-lg flex justify-between items-center shadow-sm ${
+            e.type === "service" ? "bg-[#e7f5f3]" : "bg-[#F3E8FF]"
+          }`}
+        >
+          <div className="flex flex-col gap-2">
+            <h4 className="text-xl font-bold text-black">
+              {e.nombre}
+            </h4>
+            <div className="flex items-center text-lg gap-2 text-gray-800">
+              <ClockIcon className="w-6 h-6 fill-current" />
+              <span>
+                {e.sessionDate.toLocaleDateString()} ·{" "}
+                {e.sessionDate.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+            </div>
+            <div className="flex items-center text-lg gap-2 text-gray-800">
+              <LocationIcon className="w-6 h-6 fill-current" />
+              <span>{e.type === "service" ? e.direccion : e.lugar}</span>
+            </div>
+          </div>
+          <span className={`mt-1 px-4 py-1 font-semibold rounded-md ${
+              e.type === "service"
+                ? "bg-[#62CBC9] text-black"
+                : "bg-[#d4bbef] text-black"
+            }`}>
+            {e.tag}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
+    

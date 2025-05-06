@@ -12,15 +12,18 @@ export interface Servicio {
   id: number;
   nombre: string;
   descripcion: string;
-  categoria: string;
   prestador_del_servicio: string;
   direccion_principal_del_prestador: string;
   hace_domicilio: boolean;
   comunas_a_las_que_hace_domicilio: string;
+  beneficios: Beneficio[];
+  dias_disponibles?: string;  // "0,1,2,3"
+  hora_inicio?: string;       // "09:00:00"
+  hora_termino?: string;      // "19:00:00"
   telefono_de_contacto: string;
   email_de_contacto: string;
   imagen?: string;
-  beneficios: Beneficio[];
+  id_usuario_creador?: number;
 }
 
 export async function fetchServicios(): Promise<Servicio[]> {

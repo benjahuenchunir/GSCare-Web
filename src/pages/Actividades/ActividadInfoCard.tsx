@@ -4,7 +4,7 @@ interface ActividadInfoCardProps {
     imagen: string;
   }
   
-  export default function ServicioInfoCard({ nombre, descripcion, imagen }: ActividadInfoCardProps) {
+  export default function ActividadInfoCard({ nombre, descripcion, imagen }: ActividadInfoCardProps) {
     return (
       <div className="flex flex-col-reverse md:flex-row items-stretch gap-8 p-6 bg-white rounded-2xl shadow-md mb-8">
         <div className="flex-1 flex flex-col justify-start text-center md:text-left pt-6">

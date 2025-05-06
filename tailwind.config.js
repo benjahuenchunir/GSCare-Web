@@ -24,7 +24,11 @@ module.exports = {
         a7: '#00495C',
         a8: '#1F7D9A',
         a9: '#006E5E',
-        a10:'#20AF94'
+        a10:'#20AF94',
+
+        actividadBg: '#F3E8FF',   // fondo suave morado
+        actividadText: '#6B21A8', // texto morado intenso
+        actividadTag: '#E9D5FF',  // tag suave
       },
       fontFamily: {
         sans: ['Poppins', 'Lato', 'sans-serif']

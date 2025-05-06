@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { getUserByEmail, User } from "../../services/userService";
 
 import { SubscribedServicesSection } from "../../components/UserPageComponents/SubscribedServicesSection";
-import { UpcomingActivitiesSection } from "../../components/UserPageComponents/UpcomingActivitiesSection";
+//import { UpcomingActivitiesSection } from "../../components/UserPageComponents/UpcomingActivitiesSection";
+import { UpcomingEventsSection }     from "../../components/UserPageComponents/UpcomingEventsSection";
 import QuickAccessButton from "../../common/QuickAccessButton";
 import SectionTitle from '../../common/SectionTitle';
 import EmptyState from '../../common/EmptyState';
@@ -77,8 +78,11 @@ const UserPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w">
             <div className="lg:col-span-2 space-y-4">
               <SectionTitle title="Siguientes Actividades" />
-              <div className="bg-white p-4 rounded-lg h-80 overflow-y-auto space-y-4">
+              {/* <div className="bg-white p-4 rounded-lg h-80 overflow-y-auto space-y-4">
                 <UpcomingActivitiesSection />
+              </div> */}
+              <div className="bg-white p-4 rounded-lg h-80 overflow-y-auto space-y-4">
+                <UpcomingEventsSection />
               </div>
             </div>
 

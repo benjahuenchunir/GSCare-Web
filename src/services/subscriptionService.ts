@@ -59,7 +59,9 @@ export async function unsubscribeFromService(
 export async function getUserSubscriptions(
   usuarioId: number
 ): Promise<Servicio[]> {
-  const res = await fetch(`${API_URL}/usuarios/servicios?id_usuario=${usuarioId}`);
+  const res = await fetch(
+    `${API_URL}/usuarios/servicios?id_usuario=${usuarioId}`
+  );
   if (!res.ok) throw new Error("Error al obtener servicios suscritos");
-  return await res.json();
+  return (await res.json()) as Servicio[];
 }
