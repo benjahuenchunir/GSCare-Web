@@ -109,10 +109,10 @@ const UserPage: React.FC = () => {
           {/* Servicios activos */}
           <div className="space-y-4">
             <SectionTitle title="Mis servicios activos" />
-              <div className="bg-white p-6 rounded-lg shadow">
-                <SubscribedServicesSection />
-              </div>
+            <div className="bg-white p-6 rounded-lg shadow">
+              <SubscribedServicesSection />
             </div>
+          </div>
         </div>
       </div>
     </main>
