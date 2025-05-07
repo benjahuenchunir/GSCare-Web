@@ -24,9 +24,9 @@ export default function Navbar() {
           <img
             src="/assets/LogoSinTexto.png"
             alt="Logo GSCare"
-            className="w-10 h-auto"
+            className="w-12 h-auto"
           />
-          <span className="text-2xl font-semibold text-secondary1">GSCare</span>
+          <span className="text-2xl font-semibold text-[#368990]">GSCare</span>
         </Link>
 
         {/* Desktop links */}
