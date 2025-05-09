@@ -1,6 +1,7 @@
 // src/pages/CompleteProfilePage.tsx
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { UserContext } from "../../context/UserContext";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
 import { createUser } from "../../services/userService";
@@ -9,6 +10,8 @@ import regionesData from "../../assets/data/comunas-regiones.json"; // Tu JSON
 export default function CompleteProfilePage() {
   const { user } = useAuth0();
   const navigate = useNavigate();
+
+  const { reloadProfile } = useContext(UserContext);
 
   const [form, setForm] = useState({
     nombre: "",
@@ -60,6 +63,7 @@ export default function CompleteProfilePage() {
 
     try {
       await createUser(form);
+      await reloadProfile();
       navigate("/user", { replace: true });
     } catch {
       setErrors({ general: "Error al crear el usuario. Intenta más tarde." });

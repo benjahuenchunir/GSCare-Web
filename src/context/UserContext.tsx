@@ -1,50 +1,51 @@
-import React, { createContext, useState, useEffect, ReactNode } from "react";
+// src/context/UserContext.tsx
+import React, { createContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { getUserByEmail, User } from "../services/userService";
 
-// Define la forma de tu contexto
 interface UserContextValue {
   profile: User | null;
   loading: boolean;
+  reloadProfile: () => Promise<void>;
 }
 
-// Crea el contexto con valores por defecto
 export const UserContext = createContext<UserContextValue>({
   profile: null,
-  loading: true
+  loading: true,
+  reloadProfile: async () => {}
 });
 
-// Provider
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user, isAuthenticated, isLoading } = useAuth0();
   const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Mientras Auth0 carga, mantenemos loading
-    if (isLoading) return;
+  const reloadProfile = useCallback(async () => {
+    if (!user?.email) return;
+    setLoading(true);
+    try {
+      const data = await getUserByEmail(user.email);
+      setProfile(data);
+    } catch (err) {
+      console.error("Error al recargar perfil:", err);
+      setProfile(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.email]);
 
-    // Si no está autenticado, no hay profile
+  useEffect(() => {
+    if (isLoading) return;
     if (!isAuthenticated) {
       setProfile(null);
       setLoading(false);
       return;
     }
-
-    // Si hay usuario Auth0, lo buscamos en tu API
-    if (user?.email) {
-      getUserByEmail(user.email)
-        .then(setProfile)
-        .catch(err => {
-          console.error("Error al cargar perfil:", err);
-          setProfile(null);
-        })
-        .finally(() => setLoading(false));
-    }
-  }, [isAuthenticated, isLoading, user]);
+    reloadProfile();
+  }, [isLoading, isAuthenticated, reloadProfile]);
 
   return (
-    <UserContext.Provider value={{ profile, loading }}>
+    <UserContext.Provider value={{ profile, loading, reloadProfile }}>
       {children}
     </UserContext.Provider>
   );

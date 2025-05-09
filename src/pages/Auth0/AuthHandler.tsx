@@ -1,13 +1,16 @@
 // src/pages/AuthHandler.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useAuth0 }                   from "@auth0/auth0-react";
 import { useNavigate }                from "react-router-dom";
 import { getUserByEmail }             from "../../services/userService";
+import { UserContext } from "../../context/UserContext";
 
 const AuthHandler: React.FC = () => {
   const { user, isAuthenticated, isLoading } = useAuth0();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+
+  const { reloadProfile } = useContext(UserContext);
 
   useEffect(() => {
     if (isLoading) return;
@@ -21,8 +24,9 @@ const AuthHandler: React.FC = () => {
     if (user?.email) {
       // Chequear existencia en tu API
       getUserByEmail(user.email)
-        .then(() => {
-          // Ya existe → a /user
+        .then(async () => {
+          // Recarga el contexto antes de mostrar /user
+          await reloadProfile();
           navigate("/user", { replace: true });
         })
         .catch((err: any) => {
