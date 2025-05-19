@@ -116,10 +116,10 @@ export const UpcomingEventsSection: React.FC = () => {
           }`}
         >
           <div className="flex flex-col gap-2">
-            <h4 className="text-xl font-bold text-black">
+            <h4 className="text-[1.5em] leading-snug font-bold text-black">
               {e.nombre}
             </h4>
-            <div className="flex items-center text-lg gap-2 text-gray-800">
+            <div className="flex items-center text-[1.2em] gap-2 text-gray-800">
               <ClockIcon className="w-6 h-6 fill-current" />
               <span>
                 {e.sessionDate.toLocaleDateString()} ·{" "}
@@ -129,7 +129,7 @@ export const UpcomingEventsSection: React.FC = () => {
                 })}
               </span>
             </div>
-            <div className="flex items-center text-lg gap-2 text-gray-800">
+            <div className="flex items-center text-[1.2em] gap-2 text-gray-800">
               <LocationIcon className="w-6 h-6 fill-current" />
               <span>{e.type === "service" ? e.direccion : e.lugar}</span>
             </div>

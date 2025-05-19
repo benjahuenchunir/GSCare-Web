@@ -25,8 +25,9 @@ const games = [
 
 export default function GamesView() {
   return (
+    <main className="flex-1  px-10 py-16 bg-gray-50 min-h-screen">
     <section className="flex flex-col items-center justify-center gap-20 bg-gray-50 min-h-screen">
-      <h2 className="text-[3rem] font-bold text-[#006881] w-full text-center m-0">Juegos Disponibles</h2>
+      <h2 className="text-[2em] font-bold text-[#006881] w-full text-center m-0">Juegos Disponibles</h2>
       <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto px-4">
         {games.map((game, index) => (
           <div
@@ -35,8 +36,8 @@ export default function GamesView() {
           >
             <img src={game.image} alt={game.title} className="w-full h-48 object-cover" />
             <div className="p-5 flex flex-col flex-1 w-full text-center">
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">{game.title}</h3>
-              <p className="text-sm text-gray-600 mb-4">{game.description}</p>
+              <h3 className="text-[1.5em] font-semibold leading-snug text-gray-800 mb-2">{game.title}</h3>
+              <p className="text-[1em] text-gray-600 mb-4">{game.description}</p>
               <div className="mt-auto">
 				<a
 				  href={game.link}
@@ -52,5 +53,7 @@ export default function GamesView() {
         ))}
       </div>
     </section>
+  /</main>
   );
+
 }

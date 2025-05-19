@@ -26,22 +26,22 @@ export default function Navbar() {
             alt="Logo GSCare"
             className="w-12 h-auto"
           />
-          <span className="text-2xl font-semibold text-[#368990]">GSCare</span>
+          <span className="text-[1.5em] font-semibold text-[#368990]">GSCare</span>
         </Link>
 
         {/* Desktop links */}
-        <div className="hidden md:flex items-center space-x-6">
+        <div className="hidden md:flex text-[1.1em] items-center space-x-6">
           {!isLoading && isAuthenticated && (
             <>
               <Link
                 to="/user"
-                className="text-gray-700 hover:text-gray-900 text-lg"
+                className="text-gray-700 hover:text-gray-900 "
               >
                 Ver mi perfil
               </Link>
               <Link
                 to="/games"
-                className="text-gray-700 hover:text-gray-900 text-lg"
+                className="text-gray-700 hover:text-gray-900 "
               >
                 Ver Juegos
               </Link>
@@ -50,19 +50,19 @@ export default function Navbar() {
 
           <Link
             to="/servicios"
-            className="text-gray-700 hover:text-gray-900 text-lg"
+            className="text-gray-700 hover:text-gray-900 "
           >
             Servicios
           </Link>
           <Link
             to="/productos"
-            className="text-gray-700 hover:text-gray-900 text-lg"
+            className="text-gray-700 hover:text-gray-900 "
           >
             Productos
           </Link>
           <Link
             to="/actividades"
-            className="text-gray-700 hover:text-gray-900 text-lg"
+            className="text-gray-700 hover:text-gray-900 "
           >
             Actividades
           </Link>
@@ -92,20 +92,20 @@ export default function Navbar() {
 
       {/* Mobile dropdown */}
       {menuOpen && (
-        <div className="md:hidden bg-white shadow-md">
+        <div className="md:hidden text-[1.1em] bg-white shadow-md">
           <div className="flex flex-col space-y-2 px-4 py-4">
             {!isLoading && isAuthenticated && (
               <>
                 <Link
                   to="/user"
-                  className="block text-gray-700 hover:text-gray-900 text-lg"
+                  className="block text-gray-700 hover:text-gray-900 "
                   onClick={() => setMenuOpen(false)}
                 >
                   Ver mi perfil
                 </Link>
                 <Link
                   to="/games"
-                  className="block text-gray-700 hover:text-gray-900 text-lg"
+                  className="block text-gray-700 hover:text-gray-900 "
                   onClick={() => setMenuOpen(false)}
                 >
                   Ver Juegos
@@ -115,21 +115,21 @@ export default function Navbar() {
 
             <Link
               to="/servicios"
-              className="block text-gray-700 hover:text-gray-900 text-lg"
+              className="block text-gray-700 hover:text-gray-900 "
               onClick={() => setMenuOpen(false)}
             >
               Servicios
             </Link>
             <Link
               to="/productos"
-              className="block text-gray-700 hover:text-gray-900 text-lg"
+              className="block text-gray-700 hover:text-gray-900 "
               onClick={() => setMenuOpen(false)}
             >
               Productos
             </Link>
             <Link
               to="/actividades"
-              className="block text-gray-700 hover:text-gray-900 text-lg"
+              className="block text-gray-700 hover:text-gray-900"
               onClick={() => setMenuOpen(false)}
             >
               Actividades

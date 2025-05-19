@@ -149,7 +149,7 @@ const ServicePage: React.FC = () => {
 
       {reviews.length > 0 && (
         <div className="bg-white shadow-lg rounded-lg p-6">
-          <h2 className="text-2xl font-bold mb-4 text-[#00495C]">¿Qué dicen nuestros clientes?</h2>
+          <h2 className="text-[1.2em] font-bold mb-4 text-[#00495C]">¿Qué dicen nuestros clientes?</h2>
           <Slider {...carouselSettings}>
             {reviewChunks.map((chunk, idx) => (
               <div key={idx} className="p-4">
@@ -184,7 +184,7 @@ const ServicePage: React.FC = () => {
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-            <h2 className="text-xl font-bold text-red-600 mb-4">¿Cancelar suscripción?</h2>
+            <h2 className="text-[1.5em] font-bold text-red-600 mb-4">¿Cancelar suscripción?</h2>
             <p className="text-gray-700 mb-6">
               ¿Estás seguro de que deseas cancelar tu suscripción a este servicio?
             </p>

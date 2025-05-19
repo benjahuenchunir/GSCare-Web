@@ -107,7 +107,7 @@ export const SubscribedServicesSection: React.FC = () => {
                       sel ? prev.filter(x => x !== b.id) : [...prev, b.id]
                     )
                   }
-                  className={`px-3 py-1 rounded-full text-sm border transition
+                  className={`px-3 py-1 rounded-full text-[1em] border transition
                     ${sel
                       ? "bg-[#62CBC9] text-white border-transparent"
                       : "bg-white text-[#006881] border-[#62CBC9]"}
@@ -139,12 +139,12 @@ export const SubscribedServicesSection: React.FC = () => {
                         className="bg-white rounded-2xl shadow-lg p-4 flex flex-col 
                                    items-center justify-center text-center gap-3 border border-[#62CBC9]"
                       >
-                        <h3 className="text-xl font-bold text-[#009982]">{svc.nombre}</h3>
+                        <h3 className="text-[1.5em] font-bold text-[#009982]">{svc.nombre}</h3>
                         <div className="flex flex-wrap justify-center gap-2">
                           {svc.beneficios.map(b => (
                             <span
                               key={b.id}
-                              className="bg-[#F5FCFB] text-[#006881] text-sm px-3 py-1 
+                              className="bg-[#F5FCFB] text-[#006881] text-[1em] px-3 py-1 
                                          rounded-full border border-[#62CBC9]"
                             >
                               {b.nombre}
@@ -169,7 +169,7 @@ export const SubscribedServicesSection: React.FC = () => {
             <div className="flex items-center justify-center gap-4 mt-4">
               <button
                 onClick={() => sliderRef.current?.slickPrev()}
-                className="w-10 h-10 flex items-center justify-center text-2xl text-white 
+                className="w-10 h-10 flex items-center justify-center text-[2em] text-white 
                            bg-[#009982] hover:bg-[#006E5E] rounded-full shadow-lg"
               >
                 ‹
@@ -185,7 +185,7 @@ export const SubscribedServicesSection: React.FC = () => {
               ))}
               <button
                 onClick={() => sliderRef.current?.slickNext()}
-                className="w-10 h-10 flex items-center justify-center text-2xl text-white 
+                className="w-10 h-10 flex items-center justify-center text-[2em] text-white 
                            bg-[#009982] hover:bg-[#006E5E] rounded-full shadow-lg"
               >
                 ›

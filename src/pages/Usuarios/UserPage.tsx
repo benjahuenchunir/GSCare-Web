@@ -60,7 +60,7 @@ const UserPage: React.FC = () => {
       <div className="min-h-screen bg-gray-100">
         <div className="w-full px-6 py-8 space-y-8">
           <div className="flex justify-center mb-6">
-            <h1 className="text-4xl font-bold text-primary">Hola, {userName}!</h1>
+            <h1 className="text-[2.5em] font-bold text-primary">Hola, {userName}!</h1>
           </div>
 
           {/* Botones rápidos */}
@@ -98,7 +98,7 @@ const UserPage: React.FC = () => {
                       key={i}
                       className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3"
                     >
-                      <p className="text-base font-medium text-gray-900">{c.text}</p>
+                      <p className="text-[1.1em] font-medium text-gray-900">{c.text}</p>
                     </div>
                   ))
                 )}

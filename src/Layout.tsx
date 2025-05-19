@@ -9,7 +9,7 @@ export default function Layout() {
       <main className="flex-1 pt-12">
         <Outlet />
       </main>
-      <FontSizeToggle /> {/* 👈 Aquí se renderiza el botón flotante */}
+      <FontSizeToggle /> 
     </div>
   );
 }

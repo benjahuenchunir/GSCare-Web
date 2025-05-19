@@ -42,21 +42,21 @@ const ProductPage: React.FC = () => {
           className="w-full md:w-1/2 h-auto object-cover rounded-lg border"
         />
         <div className="flex flex-col space-y-3 justify-center">
-          <h1 className="text-3xl font-bold text-[#00495C]">{producto.nombre}</h1>
-          <p className="text-gray-700">{producto.descripcion}</p>
+          <h1 className="text-[2em] leading-snug font-bold text-[#00495C]">{producto.nombre}</h1>
+          <p className="text-[1em] text-gray-700">{producto.descripcion}</p>
         </div>
       </div>
 
       {/* Información del producto */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-2xl font-bold text-[#00495C] mb-4">Detalles del producto</h2>
+        <h2 className="text-[1.2em] font-bold text-[#00495C] mb-4">Detalles del producto</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-800">
           <div className="flex items-center gap-3">
-            <FaIndustry className="text-[#009982] text-xl" />
+            <FaIndustry className="text-[#009982]" />
             <p><span className="font-semibold">Marca:</span> {producto.marca}</p>
           </div>
           <div className="flex items-center gap-3">
-            <FaStore className="text-[#009982] text-xl" />
+            <FaStore className="text-[#009982]" />
             <p><span className="font-semibold">Vendedor:</span> {producto.nombre_del_vendedor}</p>
           </div>
         </div>

@@ -62,7 +62,7 @@ const ServicesListPage: React.FC = () => {
       <div className="px-10 py-16 bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-center mb-6">
-            <h1 className="text-3xl font-bold text-secondary1 mb-4">Servicios disponibles</h1>
+            <h1 className="text-[2em] font-bold text-secondary1 mb-4">Servicios disponibles</h1>
           </div>
 
           {/* Buscador centrado */}
@@ -85,7 +85,7 @@ const ServicesListPage: React.FC = () => {
                   key={b.id}
                   onClick={() => toggleBenefit(b.id)}
                   className={`
-                    whitespace-nowrap text-base font-medium rounded-full border transition
+                    whitespace-nowrap text-[1em] font-medium rounded-full border transition
                     ${selected
                       ? "bg-[#62CBC9] text-white border-transparent"
                       : "bg-[#E0F5F5] text-[#006881] border-[#62CBC9]"}
@@ -110,10 +110,10 @@ const ServicesListPage: React.FC = () => {
                   key={s.id}
                   className="relative bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition"
                 >
-                  <h3 className="text-2xl font-semibold text-[#009982] mb-2">
+                  <h3 className="text-[1.5em] font-semibold text-[#009982] mb-2">
                     {s.nombre}
                   </h3>
-                  <p className="text-gray-700 text-sm mb-4 line-clamp-3">
+                  <p className="text-gray-700 text-[1em] mb-4 line-clamp-3">
                     {s.descripcion}
                   </p>
 
@@ -123,13 +123,13 @@ const ServicesListPage: React.FC = () => {
                       s.beneficios.map(b => (
                         <span
                           key={b.id}
-                          className="bg-[#F5FCFB] text-[#006881] text-base px-3 py-1 rounded-lg"
+                          className="bg-[#F5FCFB] text-[#006881] text-[1em] px-3 py-1 rounded-lg"
                         >
                           {b.nombre}
                         </span>
                       ))
                     ) : (
-                      <em className="text-gray-400 text-base">Sin beneficios</em>
+                      <em className="text-gray-400 text-[1em]">Sin beneficios</em>
                     )}
                   </div>
 

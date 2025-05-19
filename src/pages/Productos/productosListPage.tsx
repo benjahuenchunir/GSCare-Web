@@ -49,7 +49,7 @@ const ProductosListPage: React.FC = () => {
     <main className="flex-1">
       <div className="px-10 py-16 bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-secondary1 text-center mb-6">Productos para Adultos Mayores</h1>
+          <h1 className="text-[2em] font-bold text-secondary1 text-center mb-6">Productos para Adultos Mayores</h1>
 
           <div className="flex justify-center mb-6">
             <input
@@ -69,7 +69,7 @@ const ProductosListPage: React.FC = () => {
                   key={cat}
                   onClick={() => toggleCategoria(cat)}
                   className={`
-                    whitespace-nowrap text-base font-medium rounded-full border transition
+                    whitespace-nowrap text-[1em] font-medium rounded-full border transition
                     ${selected
                       ? "bg-[#62CBC9] text-white border-transparent"
                       : "bg-[#E0F5F5] text-[#006881] border-[#62CBC9]"}
@@ -95,10 +95,10 @@ const ProductosListPage: React.FC = () => {
                   className="bg-white p-6 rounded-xl shadow-md hover:shadow-2xl hover:scale-[1.02] hover:bg-gray-100 hover:border-2 hover:border-[#009982] border border-transparent transition-all duration-200 ease-in-out cursor-pointer"
                 >
                   <img src={p.imagen} alt={p.nombre} className="w-full h-40 object-cover rounded-md mb-4" />
-                  <h3 className="text-xl font-semibold text-[#009982] mb-1">{p.nombre}</h3>
-                  <p className="text-gray-700 text-sm mb-2">{p.descripcion}</p>
-                  <p className="text-gray-500 text-sm"><strong>Marca:</strong> {p.marca}</p>
-                  <p className="text-gray-500 text-sm"><strong>Vendedor:</strong> {p.nombre_del_vendedor}</p>
+                  <h3 className="text-[1.5em] font-semibold text-[#009982] mb-1">{p.nombre}</h3>
+                  <p className="text-gray-700 text-[1em] mb-2">{p.descripcion}</p>
+                  <p className="text-gray-500 text-[1em]"><strong>Marca:</strong> {p.marca}</p>
+                  <p className="text-gray-500 text-[1em]"><strong>Vendedor:</strong> {p.nombre_del_vendedor}</p>
                 </div>
               ))}
             </div>

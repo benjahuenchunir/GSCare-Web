@@ -13,20 +13,20 @@ interface DisponibilidadBoxProps {
   
     return (
       <div className="p-6 bg-white rounded-2xl shadow-md mb-8">
-        <h2 className="text-2xl font-bold mb-6 text-left" style={{ color: "#006881" }}>
+        <h2 className="text-[1.2em] font-bold mb-6 text-left" style={{ color: "#006881" }}>
           Disponibilidad del servicio
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           <div className="bg-[#F9FAFB] p-4 rounded-xl">
-            <h3 className="text-lg font-bold mb-2 text-left" style={{ color: "#009982" }}>
+            <h3 className="text-[1.1em] font-bold mb-2 text-left" style={{ color: "#009982" }}>
               Días disponibles
             </h3>
             <p className="text-gray-700 text-left">{diasTexto}</p>
           </div>
   
           <div className="bg-[#F9FAFB] p-4 rounded-xl">
-            <h3 className="text-lg font-bold mb-2 text-left" style={{ color: "#009982" }}>
+            <h3 className="text-[1.1em] font-bold mb-2 text-left" style={{ color: "#009982" }}>
               Horario
             </h3>
             <p className="text-gray-700 text-left">{hora_inicio.slice(0,5)} - {hora_termino.slice(0,5)}</p>
