@@ -6,6 +6,7 @@ import "slick-carousel/slick/slick-theme.css";
 import Routing from "./Routing.tsx";
 import { Auth0Provider } from "@auth0/auth0-react";
 import { UserProvider } from "./context/UserContext.tsx";
+import { FontSizeProvider } from "./context/FontSizeContext"; // 👈 nuevo import
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -15,11 +16,13 @@ createRoot(document.getElementById("root")!).render(
       authorizationParams={{
         redirect_uri: window.location.origin
       }}
-      cacheLocation="localstorage"  // 👈 esto es la clave
+      cacheLocation="localstorage"
       useRefreshTokens={true}
     >
       <UserProvider>
-        <Routing />
+        <FontSizeProvider>
+          <Routing />
+        </FontSizeProvider>
       </UserProvider>
     </Auth0Provider>
   </StrictMode>

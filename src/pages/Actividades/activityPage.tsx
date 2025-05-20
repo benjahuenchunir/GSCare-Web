@@ -24,15 +24,14 @@ const ActivityPage: React.FC = () => {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSubscribeConfirm, setShowSubscribeConfirm] = useState(false);
 
-  // 1. Carga la actividad
   useEffect(() => {
     fetchActividadById(Number(id))
       .then(setActividad)
       .catch(err => console.error("Error al cargar la actividad:", err));
   }, [id]);
 
-  // 2. Chequea si el usuario ya está inscrito
   useEffect(() => {
     if (!isAuthenticated || !user?.email) return;
     getUserByEmail(user.email)
@@ -44,7 +43,6 @@ const ActivityPage: React.FC = () => {
       .catch(err => console.warn("No se pudo verificar inscripción:", err));
   }, [id, isAuthenticated, user]);
 
-  // 3. Handler para inscribirse
   const handleInscribirse = async () => {
     if (!isAuthenticated) {
       return loginWithRedirect({
@@ -55,13 +53,20 @@ const ActivityPage: React.FC = () => {
         }
       });
     }
+
+    if (yaInscrito) {
+      setModalVisible(true);
+      return;
+    }
+
+    setShowSubscribeConfirm(true); // Mostrar modal de confirmación
+  };
+
+  const handleConfirmInscribirse = async () => {
+    setShowSubscribeConfirm(false);
     if (!user?.email || !actividad) return;
     try {
       const u = await getUserByEmail(user.email);
-      if (yaInscrito) {
-        setModalVisible(true);
-        return;
-      }
       await attendActivity(actividad.id, u.id);
       setYaInscrito(true);
       setModalVisible(true);
@@ -71,7 +76,6 @@ const ActivityPage: React.FC = () => {
     }
   };
 
-  // 4. Handler para cancelar
   const handleConfirmCancel = async () => {
     if (!user?.email || !actividad) return;
     try {
@@ -97,10 +101,10 @@ const ActivityPage: React.FC = () => {
 
       {/* Lugar */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-2xl font-bold text-[#00495C] mb-4">Información del lugar</h2>
+        <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">Información del lugar</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-800">
           <div className="flex items-start gap-3">
-            <FaMapMarkerAlt className="text-[#009982] text-3xl" />
+            <FaMapMarkerAlt className="text-[#009982]" />
             <div>
               <h3 className="font-semibold">Lugar</h3>
               <p>{actividad.lugar}</p>
@@ -118,17 +122,17 @@ const ActivityPage: React.FC = () => {
 
       {/* Fecha y hora */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-2xl font-bold text-[#00495C] mb-4">Información de la hora</h2>
+        <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">Información de la hora</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-800">
           <div className="flex items-start gap-3">
-            <FaCalendarAlt className="text-[#009982] text-3xl" />
+            <FaCalendarAlt className="text-[#009982]" />
             <div>
               <h3 className="font-semibold">Fecha</h3>
               <p>{new Date(actividad.fecha).toLocaleDateString()}</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <FaClock className="text-[#009982] text-3xl" />
+            <FaClock className="text-[#009982]" />
             <div>
               <h3 className="font-semibold">Hora</h3>
               <p>{actividad.hora.slice(0, 5)}</p>
@@ -139,13 +143,16 @@ const ActivityPage: React.FC = () => {
 
       {/* Acción de inscripción */}
       <div className="bg-[#009982] text-white rounded-lg p-6 text-center">
-        <h3 className="text-2xl font-bold mb-2">¿Quieres participar?</h3>
+        <h3 className="font-bold mb-2">¿Quieres participar?</h3>
         <p className="mb-4">Únete a esta actividad para mejorar tu bienestar y conectar con otros.</p>
         {yaInscrito ? (
           <div className="flex flex-col items-center gap-3">
             <div className="py-2 px-6 bg-white text-[#009982] rounded-lg font-semibold border border-[#009982]">
               Ya estás inscrito 😊
             </div>
+            <p className="text-white text-center">
+              ¿Quieres cancelar tu suscripción? Puedes hacerlo presionando el botón de abajo.
+            </p>
             <button
               onClick={() => setShowConfirmModal(true)}
               className="py-2 px-6 bg-red-100 text-red-700 rounded-lg font-semibold hover:bg-red-200 border border-red-300"
@@ -167,7 +174,7 @@ const ActivityPage: React.FC = () => {
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-            <h2 className="text-xl font-bold text-red-600 mb-4">¿Cancelar inscripción?</h2>
+            <h2 className=" font-bold text-red-600 mb-4">¿Cancelar inscripción?</h2>
             <p className="text-gray-700 mb-4">
               ¿Estás seguro de que deseas cancelar tu inscripción a esta actividad?
             </p>
@@ -183,6 +190,31 @@ const ActivityPage: React.FC = () => {
                 className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600"
               >
                 Sí, cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSubscribeConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+            <h2 className="text-[1.5em] font-bold text-[#009982] mb-4">¿Confirmar inscripción?</h2>
+            <p className="text-gray-700 mb-6">
+              ¿Estás seguro de que deseas inscribirte en esta actividad?
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setShowSubscribeConfirm(false)}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                No, cancelar
+              </button>
+              <button
+                onClick={handleConfirmInscribirse}
+                className="px-4 py-2 bg-[#009982] text-white rounded hover:bg-[#007f6e]"
+              >
+                Sí, inscribirme
               </button>
             </div>
           </div>

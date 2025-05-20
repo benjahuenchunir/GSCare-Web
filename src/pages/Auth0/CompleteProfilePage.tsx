@@ -76,7 +76,7 @@ export default function CompleteProfilePage() {
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded-lg shadow max-w-md w-full space-y-4"
       >
-        <h2 className="text-2xl font-bold mb-6">Completa tu perfil</h2>
+        <h2 className="text-[1.8em] font-bold mb-6">Completa tu perfil</h2>
 
         {/* Error general */}
         {errors["general"] && (
@@ -106,7 +106,7 @@ export default function CompleteProfilePage() {
             className="mt-1 w-full border rounded px-3 py-2"
           />
           {errors["fecha_de_nacimiento"] && (
-            <p className="text-sm text-red-600 mt-1">{errors["fecha_de_nacimiento"]}</p>
+            <p className="text-[1em] text-red-600 mt-1">{errors["fecha_de_nacimiento"]}</p>
           )}
         </label>
 
@@ -127,7 +127,7 @@ export default function CompleteProfilePage() {
             ))}
           </select>
           {errors["region_de_residencia"] && (
-            <p className="text-sm text-red-600 mt-1">{errors["region_de_residencia"]}</p>
+            <p className="text-[1em] text-red-600 mt-1">{errors["region_de_residencia"]}</p>
           )}
         </label>
 
@@ -153,7 +153,7 @@ export default function CompleteProfilePage() {
             ))}
           </select>
           {errors["comuna_de_residencia"] && (
-            <p className="text-sm text-red-600 mt-1">{errors["comuna_de_residencia"]}</p>
+            <p className="text-[1em] text-red-600 mt-1">{errors["comuna_de_residencia"]}</p>
           )}
         </label>
 
@@ -168,7 +168,7 @@ export default function CompleteProfilePage() {
             placeholder="Calle, número, etc."
           />
           {errors["direccion_particular"] && (
-            <p className="text-sm text-red-600 mt-1">{errors["direccion_particular"]}</p>
+            <p className="text-[1em] text-red-600 mt-1">{errors["direccion_particular"]}</p>
           )}
         </label>
 

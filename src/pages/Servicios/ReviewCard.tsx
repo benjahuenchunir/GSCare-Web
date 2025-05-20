@@ -32,7 +32,7 @@ const ReviewCard: React.FC<Props> = ({ nombre, review, rating, createdAt }) => {
   return (
     <div className="border border-gray-200 rounded-xl p-4 flex flex-col justify-between h-full shadow-sm">
       <div className="flex items-start space-x-4">
-        <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center text-white text-lg font-bold">
+        <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center text-white text-[1.1em] font-bold">
           {nombre.charAt(0)}
         </div>
         <div className="flex-1">
@@ -48,7 +48,7 @@ const ReviewCard: React.FC<Props> = ({ nombre, review, rating, createdAt }) => {
         </div>
       </div>
       <div className="flex justify-end mt-4">
-        <p className="text-gray-400 text-sm">{calcularTiempo(createdAt)}</p>
+        <p className="text-gray-400 text-[1em]">{calcularTiempo(createdAt)}</p>
       </div>
     </div>
   );

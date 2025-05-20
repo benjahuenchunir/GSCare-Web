@@ -21,7 +21,7 @@ const AgendarBox: React.FC<Props> = ({
   onUnsubscribe
 }) => (
   <div className="bg-[#36A2A1] text-white rounded-lg p-8 text-center flex flex-col items-center gap-4">
-    <h3 className="text-2xl font-bold">¿Quieres agendar?</h3>
+    <h3 className="text-[1.5em] font-bold">¿Quieres agendar?</h3>
 
     {!isSubscribed && (
       <p className="max-w-lg text-white">
@@ -46,7 +46,7 @@ const AgendarBox: React.FC<Props> = ({
         <div className="py-2 px-6 bg-white text-[#009982] rounded-lg font-semibold border border-white">
           Ya estás suscrito 😊
         </div>
-        <p className="text-white text-sm max-w-md">
+        <p className="text-white text-[1em] max-w-md">
           ¿Quieres cancelar tu suscripción? Puedes hacerlo presionando el botón de abajo.
         </p>
         <button

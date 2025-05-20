@@ -19,8 +19,8 @@ export default function Footer() {
       <div className="max-w-screen-lg mx-auto grid grid-cols-1 sm:grid-cols-2 gap-8">
         {/* Contacto */}
         <div className="space-y-2">
-          <h4 className="text-xl font-bold">Contacto</h4>
-          <ul className="space-y-1 text-sm">
+          <h4 className="text-[1.2em] font-bold">Contacto</h4>
+          <ul className="space-y-1  text-[0.9em]">
             <li className="flex items-center gap-2">
               <FontAwesomeIcon icon={faPhone} className="w-5 h-5" />
               <a href="tel:+56222466789" className="hover:underline">
@@ -42,8 +42,8 @@ export default function Footer() {
 
         {/* Síguenos */}
         <div className="space-y-2">
-          <h4 className="text-xl font-bold">Síguenos</h4>
-          <div className="flex items-center gap-4">
+          <h4 className="text-[1.2em] font-bold">Síguenos</h4>
+          <div className="flex text-[0.9em] items-center gap-4">
             <a
               href="https://facebook.com"
               aria-label="Facebook"
@@ -81,7 +81,7 @@ export default function Footer() {
       </div>
 
       {/* Copyright centrado */}
-      <div className="mt-8 border-t border-white/50 pt-4 text-center text-sm">
+      <div className="mt-8 border-t border-white/50 pt-4 text-center text-[0.9em]">
         © 2025 Acompaña Mayor. Todos los derechos reservados.
       </div>
     </footer>

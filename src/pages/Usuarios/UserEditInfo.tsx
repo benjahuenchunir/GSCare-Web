@@ -106,7 +106,7 @@ export default function EditProfilePage() {
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded-lg shadow max-w-md w-full space-y-4"
       >
-        <h2 className="text-2xl font-bold mb-4">Editar perfil</h2>
+        <h2 className="text-[2em] font-bold mb-4">Editar perfil</h2>
 
         {errors["general"] && <p className="text-red-600 mb-4">{errors["general"]}</p>}
         {successMsg && <p className="text-green-600 mb-4">{successMsg}</p>}
@@ -129,7 +129,7 @@ export default function EditProfilePage() {
             onChange={handleChange}
             className="mt-1 w-full border rounded px-3 py-2"
           />
-          {errors["nombre"] && <p className="text-sm text-red-600 mt-1">{errors["nombre"]}</p>}
+          {errors["nombre"] && <p className="text-[1em] text-red-600 mt-1">{errors["nombre"]}</p>}
         </label>
 
         <label className="block">
@@ -142,7 +142,7 @@ export default function EditProfilePage() {
             className="mt-1 w-full border rounded px-3 py-2"
           />
           {errors["fecha_de_nacimiento"] && (
-            <p className="text-sm text-red-600 mt-1">{errors["fecha_de_nacimiento"]}</p>
+            <p className="text-[1em] text-red-600 mt-1">{errors["fecha_de_nacimiento"]}</p>
           )}
         </label>
 
@@ -162,7 +162,7 @@ export default function EditProfilePage() {
             ))}
           </select>
           {errors["region_de_residencia"] && (
-            <p className="text-sm text-red-600 mt-1">{errors["region_de_residencia"]}</p>
+            <p className="text-[1em] text-red-600 mt-1">{errors["region_de_residencia"]}</p>
           )}
         </label>
 
@@ -185,7 +185,7 @@ export default function EditProfilePage() {
             ))}
           </select>
           {errors["comuna_de_residencia"] && (
-            <p className="text-sm text-red-600 mt-1">{errors["comuna_de_residencia"]}</p>
+            <p className="text-[1em] text-red-600 mt-1">{errors["comuna_de_residencia"]}</p>
           )}
         </label>
 
@@ -198,7 +198,7 @@ export default function EditProfilePage() {
             className="mt-1 w-full border rounded px-3 py-2"
           />
           {errors["direccion_particular"] && (
-            <p className="text-sm text-red-600 mt-1">{errors["direccion_particular"]}</p>
+            <p className="text-[1em] text-red-600 mt-1">{errors["direccion_particular"]}</p>
           )}
         </label>
 

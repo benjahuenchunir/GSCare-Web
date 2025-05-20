@@ -15,7 +15,7 @@ const LoginButton: React.FC = () => {
           }
         }
       )}
-      className="w-48 px-6 py-3 bg-primary1 text-white font-semibold rounded-lg hover:bg-primary2 transition"
+      className="w-48  py-3 bg-primary1 text-[1em] text-white font-semibold rounded-lg hover:bg-primary2 transition"
     >
       Iniciar sesión
     </button>

@@ -40,7 +40,7 @@ const ActividadesListPage: React.FC = () => {
     <main className="flex-1 ">
       <div className="px-10 py-16 bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-secondary1 text-center mb-6">Actividades</h1>
+          <h1 className="text-[2em] font-bold text-secondary1 text-center mb-6">Actividades</h1>
 
           <div className="flex justify-center mb-6">
             <input
@@ -60,7 +60,7 @@ const ActividadesListPage: React.FC = () => {
                   key={cat}
                   onClick={() => toggleCategoria(cat)}
                   className={`
-                    whitespace-nowrap text-base font-medium rounded-full border transition
+                    whitespace-nowrap text-[1em] font-medium rounded-full border transition
                     ${selected
                       ? "bg-[#62CBC9] text-white border-transparent"
                       : "bg-[#E0F5F5] text-[#006881] border-[#62CBC9]"}
@@ -85,11 +85,11 @@ const ActividadesListPage: React.FC = () => {
                   onClick={() => navigate(`/actividades/${a.id}`)}
                   className="bg-white p-6 rounded-xl shadow-md hover:shadow-2xl hover:scale-[1.02] hover:bg-gray-100 hover:border-2 hover:border-[#009982] border border-transparent transition-all duration-200 ease-in-out cursor-pointer"
                 >
-                  <h3 className="text-2xl font-semibold text-[#009982] mb-2">{a.nombre}</h3>
-                  <p className="text-gray-700 text-sm mb-2">{a.descripcion}</p>
-                  <p className="text-gray-500 text-sm mb-1"><strong>Categoría:</strong> {a.categoria}</p>
-                  <p className="text-gray-500 text-sm mb-1"><strong>Fecha:</strong> {new Date(a.fecha).toLocaleString()}</p>
-                  <p className="text-gray-500 text-sm"><strong>Lugar:</strong> {a.lugar}</p>
+                  <h3 className="text-[1.5em] leading-snug font-semibold text-[#009982] mb-2">{a.nombre}</h3>
+                  <p className="text-gray-700 text-[1em] mb-2">{a.descripcion}</p>
+                  <p className="text-gray-500 text-[1em] mb-1"><strong>Categoría:</strong> {a.categoria}</p>
+                  <p className="text-gray-500 text-[1em] mb-1"><strong>Fecha:</strong> {new Date(a.fecha).toLocaleString()}</p>
+                  <p className="text-gray-500 text-[1em]"><strong>Lugar:</strong> {a.lugar}</p>
                 </div>
               ))}
             </div>
