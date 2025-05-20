@@ -15,6 +15,8 @@ import CalendarIcon from '../../assets/Calendar2.svg?react';
 import HeadsetIcon from '../../assets/Support.svg?react';
 import UserIcon from '../../assets/Person.svg?react';
 
+import TokenTestButton from "../../components/TokenTestButton";
+
 
 const UserPage: React.FC = () => {
   const { user, isAuthenticated } = useAuth0();
@@ -62,6 +64,8 @@ const UserPage: React.FC = () => {
           <div className="flex justify-center mb-6">
             <h1 className="text-[2.5em] font-bold text-primary">Hola, {userName}!</h1>
           </div>
+
+          <TokenTestButton />
 
           {/* Botones rápidos */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
