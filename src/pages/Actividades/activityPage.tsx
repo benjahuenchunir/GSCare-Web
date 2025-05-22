@@ -15,13 +15,22 @@ import {
 import ActividadInfoCard from "./ActividadInfoCard";
 import ModalInscripcion from "./ModalInscripcion";
 
+// Función para formatear fecha YYYY-MM-DD a "15 de mayo de 2025"
+const formatearFecha = (fecha: string) => {
+  const [a, m, d] = fecha.split("-");
+  const meses = [
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+  ];
+  return `${parseInt(d)} de ${meses[parseInt(m) - 1]} de ${a}`;
+};
+
 const ActivityPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user, isAuthenticated, loginWithRedirect } = useAuth0();
 
   const [actividad, setActividad] = useState<Actividad | null>(null);
   const [yaInscrito, setYaInscrito] = useState(false);
-
   const [modalVisible, setModalVisible] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSubscribeConfirm, setShowSubscribeConfirm] = useState(false);
@@ -59,7 +68,7 @@ const ActivityPage: React.FC = () => {
       return;
     }
 
-    setShowSubscribeConfirm(true); // Mostrar modal de confirmación
+    setShowSubscribeConfirm(true);
   };
 
   const handleConfirmInscribirse = async () => {
@@ -128,7 +137,7 @@ const ActivityPage: React.FC = () => {
             <FaCalendarAlt className="text-[#009982]" />
             <div>
               <h3 className="font-semibold">Fecha</h3>
-              <p>{new Date(actividad.fecha).toLocaleDateString()}</p>
+              <p>{formatearFecha(actividad.fecha)}</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
@@ -221,7 +230,6 @@ const ActivityPage: React.FC = () => {
         </div>
       )}
 
-      {/* Modal de éxito */}
       <ModalInscripcion
         visible={modalVisible}
         onClose={() => setModalVisible(false)}

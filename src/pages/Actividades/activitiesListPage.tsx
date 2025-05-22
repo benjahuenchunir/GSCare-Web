@@ -2,6 +2,15 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchActividades, Actividad } from "../../services/actividadService";
 
+const formatearFecha = (fecha: string) => {
+  const [a, m, d] = fecha.split("-");
+  const meses = [
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+  ];
+  return `${parseInt(d)} de ${meses[parseInt(m) - 1]} de ${a}`;
+};
+
 const ActividadesListPage: React.FC = () => {
   const navigate = useNavigate();
   const [actividades, setActividades] = useState<Actividad[]>([]);
@@ -88,7 +97,7 @@ const ActividadesListPage: React.FC = () => {
                   <h3 className="text-[1.5em] leading-snug font-semibold text-[#009982] mb-2">{a.nombre}</h3>
                   <p className="text-gray-700 text-[1em] mb-2">{a.descripcion}</p>
                   <p className="text-gray-500 text-[1em] mb-1"><strong>Categoría:</strong> {a.categoria}</p>
-                  <p className="text-gray-500 text-[1em] mb-1"><strong>Fecha:</strong> {new Date(a.fecha).toLocaleString()}</p>
+                  <p className="text-gray-500 text-[1em] mb-1"><strong>Fecha:</strong> {formatearFecha(a.fecha)}</p>
                   <p className="text-gray-500 text-[1em]"><strong>Lugar:</strong> {a.lugar}</p>
                 </div>
               ))}
