@@ -24,7 +24,7 @@ const initialProducto: ProductoForm = {
 };
 
 export default function PartnerHub() {
-  const { isAuthenticated, user } = useAuth0();
+  const { isAuthenticated, user, getAccessTokenSilently} = useAuth0();
   const [open, setOpen] = useState(false);
   const [modalView, setModalView] = useState<
     "main" | "actividad" | "producto" | "servicio"
@@ -34,6 +34,7 @@ export default function PartnerHub() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
 
   if (!isAuthenticated) return null;
 
@@ -67,6 +68,7 @@ export default function PartnerHub() {
     ];
 
     const missing = required.filter((f) => !actividad[f]);
+    const token = await getAccessTokenSilently();
 
     if (missing.length > 0) {
       setError("Faltan campos obligatorios: " + missing.join(", "));
@@ -78,10 +80,18 @@ export default function PartnerHub() {
       const userPartner = await axios.get(
         `${import.meta.env.VITE_API_URL}/usuarios/email/${user?.email}`
       );
-      await axios.post(`${import.meta.env.VITE_API_URL}/actividades`, {
-        ...actividad,
-        id_creador_del_evento: userPartner.data.id,
-      });
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/actividades`,
+        {
+          ...actividad,
+          id_creador_del_evento: userPartner.data.id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setSuccess("¡Actividad creada exitosamente!");
       setActividad(initialActividad);
     } catch (err) {
@@ -111,6 +121,7 @@ export default function PartnerHub() {
     ];
 
     const missing = required.filter((f) => !producto[f]);
+    const token = await getAccessTokenSilently();
 
     if (missing.length > 0) {
       setError("Faltan campos obligatorios: " + missing.join(", "));
@@ -131,12 +142,21 @@ export default function PartnerHub() {
     }
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/productos`, producto);
-      setSuccess("¡Producto creado exitosamente!");
-      setProducto(initialProducto);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
-    } finally {
+      const token = await getAccessTokenSilently();
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/productos`,
+          producto,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setSuccess("¡Producto creado exitosamente!");
+        setProducto(initialProducto);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Error desconocido");
+      } finally {
       setLoading(false);
     }
   };
