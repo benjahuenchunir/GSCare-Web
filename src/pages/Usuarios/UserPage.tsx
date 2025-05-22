@@ -101,7 +101,7 @@ const UserPage: React.FC = () => {
           {/* Actividades y Consejos */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w">
             <div className="lg:col-span-2 space-y-4">
-              <SectionTitle title="Siguientes Actividades" />
+              <SectionTitle title="Siguientes Eventos" />
               {/* <div className="bg-white p-4 rounded-lg h-80 overflow-y-auto space-y-4">
                 <UpcomingActivitiesSection />
               </div> */}
