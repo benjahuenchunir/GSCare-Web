@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import { FaMapMarkerAlt, FaCity, FaCalendarAlt, FaClock } from "react-icons/fa";
 
 import { getUserByEmail } from "../../services/userService";
+import { UserContext } from "../../context/UserContext";
 import {
   Actividad,
   getAssistantsByActivity,
@@ -24,6 +25,14 @@ const ActivityPage: React.FC = () => {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const { profile, reloadProfile } = useContext(UserContext);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      reloadProfile(); // 🔁 para asegurar que el rol esté actualizado
+    }
+  }, [isAuthenticated]);
+
 
   useEffect(() => {
     fetchActividadById(Number(id))
@@ -134,33 +143,49 @@ const ActivityPage: React.FC = () => {
       </div>
 
       {/* Acción de inscripción */}
-      <div className="bg-[#009982] text-white rounded-lg p-6 text-center">
-        <h3 className="font-bold mb-2">¿Quieres participar?</h3>
-        <p className="mb-4">Únete a esta actividad para mejorar tu bienestar y conectar con otros.</p>
-        {yaInscrito ? (
-          <div className="flex flex-col items-center gap-3">
-            <div className="py-2 px-6 bg-white text-[#009982] rounded-lg font-semibold border border-[#009982]">
-              Ya estás inscrito 😊
+      {profile?.rol === "socio" ? (
+        <div className="bg-[#009982] text-white rounded-lg p-6 text-center">
+          <h3 className="font-bold mb-2">¿Quieres participar?</h3>
+          <p className="mb-4">Únete a esta actividad para mejorar tu bienestar y conectar con otros.</p>
+          {yaInscrito ? (
+            <div className="flex flex-col items-center gap-3">
+              <div className="py-2 px-6 bg-white text-[#009982] rounded-lg font-semibold border border-[#009982]">
+                Ya estás inscrito 😊
+              </div>
+              <p className="text-white text-center">
+                ¿Quieres cancelar tu inscripción? Puedes hacerlo presionando el botón de abajo.
+              </p>
+              <button
+                onClick={() => setShowConfirmModal(true)}
+                className="py-2 px-6 bg-red-100 text-red-700 rounded-lg font-semibold hover:bg-red-200 border border-red-300"
+              >
+                Cancelar inscripción
+              </button>
             </div>
-            <p className="text-white text-center">
-              ¿Quieres cancelar tu suscripción? Puedes hacerlo presionando el botón de abajo.
-            </p>
+          ) : (
             <button
-              onClick={() => setShowConfirmModal(true)}
-              className="py-2 px-6 bg-red-100 text-red-700 rounded-lg font-semibold hover:bg-red-200 border border-red-300"
+              onClick={handleInscribirse}
+              className="py-2 px-6 bg-white text-[#009982] rounded-lg font-semibold hover:bg-gray-200"
             >
-              Cancelar inscripción
+              Suscribirse
             </button>
-          </div>
-        ) : (
+          )}
+        </div>
+      ) : (
+        <div className="bg-yellow-100 text-yellow-900 rounded-lg p-6 text-center">
+          <h3 className="text-xl font-bold">Actividad exclusiva para socios</h3>
+          <p className="mt-2">Hazte socio para poder participar en nuestras actividades exclusivas.</p>
           <button
-            onClick={handleInscribirse}
-            className="py-2 px-6 bg-white text-[#009982] rounded-lg font-semibold hover:bg-gray-200"
+            onClick={() => {
+              window.location.href = "/user"; // o redirección a botón de hacerse socio
+            }}
+            className="mt-4 px-6 py-2 bg-yellow-400 text-white rounded-lg font-semibold hover:bg-yellow-500"
           >
-            Suscribirse
+            Hacerse socio
           </button>
-        )}
-      </div>
+        </div>
+      )}
+
 
       {/* Modal confirmación cancelación */}
       {showConfirmModal && (

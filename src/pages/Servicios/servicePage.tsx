@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import Slider from "react-slick"; // Importa el slider
 
@@ -41,8 +41,9 @@ interface Beneficio {
 
 const ServicePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const {isAuthenticated, loginWithRedirect } = useAuth0();
-  const { profile, loading: loadingProfile } = useContext(UserContext);
+  const { profile, reloadProfile, loading: loadingProfile } = useContext(UserContext);
 
   // Para datos del servicio
   const [servicio, setServicio] = useState<Servicio | null>(null);
@@ -53,6 +54,12 @@ const ServicePage: React.FC = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [loadingSub, setLoadingSub] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      reloadProfile(); // 🔁 forzar recarga del usuario
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     axios.get(`${import.meta.env.VITE_API_URL}/servicios/${id}`)
@@ -171,15 +178,31 @@ const ServicePage: React.FC = () => {
       )}
 
       <div className="mt-8">
-      <AgendarBox
-        telefono={servicio.telefono_de_contacto}
-        email={servicio.email_de_contacto}
-        direccion={servicio.direccion_principal_del_prestador}
-        isSubscribed={isSubscribed}
-        loading={loadingSub}
-        onSubscribe={handleSubscribe}
-        onUnsubscribe={handleUnsubscribe}
-      />
+      {profile?.rol === "socio" ? (
+        <AgendarBox
+          telefono={servicio.telefono_de_contacto}
+          email={servicio.email_de_contacto}
+          direccion={servicio.direccion_principal_del_prestador}
+          isSubscribed={isSubscribed}
+          loading={loadingSub}
+          onSubscribe={handleSubscribe}
+          onUnsubscribe={handleUnsubscribe}
+        />
+      ) : (
+        <div className="bg-yellow-100 text-yellow-900 rounded-lg p-6 text-center">
+          <h3 className="text-xl font-bold">Funcionalidad exclusiva para socios</h3>
+          <p className="mt-2">
+            Si quieres agendar este servicio, hazte <strong>Socio</strong> y disfruta de todos los beneficios.
+          </p>
+          <button
+            onClick={() => navigate("/user")}
+            className="mt-4 px-6 py-2 bg-yellow-400 text-white rounded-lg font-semibold hover:bg-yellow-500"
+          >
+            Hacerse Socio
+          </button>
+        </div>
+      )}
+
 
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
