@@ -1,4 +1,3 @@
-
 export interface User {
   id: number;
   nombre: string;
@@ -41,10 +40,13 @@ export async function createUser(data: {
   return await res.json();
 }
 
-export async function updateUserProfile(data: User): Promise<User> {
+export async function updateUserProfile(data: User, token: string): Promise<User> {
   const res = await fetch(`${API_URL}/usuarios/${data.id}`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify(data),
   });
 
@@ -52,10 +54,26 @@ export async function updateUserProfile(data: User): Promise<User> {
   return await res.json();
 }
 
-export async function deleteUserById(id: number): Promise<void> {
-  const res = await fetch(`${API_URL}/usuarios/${id}`, {
+export async function deleteCurrentUser(token: string, dbUserId: number): Promise<void> {
+  const authRes = await fetch(`${API_URL}/auth/delete-account`, {
     method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
-  if (!res.ok) throw new Error("Error deleting user");
-}
 
+  if (!authRes.ok) {
+    throw new Error("Error deleting user from Auth0");
+  }
+
+  const dbRes = await fetch(`${API_URL}/usuarios/${dbUserId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!dbRes.ok) {
+    throw new Error("Error deleting user from database");
+  }
+}
