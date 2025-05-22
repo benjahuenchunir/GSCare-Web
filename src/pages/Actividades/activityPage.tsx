@@ -16,13 +16,22 @@ import {
 import ActividadInfoCard from "./ActividadInfoCard";
 import ModalInscripcion from "./ModalInscripcion";
 
+// Función para formatear fecha YYYY-MM-DD a "15 de mayo de 2025"
+const formatearFecha = (fecha: string) => {
+  const [a, m, d] = fecha.split("-");
+  const meses = [
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+  ];
+  return `${parseInt(d)} de ${meses[parseInt(m) - 1]} de ${a}`;
+};
+
 const ActivityPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user, isAuthenticated, loginWithRedirect, getAccessTokenSilently } = useAuth0();
 
   const [actividad, setActividad] = useState<Actividad | null>(null);
   const [yaInscrito, setYaInscrito] = useState(false);
-
   const [modalVisible, setModalVisible] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const { profile, reloadProfile } = useContext(UserContext);
@@ -33,6 +42,7 @@ const ActivityPage: React.FC = () => {
     }
   }, [isAuthenticated]);
 
+  const [showSubscribeConfirm, setShowSubscribeConfirm] = useState(false);
 
   useEffect(() => {
     fetchActividadById(Number(id))
@@ -61,14 +71,21 @@ const ActivityPage: React.FC = () => {
         }
       });
     }
+
+    if (yaInscrito) {
+      setModalVisible(true);
+      return;
+    }
+
+    setShowSubscribeConfirm(true);
+  };
+
+  const handleConfirmInscribirse = async () => {
+    setShowSubscribeConfirm(false);
     if (!user?.email || !actividad) return;
     try {
       const token = await getAccessTokenSilently();
       const u = await getUserByEmail(user.email);
-      if (yaInscrito) {
-        setModalVisible(true);
-        return;
-      }
       await attendActivity(actividad.id, u.id, token);
       setYaInscrito(true);
       setModalVisible(true);
@@ -131,7 +148,7 @@ const ActivityPage: React.FC = () => {
             <FaCalendarAlt className="text-[#009982]" />
             <div>
               <h3 className="font-semibold">Fecha</h3>
-              <p>{new Date(actividad.fecha).toLocaleDateString()}</p>
+              <p>{formatearFecha(actividad.fecha)}</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
@@ -215,7 +232,31 @@ const ActivityPage: React.FC = () => {
         </div>
       )}
 
-      {/* Modal de éxito */}
+      {showSubscribeConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+            <h2 className="text-[1.5em] font-bold text-[#009982] mb-4">¿Confirmar inscripción?</h2>
+            <p className="text-gray-700 mb-6">
+              ¿Estás seguro de que deseas inscribirte en esta actividad?
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setShowSubscribeConfirm(false)}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                No, cancelar
+              </button>
+              <button
+                onClick={handleConfirmInscribirse}
+                className="px-4 py-2 bg-[#009982] text-white rounded hover:bg-[#007f6e]"
+              >
+                Sí, inscribirme
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <ModalInscripcion
         visible={modalVisible}
         onClose={() => setModalVisible(false)}

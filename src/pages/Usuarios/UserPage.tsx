@@ -89,14 +89,22 @@ const UserPage: React.FC = () => {
 
           {/* Botones rápidos */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <QuickAccessButton icon={<CalendarIcon className="w-8 h-8 text-primary" />} label="Mi agenda" />
-            <QuickAccessButton icon={<HeadsetIcon className="w-8 h-8 text-accent3" />} label="Soporte" />
+            <QuickAccessButton
+              icon={<CalendarIcon className="w-8 h-8 text-primary" />}
+              label="Mi agenda"
+              onClick={() => navigate("/mi-agenda")}
+            />
+            <QuickAccessButton
+              icon={<HeadsetIcon className="w-8 h-8 text-accent3" />}
+              label="Soporte"
+            />
             <QuickAccessButton
               icon={<UserIcon className="w-8 h-8 text-accent2" />}
               label="Mi perfil"
               onClick={() => navigate("/edit-profile")}
-              />
+            />
           </div>
+
 
           {/* Actividades y Consejos */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w">

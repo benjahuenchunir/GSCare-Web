@@ -14,6 +14,7 @@ import ActivityPage from "./pages/Actividades/activityPage.tsx";
 import ActivitiesListPage from "./pages/Actividades/activitiesListPage.tsx";
 import ProductPage from "./pages/Productos/productosPage.tsx";
 import ProductsListPage from "./pages/Productos/productosListPage.tsx";
+import Agenda from "./pages/Agenda/Agenda.tsx";
 
 export default function Routing() {
     return (
@@ -29,6 +30,8 @@ export default function Routing() {
                 <Route path="/actividades/:id" element={<ActivityPage />} />
                 <Route path="/productos" element={<ProductsListPage />} />
                 <Route path="/productos/:id" element={<ProductPage />} />
+                <Route path="/mi-agenda" element={<Agenda />} />
+                {/* Ruta de login */}
 
                 {/* Ruta protegida */}
                 <Route path="/user" element={
