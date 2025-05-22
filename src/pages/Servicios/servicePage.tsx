@@ -42,7 +42,7 @@ interface Beneficio {
 const ServicePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const {isAuthenticated, loginWithRedirect } = useAuth0();
+  const {isAuthenticated, loginWithRedirect, getAccessTokenSilently } = useAuth0();
   const { profile, reloadProfile, loading: loadingProfile } = useContext(UserContext);
 
   // Para datos del servicio
@@ -55,12 +55,14 @@ const ServicePage: React.FC = () => {
   const [loadingSub, setLoadingSub] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
+  // 1️⃣ Forzar recarga del perfil tras login o cambio de rol
   useEffect(() => {
     if (isAuthenticated) {
-      reloadProfile(); // 🔁 forzar recarga del usuario
+      reloadProfile();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, reloadProfile]);
 
+  // 2️⃣ Cargar datos del servicio, reseñas y beneficios
   useEffect(() => {
     axios.get(`${import.meta.env.VITE_API_URL}/servicios/${id}`)
       .then(res => setServicio(res.data))
@@ -75,6 +77,70 @@ const ServicePage: React.FC = () => {
       .catch(() => {});
   }, [id]);
 
+  // 3️⃣ Verificar si el usuario está suscrito (usa token)
+  useEffect(() => {
+    (async () => {
+      if (loadingProfile) return;
+      setLoadingSub(true);
+
+      if (isAuthenticated && profile?.id) {
+        try {
+          const token = await getAccessTokenSilently();
+          const subscribed = await isUserSubscribed(
+            Number(id),
+            profile.id,
+            token
+          );
+          setIsSubscribed(subscribed);
+        } catch (e) {
+          console.error("Error comprobando suscripción:", e);
+        }
+      }
+      setLoadingSub(false);
+    })();
+  }, [isAuthenticated, loadingProfile, profile, id, getAccessTokenSilently]);
+
+  // 4️⃣ Handler para suscribirse
+  const handleSubscribe = async () => {
+    if (!isAuthenticated) {
+      await loginWithRedirect({
+        appState: { returnTo: `/servicios/${id}` }
+      });
+      return;
+    }
+    if (!profile?.id) return;
+
+    setLoadingSub(true);
+    try {
+      const token = await getAccessTokenSilently();
+      await subscribeToService(Number(id), profile.id, token);
+      setIsSubscribed(true);
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setLoadingSub(false);
+    }
+  };
+
+  // 5️⃣ Handler para cancelar suscripción
+  const handleConfirmCancel = async () => {
+    setShowConfirmModal(false);
+    if (!profile?.id) return;
+
+    setLoadingSub(true);
+    try {
+      const token = await getAccessTokenSilently();
+      await unsubscribeFromService(Number(id), profile.id, token);
+      setIsSubscribed(false);
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setLoadingSub(false);
+    }
+  };
+
+  if (!servicio) return <div className="p-4">Cargando servicio...</div>;
+
   const chunkedReviews = (arr: Review[], size: number) => {
     const chunks: Review[][] = [];
     for (let i = 0; i < arr.length; i += size) {
@@ -87,57 +153,8 @@ const ServicePage: React.FC = () => {
     slidesToShow: 1, slidesToScroll: 1, infinite: false, dots: true, arrows: true
   };
 
-  // 2.1 Check if user is subscribed
-  useEffect(() => {
-    if (loadingProfile) return;
-  
-    if (isAuthenticated && profile?.id) {
-      isUserSubscribed(Number(id), profile.id)
-        .then(setIsSubscribed)
-        .catch(console.error)
-        .finally(() => setLoadingSub(false));
-    } else {
-      setLoadingSub(false);
-    }
-  }, [isAuthenticated, loadingProfile, profile, id]);
-
-  // 2.2 Handler Suscribirse
-  const handleSubscribe = async () => {
-    if (!isAuthenticated) {
-      await loginWithRedirect({ appState: { returnTo: `/servicios/${id}` } });
-      return;
-    }
-    if (!profile?.id) return;
-    setLoadingSub(true);
-    try {
-      await subscribeToService(Number(id), profile.id);
-      setIsSubscribed(true);
-    } catch (e: any) {
-      alert(e.message);
-    } finally {
-      setLoadingSub(false);
-    }
-  };
-
-  const handleUnsubscribe = () => {
-    setShowConfirmModal(true);
-  };
-
-  const handleConfirmCancel = async () => {
-    setShowConfirmModal(false);
-    if (!profile?.id) return;
-    setLoadingSub(true);
-    try {
-      await unsubscribeFromService(Number(id), profile.id);
-      setIsSubscribed(false);
-    } catch (e: any) {
-      alert(e.message);
-    } finally {
-      setLoadingSub(false);
-    }
-  };
-
   if (!servicio) return <div className="p-4">Cargando servicio...</div>;
+
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8 pt-20">
       <ServicioInfoCard
@@ -156,12 +173,14 @@ const ServicePage: React.FC = () => {
 
       {reviews.length > 0 && (
         <div className="bg-white shadow-lg rounded-lg p-6">
-          <h2 className="text-[1.2em] font-bold mb-4 text-[#00495C]">¿Qué dicen nuestros clientes?</h2>
+          <h2 className="text-[1.2em] font-bold mb-4 text-[#00495C]">
+            ¿Qué dicen nuestros clientes?
+          </h2>
           <Slider {...carouselSettings}>
             {reviewChunks.map((chunk, idx) => (
               <div key={idx} className="p-4">
                 <div className="grid grid-cols-2 gap-6">
-                  {chunk.map(r => (
+                  {chunk.map((r) => (
                     <ReviewCard
                       key={r.id}
                       nombre={r.Usuario.nombre}
@@ -178,56 +197,61 @@ const ServicePage: React.FC = () => {
       )}
 
       <div className="mt-8">
-      {profile?.rol === "socio" ? (
-        <AgendarBox
-          telefono={servicio.telefono_de_contacto}
-          email={servicio.email_de_contacto}
-          direccion={servicio.direccion_principal_del_prestador}
-          isSubscribed={isSubscribed}
-          loading={loadingSub}
-          onSubscribe={handleSubscribe}
-          onUnsubscribe={handleUnsubscribe}
-        />
-      ) : (
-        <div className="bg-yellow-100 text-yellow-900 rounded-lg p-6 text-center">
-          <h3 className="text-xl font-bold">Funcionalidad exclusiva para socios</h3>
-          <p className="mt-2">
-            Si quieres agendar este servicio, hazte <strong>Socio</strong> y disfruta de todos los beneficios.
-          </p>
-          <button
-            onClick={() => navigate("/user")}
-            className="mt-4 px-6 py-2 bg-yellow-400 text-white rounded-lg font-semibold hover:bg-yellow-500"
-          >
-            Hacerse Socio
-          </button>
-        </div>
-      )}
-
-
-      {showConfirmModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-            <h2 className="text-[1.5em] font-bold text-red-600 mb-4">¿Cancelar suscripción?</h2>
-            <p className="text-gray-700 mb-6">
-              ¿Estás seguro de que deseas cancelar tu suscripción a este servicio?
+        {profile?.rol === "socio" ? (
+          <AgendarBox
+            telefono={servicio.telefono_de_contacto}
+            email={servicio.email_de_contacto}
+            direccion={servicio.direccion_principal_del_prestador}
+            isSubscribed={isSubscribed}
+            loading={loadingSub}
+            onSubscribe={handleSubscribe}
+            onUnsubscribe={() => setShowConfirmModal(true)}
+          />
+        ) : (
+          <div className="bg-yellow-100 text-yellow-900 rounded-lg p-6 text-center">
+            <h3 className="text-xl font-bold">
+              Funcionalidad exclusiva para socios
+            </h3>
+            <p className="mt-2">
+              Si quieres agendar este servicio, hazte <strong>Socio</strong> y
+              disfruta de todos los beneficios.
             </p>
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={() => setShowConfirmModal(false)}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-              >
-                No, mantener
-              </button>
-              <button
-                onClick={handleConfirmCancel}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-              >
-                Sí, cancelar
-              </button>
+            <button
+              onClick={() => navigate("/user")}
+              className="mt-4 px-6 py-2 bg-yellow-400 text-white rounded-lg font-semibold hover:bg-yellow-500"
+            >
+              Hacerse Socio
+            </button>
+          </div>
+        )}
+
+        {showConfirmModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+              <h2 className="text-[1.5em] font-bold text-red-600 mb-4">
+                ¿Cancelar suscripción?
+              </h2>
+              <p className="text-gray-700 mb-6">
+                ¿Estás seguro de que deseas cancelar tu suscripción a este
+                servicio?
+              </p>
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={() => setShowConfirmModal(false)}
+                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                >
+                  No, mantener
+                </button>
+                <button
+                  onClick={handleConfirmCancel}
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                >
+                  Sí, cancelar
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
     </div>
   );

@@ -58,11 +58,15 @@ export async function getAssistantsByActivity(
 // 5. Inscribir (asistir) a una actividad
 export async function attendActivity(
   actividadId: number,
-  usuarioId: number
+  usuarioId: number,
+  token: string
 ): Promise<Asistente> {
   const res = await fetch(`${API_URL}/asistentes`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}` // ✅ agregar
+    },
     body: JSON.stringify({
       id_evento_a_asistir: actividadId,
       id_usuario_asistente: usuarioId
@@ -78,11 +82,15 @@ export async function attendActivity(
 // 6. Cancelar asistencia
 export async function cancelAttendance(
   actividadId: number,
-  usuarioId: number
+  usuarioId: number,
+  token: string
 ): Promise<void> {
   const res = await fetch(`${API_URL}/asistentes`, {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}` // ✅ agregar
+    },
     body: JSON.stringify({
       id_evento_a_asistir: actividadId,
       id_usuario_asistente: usuarioId

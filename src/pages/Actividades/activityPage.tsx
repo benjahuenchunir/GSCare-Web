@@ -18,7 +18,7 @@ import ModalInscripcion from "./ModalInscripcion";
 
 const ActivityPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { user, isAuthenticated, loginWithRedirect } = useAuth0();
+  const { user, isAuthenticated, loginWithRedirect, getAccessTokenSilently } = useAuth0();
 
   const [actividad, setActividad] = useState<Actividad | null>(null);
   const [yaInscrito, setYaInscrito] = useState(false);
@@ -63,12 +63,13 @@ const ActivityPage: React.FC = () => {
     }
     if (!user?.email || !actividad) return;
     try {
+      const token = await getAccessTokenSilently();
       const u = await getUserByEmail(user.email);
       if (yaInscrito) {
         setModalVisible(true);
         return;
       }
-      await attendActivity(actividad.id, u.id);
+      await attendActivity(actividad.id, u.id, token);
       setYaInscrito(true);
       setModalVisible(true);
     } catch (err: any) {
@@ -80,8 +81,9 @@ const ActivityPage: React.FC = () => {
   const handleConfirmCancel = async () => {
     if (!user?.email || !actividad) return;
     try {
+      const token = await getAccessTokenSilently();
       const u = await getUserByEmail(user.email);
-      await cancelAttendance(actividad.id, u.id);
+      await cancelAttendance(actividad.id, u.id, token);
       setYaInscrito(false);
       setShowConfirmModal(false);
     } catch (err) {
