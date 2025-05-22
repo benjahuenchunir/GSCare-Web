@@ -98,7 +98,7 @@ const Agenda = () => {
 
   return (
     <div className="min-h-screen flex-1  bg-gray-100 p-6">
-      <h1 className="text-[2em] font-bold flex-1  px-10 py-7 text-center mb-6 text-primary">Mi Agenda</h1>
+    <h1 className="text-[2em] font-bold flex-1 text-center mb-6 text-primary mt-8">Mi Agenda</h1>
 
       <div className="bg-white p-4 rounded-xl shadow">
         <Calendar
