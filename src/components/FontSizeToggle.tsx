@@ -4,7 +4,7 @@ export default function FontSizeToggle() {
   const { increaseFont, decreaseFont, resetFont } = useFontSize();
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-row gap-2">
+    <div className="fixed bottom-4 right-4 z-40 flex flex-row gap-2">
       {/* Disminuir tamaño */}
       <button
         onClick={decreaseFont}
