@@ -18,6 +18,7 @@ const localizer = dateFnsLocalizer({
 });
 
 type Evento = {
+  id: number;
   title: string;
   start: Date;
   end: Date;
@@ -38,67 +39,71 @@ const Agenda = () => {
 
   const API_URL = import.meta.env.VITE_API_URL;
 
+  const fetchEventos = async () => {
+    try {
+      if (!isAuthenticated || !user?.email) return;
+
+      const usuario = await getUserByEmail(user.email);
+      if (!usuario?.id) return;
+
+      const [citasRes, actividadesRes] = await Promise.all([
+        fetch(`${API_URL}/usuarios/usuarios/${usuario.id}/citas`),
+        fetch(`${API_URL}/usuarios/actividades?id_usuario=${usuario.id}`)
+      ]);
+
+      const citas = await citasRes.json();
+      const actividades = await actividadesRes.json();
+
+      const serviciosFormateados: Evento[] = citas.map((cita: any): Evento => ({
+        id: cita.id,
+        title: cita.title ?? 'Servicio',
+        start: new Date(cita.start),
+        end: new Date(cita.end),
+        tipo: 'servicio',
+        descripcion: `Estado: ${cita.extendedProps?.estado ?? cita.estado}`,
+      }));
+
+      const actividadesFormateadas: Evento[] = actividades.map((a: any): Evento => {
+        const fechaHoraInicio = new Date(`${a.fecha}T${a.hora}`);
+        const fechaHoraFin = new Date(fechaHoraInicio);
+        fechaHoraFin.setHours(fechaHoraInicio.getHours() + 1);
+
+        return {
+          id: a.id,
+          title: a.nombre.replace(/^🔵\s*/, ''),
+          start: fechaHoraInicio,
+          end: fechaHoraFin,
+          tipo: 'actividad',
+          descripcion: a.descripcion,
+          lugar: a.lugar,
+        };
+      });
+
+      setEventos([...serviciosFormateados, ...actividadesFormateadas]);
+    } catch (err) {
+      console.error('Error al cargar eventos:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchEventos = async () => {
-      try {
-        if (!isAuthenticated || !user?.email) return;
-
-        const usuario = await getUserByEmail(user.email);
-        if (!usuario?.id) return;
-
-        const [serviciosRes, actividadesRes] = await Promise.all([
-          fetch(`${API_URL}/usuarios/servicios?id_usuario=${usuario.id}`),
-          fetch(`${API_URL}/usuarios/actividades?id_usuario=${usuario.id}`)
-        ]);
-
-        const servicios = await serviciosRes.json();
-        const actividades = await actividadesRes.json();
-
-        const serviciosFormateados: Evento[] = servicios.map((s: any): Evento => ({
-          title: s.nombre.replace(/^🟢\s*/, ''), // elimina emoji si quedó guardado
-          start: new Date(s.fecha_inicio),
-          end: new Date(s.fecha_fin),
-          tipo: 'servicio',
-          descripcion: s.descripcion,
-          lugar: s.lugar,
-        }));
-
-        const actividadesFormateadas: Evento[] = actividades.map((a: any): Evento => {
-          const fechaHoraInicio = new Date(`${a.fecha}T${a.hora}`);
-          const fechaHoraFin = new Date(fechaHoraInicio);
-          fechaHoraFin.setHours(fechaHoraInicio.getHours() + 1);
-
-          return {
-            title: a.nombre.replace(/^🔵\s*/, ''), // elimina emoji si quedó guardado
-            start: fechaHoraInicio,
-            end: fechaHoraFin,
-            tipo: 'actividad',
-            descripcion: a.descripcion,
-            lugar: a.lugar,
-          };
-        });
-
-        // ✅ Limpia eventos anteriores
-        setEventos([]);
-
-        const todosLosEventos = [...serviciosFormateados, ...actividadesFormateadas];
-        setEventos(todosLosEventos);
-
-      } catch (err) {
-        console.error('Error al cargar eventos:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchEventos();
+  }, [isAuthenticated, user]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchEventos();
+    }, 60000); // 60 segundos
+
+    return () => clearInterval(interval); // limpiar al desmontar
   }, [isAuthenticated, user]);
 
   if (loading) return <p className="text-center mt-10">Cargando agenda…</p>;
 
   return (
-    <div className="min-h-screen flex-1  bg-gray-100 p-6">
-    <h1 className="text-[2em] font-bold flex-1 text-center mb-6 text-primary mt-8">Mi Agenda</h1>
+    <div className="min-h-screen flex-1 bg-gray-100 p-6">
+      <h1 className="text-[2em] font-bold flex-1 text-center mb-6 text-primary mt-8">Mi Agenda</h1>
 
       <div className="bg-white p-4 rounded-xl shadow">
         <Calendar
@@ -136,6 +141,7 @@ const Agenda = () => {
           <ModalEvento
             evento={eventoSeleccionado}
             onClose={() => setEventoSeleccionado(null)}
+            onRefresh={fetchEventos}
           />
         )}
       </AnimatePresence>
