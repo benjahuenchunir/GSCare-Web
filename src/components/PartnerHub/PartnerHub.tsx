@@ -10,7 +10,8 @@ const initialActividad: ActividadForm = {
   lugar: "",
   comuna: "",
   fecha: "",
-  hora: "",
+  hora_inicio: "",
+  hora_final: "",
 };
 
 const initialProducto: ProductoForm = {
@@ -64,7 +65,8 @@ export default function PartnerHub() {
       "lugar",
       "comuna",
       "fecha",
-      "hora",
+      "hora_inicio",
+      "hora_final",
     ];
 
     const missing = required.filter((f) => !actividad[f]);
@@ -121,7 +123,6 @@ export default function PartnerHub() {
     ];
 
     const missing = required.filter((f) => !producto[f]);
-    const token = await getAccessTokenSilently();
 
     if (missing.length > 0) {
       setError("Faltan campos obligatorios: " + missing.join(", "));

@@ -6,7 +6,8 @@ export interface ActividadForm {
   lugar: string;
   comuna: string;
   fecha: string;
-  hora: string;
+  hora_inicio: string;
+  hora_final: string;
 }
 
 interface Props {
@@ -100,14 +101,27 @@ export default function ActivityForm({
         />
       </div>
       <div className="flex-1 flex flex-col">
-        <label className="text-left font-semibold" htmlFor="hora_actividad">
-          Hora
+        <label className="text-left font-semibold" htmlFor="hora_inicio_actividad">
+          Hora Inicio
         </label>
         <input
-          id="hora_actividad"
+          id="hora_inicio_actividad"
           type="time"
-          name="hora"
-          value={actividad.hora}
+          name="hora_inicio"
+          value={actividad.hora_inicio}
+          onChange={onChange}
+          className="border p-2 rounded"
+        />
+      </div>
+      <div className="flex-1 flex flex-col">
+        <label className="text-left font-semibold" htmlFor="hora_final_actividad">
+          Hora Final
+        </label>
+        <input
+          id="hora_final_actividad"
+          type="time"
+          name="hora_final"
+          value={actividad.hora_final}
           onChange={onChange}
           className="border p-2 rounded"
         />
