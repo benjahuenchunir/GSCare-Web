@@ -7,8 +7,6 @@ import {
   X,
   Trash,
 } from 'lucide-react';
-import { useAuth0 } from '@auth0/auth0-react';
-import { getUserByEmail } from '../../services/userService';
 
 type Evento = {
   id: number;
@@ -23,54 +21,11 @@ type Evento = {
 type Props = {
   evento: Evento;
   onClose: () => void;
-  onRefresh: () => void; 
+  onRefresh: () => void;
+  onCancelEvento: (evento: Evento) => void; // <-- nuevo prop
 };
 
-const ModalEvento = ({ evento, onClose, onRefresh }: Props) => {
-  const { user } = useAuth0();
-  const API_URL = import.meta.env.VITE_API_URL;
-
-  const cancelarEvento = async () => {
-    if (!user?.email) return;
-
-    const confirmar = window.confirm(
-      `¿Estás seguro de que quieres cancelar este ${evento.tipo}?`
-    );
-    if (!confirmar) return;
-
-    try {
-      const usuario = await getUserByEmail(user.email);
-      if (!usuario?.id) throw new Error('No se encontró el ID del usuario');
-
-      let res: Response | undefined;
-
-      if (evento.tipo === 'servicio') {
-        res = await fetch(`${API_URL}/usuarios/usuarios/${usuario.id}/citas/${evento.id}`, {
-          method: 'DELETE',
-        });
-      } else if (evento.tipo === 'actividad') {
-        res = await fetch(`${API_URL}/asistencias`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id_evento_a_asistir: evento.id,
-            id_usuario_asistente: usuario.id,
-          }),
-        });
-      }
-
-      if (!res || !res.ok) {
-        const msg = await res?.text();
-        throw new Error(msg || 'Error al cancelar el evento');
-      }
-
-      onClose();
-      onRefresh();
-    } catch (err) {
-      console.error(err);
-      alert('No se pudo cancelar el evento.');
-    }
-  };
+const ModalEvento = ({ evento, onClose, onCancelEvento }: Props) => {
 
   const fecha = evento.start.toLocaleDateString('es-ES', {
     weekday: 'long',
@@ -155,7 +110,7 @@ const ModalEvento = ({ evento, onClose, onRefresh }: Props) => {
 
         <div className="mt-6 flex justify-between">
           <button
-            onClick={cancelarEvento}
+            onClick={() => onCancelEvento(evento)}
             className="inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition shadow-md"
           >
             <Trash size={18} />

@@ -101,6 +101,55 @@ const Agenda = () => {
 
   if (loading) return <p className="text-center mt-10">Cargando agenda…</p>;
 
+  // Nueva función para cancelar evento de forma optimista
+  const cancelarEventoOptimista = async (evento: Evento) => {
+    if (!isAuthenticated || !user?.email) return;
+
+    const confirmar = window.confirm(
+      `¿Estás seguro de que quieres cancelar este ${evento.tipo}?`
+    );
+    if (!confirmar) return;
+
+    // Optimistic update: elimina el evento localmente
+    const eventosPrevios = eventos;
+    setEventos(prev => prev.filter(e => e.id !== evento.id || e.tipo !== evento.tipo));
+    setEventoSeleccionado(null);
+
+    try {
+      const usuario = await getUserByEmail(user.email);
+      if (!usuario?.id) throw new Error('No se encontró el ID del usuario');
+
+      let res: Response | undefined;
+
+      if (evento.tipo === 'servicio') {
+        res = await fetch(`${API_URL}/usuarios/usuarios/${usuario.id}/citas/${evento.id}`, {
+          method: 'DELETE',
+        });
+      } else if (evento.tipo === 'actividad') {
+        res = await fetch(`${API_URL}/asistencias`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id_evento_a_asistir: evento.id,
+            id_usuario_asistente: usuario.id,
+          }),
+        });
+      }
+
+      if (!res || !res.ok) {
+        const msg = await res?.text();
+        throw new Error(msg || 'Error al cancelar el evento');
+      }
+
+      // Opcional: refrescar desde backend
+      // await fetchEventos();
+    } catch (err) {
+      // Revertir si hay error
+      setEventos(eventosPrevios);
+      alert('No se pudo cancelar el evento.');
+    }
+  };
+
   return (
     <div className="min-h-screen flex-1 bg-gray-100 p-6">
       <h1 className="text-[2em] font-bold flex-1 text-center mb-6 text-primary mt-8">Mi Agenda</h1>
@@ -142,6 +191,7 @@ const Agenda = () => {
             evento={eventoSeleccionado}
             onClose={() => setEventoSeleccionado(null)}
             onRefresh={fetchEventos}
+            onCancelEvento={cancelarEventoOptimista} // <-- pasa la función
           />
         )}
       </AnimatePresence>

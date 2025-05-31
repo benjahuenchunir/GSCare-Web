@@ -43,18 +43,27 @@ export const SubscribedServicesSection: React.FC = () => {
       .then(async servs => {
         const list = await Promise.all(
           servs.map(async svc => {
-            const bs = await fetchBeneficiosPorServicio(svc.id);
+            // Si el fetch de beneficios falla, retorna un array vacío
+            let bs: { id: number; nombre: string }[] = [];
+            try {
+              bs = await fetchBeneficiosPorServicio(svc.id);
+            } catch (e) {
+              console.error(`No se pudieron cargar beneficios para el servicio ${svc.id}:`, e);
+            }
+            // Si svc o svc.nombre no existen, ignora este servicio
+            if (!svc || typeof svc.nombre !== "string") return null;
             return { ...svc, beneficios: bs };
           })
         );
-        setServices(list);
+        // Filtra servicios nulos o sin nombre válido
+        setServices(list.filter((s): s is Servicio => !!s && typeof s.nombre === "string"));
       })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [profile]);
 
   const filtered = services
-    .filter(s => s.nombre.toLowerCase().includes(searchTerm.toLowerCase()))
+    .filter(s => typeof s.nombre === "string" && s.nombre.toLowerCase().includes(searchTerm.toLowerCase()))
     .filter(s =>
       selectedBenefits.length === 0
         ? true

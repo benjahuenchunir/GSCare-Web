@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
-import axios from "axios";
 import { useParams } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import Slider from "react-slick";
 
+import axios from "axios";
 import ServicioInfoCard from "./ServicioInfoCard";
 import ReviewCard from "./ReviewCard";
 import BeneficiosBox from "./BeneficiosBox";
@@ -11,15 +11,11 @@ import DisponibilidadBox from "./DisponibilidadBox";
 import AgendarBox from "./AgendarBox";
 import ModalSelectorDeBloque from "../../components/Servicios/ModalSelectorDeBloque";
 import ModalConfirmarCita from "../../components/Servicios/ModalConfirmarCita";
+import ModalCancelarCita from "../../components/Servicios/ModalCancelarCita";
 import { BloqueHorario } from "../../components/Servicios/SelectorDeBloque";
 import { Review } from "./types";
 
-import {
-  isUserSubscribed,
-  createCita,
-  unsubscribeFromService
-} from "../../services/subscriptionService";
-
+import { createCita, getUserSubscriptions, deleteCita } from "../../services/subscriptionService";
 import { UserContext } from "../../context/UserContext";
 
 interface Servicio {
@@ -46,12 +42,13 @@ const ServicePage: React.FC = () => {
   const [beneficios, setBeneficios] = useState<any[]>([]);
   const [bloques, setBloques] = useState<BloqueHorario[]>([]);
   const [bloqueSeleccionado, setBloqueSeleccionado] = useState<BloqueHorario | null>(null);
-
-  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [citasDelServicio, setCitasDelServicio] = useState<{ id: number; bloque: BloqueHorario }[]>([]);
   const [loadingSub, setLoadingSub] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSelectBloqueModal, setShowSelectBloqueModal] = useState(false);
   const [showSubscribeConfirm, setShowSubscribeConfirm] = useState(false);
+
+  const isSubscribed = citasDelServicio.length > 0;
 
   useEffect(() => {
     axios.get(`${import.meta.env.VITE_API_URL}/servicios/${id}`)
@@ -85,16 +82,31 @@ const ServicePage: React.FC = () => {
   }, [id]);
 
   useEffect(() => {
-    if (loadingProfile) return;
-    if (isAuthenticated && profile?.id) {
-      isUserSubscribed(Number(id), profile.id)
-        .then(setIsSubscribed)
-        .catch(console.error)
-        .finally(() => setLoadingSub(false));
-    } else {
-      setLoadingSub(false);
-    }
-  }, [isAuthenticated, loadingProfile, profile, id]);
+    if (!id || !profile?.id || loadingProfile) return;
+
+    getUserSubscriptions(profile.id)
+      .then(citas => {
+        const citasServicio = citas.filter((cita: any) => cita.id_servicio === Number(id));
+        const parsed = citasServicio.map((c: any) => {
+          const start = new Date(c.start);
+          const end = new Date(c.end);
+          const dia = start.toLocaleDateString("es-ES", { weekday: "long" });
+          return {
+            id: c.id,
+            bloque: {
+              id: c.id_bloque,
+              dia: dia.charAt(0).toUpperCase() + dia.slice(1),
+              inicio: start.toTimeString().slice(0, 5),
+              fin: end.toTimeString().slice(0, 5),
+              disponible: c.extendedProps?.disponible ?? true
+            }
+          };
+        });
+        setCitasDelServicio(parsed);
+      })
+      .catch(console.error)
+      .finally(() => setLoadingSub(false));
+  }, [id, profile, loadingProfile]);
 
   const handleSubscribe = async () => {
     if (!isAuthenticated) {
@@ -107,30 +119,71 @@ const ServicePage: React.FC = () => {
   const handleConfirmSubscribe = async () => {
     if (!profile?.id || !bloqueSeleccionado) return;
     setLoadingSub(true);
+
+    // Optimistic update: agrega la cita localmente
+    const tempId = Date.now(); // id temporal para la cita
+    const newCita = {
+      id: tempId,
+      bloque: bloqueSeleccionado
+    };
+    setCitasDelServicio(prev => [...prev, newCita]);
+    setShowSubscribeConfirm(false);
+
     try {
-      await createCita(profile.id, bloqueSeleccionado.id); // ✅ solo 2 argumentos
-      setIsSubscribed(true);
+      await createCita(profile.id, bloqueSeleccionado.id);
+      
+
+      // Refresca desde backend para asegurar consistencia
+      const citas = await getUserSubscriptions(profile.id);
+      const citasServicio = citas.filter((cita: any) => cita.id_servicio === Number(id));
+      const parsed = citasServicio.map((c: any) => {
+        const start = new Date(c.start);
+        const end = new Date(c.end);
+        const dia = start.toLocaleDateString("es-ES", { weekday: "long" });
+        return {
+          id: c.id,
+          bloque: {
+            id: c.id_bloque,
+            dia: dia.charAt(0).toUpperCase() + dia.slice(1),
+            inicio: start.toTimeString().slice(0, 5),
+            fin: end.toTimeString().slice(0, 5),
+            disponible: c.extendedProps?.disponible ?? true
+          }
+        };
+      });
+      setCitasDelServicio(parsed); 
     } catch (e: any) {
+      // Revertir si hay error
+      setCitasDelServicio(prev => prev.filter(c => c.id !== tempId));
       alert(e.message);
     } finally {
       setLoadingSub(false);
-      setShowSubscribeConfirm(false);
     }
   };
 
-  const handleUnsubscribe = () => setShowConfirmModal(true);
-
-  const handleConfirmCancel = async () => {
+  const handleCancelCita = async (citaId: number) => {
     if (!profile?.id) return;
     setLoadingSub(true);
+
+    // Optimistic update: elimina la cita localmente
+    const prevCitas = citasDelServicio;
+    setCitasDelServicio(prev => {
+      const updated = prev.filter(c => c.id !== citaId);
+      if (updated.length === 0) setShowConfirmModal(false);
+      return updated;
+    });
+
     try {
-      await unsubscribeFromService(Number(id), profile.id);
-      setIsSubscribed(false);
+      await deleteCita(profile.id, citaId);
+      // Opcional: refrescar desde backend para asegurar consistencia
+      // const citas = await getUserSubscriptions(profile.id);
+      // ...parse y setCitasDelServicio...
     } catch (e: any) {
+      // Revertir si hay error
+      setCitasDelServicio(prevCitas);
       alert(e.message);
     } finally {
       setLoadingSub(false);
-      setShowConfirmModal(false);
     }
   };
 
@@ -175,7 +228,7 @@ const ServicePage: React.FC = () => {
         isSubscribed={isSubscribed}
         loading={loadingSub}
         onSubscribe={handleSubscribe}
-        onUnsubscribe={handleUnsubscribe}
+        onUnsubscribe={() => setShowConfirmModal(true)}
       />
 
       {showSelectBloqueModal && (
@@ -200,16 +253,11 @@ const ServicePage: React.FC = () => {
       )}
 
       {showConfirmModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-            <h2 className="text-[1.5em] font-bold text-red-600 mb-4">¿Cancelar suscripción?</h2>
-            <p className="text-gray-700 mb-6">¿Estás seguro de que deseas cancelar tu suscripción a este servicio?</p>
-            <div className="flex justify-end gap-4">
-              <button onClick={() => setShowConfirmModal(false)} className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">No, mantener</button>
-              <button onClick={handleConfirmCancel} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Sí, cancelar</button>
-            </div>
-          </div>
-        </div>
+        <ModalCancelarCita
+          citas={citasDelServicio}
+          onCancelCita={handleCancelCita}
+          onClose={() => setShowConfirmModal(false)}
+        />
       )}
     </div>
   );

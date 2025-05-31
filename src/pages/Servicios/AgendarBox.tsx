@@ -1,4 +1,3 @@
-// src/pages/AgendarBox.tsx
 import React from "react";
 
 interface Props {
@@ -29,14 +28,12 @@ const AgendarBox: React.FC<Props> = ({
       </p>
     )}
 
-    {/* Datos de contacto */}
     <div className="bg-white text-[#00495C] rounded-md p-4 w-full max-w-md text-left space-y-2">
       <p><strong>Teléfono:</strong> {telefono}</p>
       <p><strong>Email:</strong> {email}</p>
       <p><strong>Dirección:</strong> {direccion}</p>
     </div>
 
-    {/* Botones */}
     {loading ? (
       <button disabled className="mt-4 px-6 py-2 bg-gray-400 text-white rounded-lg">
         Cargando…
