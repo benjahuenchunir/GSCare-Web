@@ -15,7 +15,6 @@ import {
 import ActividadInfoCard from "./ActividadInfoCard";
 import ModalInscripcion from "./ModalInscripcion";
 
-// Función para formatear fecha YYYY-MM-DD a "15 de mayo de 2025"
 const formatearFecha = (fecha: string) => {
   const [a, m, d] = fecha.split("-");
   const meses = [
@@ -108,28 +107,47 @@ const ActivityPage: React.FC = () => {
         imagen={actividad.imagen ?? ""}
       />
 
-      {/* Lugar */}
+      {/* Modalidad: Presencial vs Online */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">Información del lugar</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-800">
-          <div className="flex items-start gap-3">
-            <FaMapMarkerAlt className="text-[#009982]" />
-            <div>
-              <h3 className="font-semibold">Lugar</h3>
-              <p>{actividad.lugar}</p>
+        <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">Modalidad</h2>
+        {actividad.modalidad === "presencial" ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-800">
+            <div className="flex items-start gap-3">
+              <FaMapMarkerAlt className="text-[#009982]" />
+              <div>
+                <h3 className="font-semibold">Lugar</h3>
+                <p>{actividad.lugar}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <FaCity className="text-[#009982] text-3xl" />
+              <div>
+                <h3 className="font-semibold">Comuna</h3>
+                <p>{actividad.comuna}</p>
+              </div>
             </div>
           </div>
-          <div className="flex items-start gap-3">
-            <FaCity className="text-[#009982] text-3xl" />
-            <div>
-              <h3 className="font-semibold">Comuna</h3>
-              <p>{actividad.comuna}</p>
+        ) : (
+          <div className="text-gray-800">
+            <div className="flex items-start gap-3">
+              <FaMapMarkerAlt className="text-[#009982]" />
+              <div>
+                <h3 className="font-semibold">Link de acceso</h3>
+                <a
+                  href={actividad.link ?? "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline hover:text-blue-800"
+                >
+                  {actividad.link}
+                </a>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Fecha y hora */}
+      {/* Fecha y horario */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">Información de la hora</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-800">
@@ -143,8 +161,10 @@ const ActivityPage: React.FC = () => {
           <div className="flex items-start gap-3">
             <FaClock className="text-[#009982]" />
             <div>
-              <h3 className="font-semibold">Hora</h3>
-              <p>{actividad.hora.slice(0, 5)}</p>
+              <h3 className="font-semibold">Horario</h3>
+              <p>
+                {actividad.hora_inicio?.slice(0, 5) ?? "?"} - {actividad.hora_final?.slice(0, 5) ?? "?"}
+              </p>
             </div>
           </div>
         </div>
@@ -179,7 +199,6 @@ const ActivityPage: React.FC = () => {
         )}
       </div>
 
-      {/* Modal confirmación cancelación */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">

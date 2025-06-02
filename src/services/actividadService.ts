@@ -1,4 +1,3 @@
-// src/services/actividadService.ts
 const API_URL = import.meta.env.VITE_API_URL;
 
 export interface Actividad {
@@ -6,15 +5,20 @@ export interface Actividad {
   nombre: string;
   descripcion: string;
   categoria: string;
-  fecha: string;   // ISO date
-  hora: string;    // "HH:MM:SS"
+  fecha: string;
+  hora_inicio: string;
+  hora_final: string;
   lugar: string;
   comuna: string;
   imagen: string | null;
+  modalidad: "presencial" | "online";
+  link: string | null;
+  id_foro_actividad?: number | null; // NUEVO
   id_creador_del_evento: number;
   createdAt: string;
   updatedAt: string;
 }
+
 
 export interface Asistente {
   id_evento_a_asistir: number;

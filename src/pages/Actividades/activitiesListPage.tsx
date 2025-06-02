@@ -98,7 +98,11 @@ const ActividadesListPage: React.FC = () => {
                   <p className="text-gray-700 text-[1em] mb-2">{a.descripcion}</p>
                   <p className="text-gray-500 text-[1em] mb-1"><strong>Categoría:</strong> {a.categoria}</p>
                   <p className="text-gray-500 text-[1em] mb-1"><strong>Fecha:</strong> {formatearFecha(a.fecha)}</p>
-                  <p className="text-gray-500 text-[1em]"><strong>Lugar:</strong> {a.lugar}</p>
+                  <p className="text-gray-500 text-[1em] mb-1"><strong>Modalidad:</strong> {a.modalidad === "presencial" ? "Presencial" : "Online"}</p>
+                  <p className="text-gray-500 text-[1em]">
+                    <strong>{a.modalidad === "presencial" ? "Lugar" : "Link"}:</strong>{" "}
+                    {a.modalidad === "presencial" ? a.lugar : (a.link || "Sin link")}
+                  </p>
                 </div>
               ))}
             </div>
