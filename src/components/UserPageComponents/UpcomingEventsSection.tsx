@@ -51,8 +51,8 @@ export const UpcomingEventsSection: React.FC = () => {
           // parseamos CSV a número
           const diasArr = (svc.dias_disponibles || "")
             .split(",")
-            .map((d) => parseInt(d, 10))
-            .filter((n) => !isNaN(n));
+            .map((d: string) => parseInt(d, 10))
+            .filter((n: number) => !isNaN(n));
 
           const sd = getNextSessionDate(diasArr, svc.hora_inicio!);
           if (!sd) return null;
@@ -73,7 +73,7 @@ export const UpcomingEventsSection: React.FC = () => {
     const pActivities = getUserActivities(profile.id).then((acts) =>
       acts.map<EventItem>((a: Actividad) => {
         const fecha = new Date(a.fecha);
-        const [h, m] = a.hora.split(":").map(Number);
+        const [h, m] = a.hora_inicio.split(":").map(Number);
         fecha.setHours(h, m, 0, 0);
 
         return {
