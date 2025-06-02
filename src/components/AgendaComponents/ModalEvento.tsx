@@ -6,6 +6,9 @@ import {
   MessageSquareText,
   X,
   Trash,
+  Globe,
+  Link as LinkIcon,
+  Building2
 } from 'lucide-react';
 
 type Evento = {
@@ -16,17 +19,20 @@ type Evento = {
   tipo: 'servicio' | 'actividad';
   descripcion?: string;
   lugar?: string;
+  modalidad?: 'presencial' | 'online';
+  link?: string | null;
+  comuna?: string;
+  id_foro_actividad?: number | null;
 };
 
 type Props = {
   evento: Evento;
   onClose: () => void;
   onRefresh: () => void;
-  onCancelEvento: (evento: Evento) => void; // <-- nuevo prop
+  onCancelEvento: (evento: Evento) => void;
 };
 
 const ModalEvento = ({ evento, onClose, onCancelEvento }: Props) => {
-
   const fecha = evento.start.toLocaleDateString('es-ES', {
     weekday: 'long',
     year: 'numeric',
@@ -67,6 +73,7 @@ const ModalEvento = ({ evento, onClose, onCancelEvento }: Props) => {
         </div>
 
         <div className="mb-4 space-y-4 text-[1em]">
+          {/* Fecha */}
           <div className="flex items-start gap-3">
             <CalendarDays className="text-primary mt-1" size={20} />
             <div>
@@ -77,6 +84,7 @@ const ModalEvento = ({ evento, onClose, onCancelEvento }: Props) => {
             </div>
           </div>
 
+          {/* Hora */}
           <div className="flex items-start gap-3">
             <Clock className="text-primary mt-1" size={20} />
             <div>
@@ -87,7 +95,37 @@ const ModalEvento = ({ evento, onClose, onCancelEvento }: Props) => {
             </div>
           </div>
 
-          {evento.lugar && (
+          {/* Modalidad */}
+          {evento.modalidad && (
+            <div className="flex items-start gap-3">
+              <Globe className="text-primary mt-1" size={20} />
+              <div>
+                <p className="font-semibold text-gray-900">Modalidad</p>
+                <p className="text-gray-900 capitalize">{evento.modalidad}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Link (si es online) */}
+          {evento.modalidad === 'online' && evento.link && (
+            <div className="flex items-start gap-3">
+              <LinkIcon className="text-primary mt-1" size={20} />
+              <div>
+                <p className="font-semibold text-gray-900">Enlace</p>
+                <a
+                  href={evento.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline"
+                >
+                  {evento.link}
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* Lugar */}
+          {evento.lugar && evento.modalidad === 'presencial' && (
             <div className="flex items-start gap-3">
               <MapPin className="text-primary mt-1" size={20} />
               <div>
@@ -97,6 +135,18 @@ const ModalEvento = ({ evento, onClose, onCancelEvento }: Props) => {
             </div>
           )}
 
+          {/* Comuna */}
+          {evento.comuna && (
+            <div className="flex items-start gap-3">
+              <Building2 className="text-primary mt-1" size={20} />
+              <div>
+                <p className="font-semibold text-gray-900">Comuna</p>
+                <p className="text-gray-900">{evento.comuna}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Descripción */}
           {evento.descripcion && (
             <div className="flex items-start gap-3">
               <MessageSquareText className="text-primary mt-1" size={20} />
@@ -104,6 +154,16 @@ const ModalEvento = ({ evento, onClose, onCancelEvento }: Props) => {
                 <p className="font-semibold text-gray-900">Detalle</p>
                 <p className="text-gray-900">{evento.descripcion}</p>
               </div>
+            </div>
+          )}
+
+          {/* Foro (placeholder) */}
+          {evento.id_foro_actividad && (
+            <div className="text-center text-sm text-blue-600 mt-2">
+              {/* Puedes reemplazar esto por un botón de navegación */}
+              <a href={`/foro/${evento.id_foro_actividad}`} className="underline hover:text-blue-800">
+                Ir al foro de esta actividad
+              </a>
             </div>
           )}
         </div>

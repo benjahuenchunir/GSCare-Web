@@ -8,6 +8,7 @@ import { getUserByEmail } from '../../services/userService';
 import { AnimatePresence } from 'framer-motion';
 import ModalEvento from '../../components/AgendaComponents/ModalEvento';
 import { mensajesCalendario } from '../../data/MensajesCalendario';
+import { cancelAttendance } from '../../services/actividadService';
 
 const localizer = dateFnsLocalizer({
   format,
@@ -25,12 +26,16 @@ type Evento = {
   tipo: 'servicio' | 'actividad';
   descripcion?: string;
   lugar?: string;
+  modalidad?: 'presencial' | 'online';
+  link?: string | null;
+  comuna?: string;
+  id_foro_actividad?: number | null;
 };
 
 type VistaCalendario = 'month' | 'week' | 'day';
 
 const Agenda = () => {
-  const { user, isAuthenticated } = useAuth0();
+  const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [eventoSeleccionado, setEventoSeleccionado] = useState<Evento | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -64,9 +69,8 @@ const Agenda = () => {
       }));
 
       const actividadesFormateadas: Evento[] = actividades.map((a: any): Evento => {
-        const fechaHoraInicio = new Date(`${a.fecha}T${a.hora}`);
-        const fechaHoraFin = new Date(fechaHoraInicio);
-        fechaHoraFin.setHours(fechaHoraInicio.getHours() + 1);
+        const fechaHoraInicio = new Date(`${a.fecha}T${a.hora_inicio}`);
+        const fechaHoraFin = new Date(`${a.fecha}T${a.hora_final}`);
 
         return {
           id: a.id,
@@ -76,6 +80,10 @@ const Agenda = () => {
           tipo: 'actividad',
           descripcion: a.descripcion,
           lugar: a.lugar,
+          modalidad: a.modalidad,
+          link: a.link,
+          comuna: a.comuna,
+          id_foro_actividad: a.id_foro_actividad,
         };
       });
 
@@ -94,14 +102,13 @@ const Agenda = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       fetchEventos();
-    }, 60000); // 60 segundos
+    }, 60000);
 
-    return () => clearInterval(interval); // limpiar al desmontar
+    return () => clearInterval(interval);
   }, [isAuthenticated, user]);
 
   if (loading) return <p className="text-center mt-10">Cargando agenda…</p>;
 
-  // Nueva función para cancelar evento de forma optimista
   const cancelarEventoOptimista = async (evento: Evento) => {
     if (!isAuthenticated || !user?.email) return;
 
@@ -110,43 +117,29 @@ const Agenda = () => {
     );
     if (!confirmar) return;
 
-    // Optimistic update: elimina el evento localmente
     const eventosPrevios = eventos;
     setEventos(prev => prev.filter(e => e.id !== evento.id || e.tipo !== evento.tipo));
     setEventoSeleccionado(null);
 
     try {
       const usuario = await getUserByEmail(user.email);
+      const token = await getAccessTokenSilently();
+
       if (!usuario?.id) throw new Error('No se encontró el ID del usuario');
 
-      let res: Response | undefined;
-
-      if (evento.tipo === 'servicio') {
-        res = await fetch(`${API_URL}/usuarios/usuarios/${usuario.id}/citas/${evento.id}`, {
+      if (evento.tipo === 'actividad') {
+        await cancelAttendance(evento.id, usuario.id, token);
+      } else if (evento.tipo === 'servicio') {
+        const res = await fetch(`${API_URL}/usuarios/usuarios/${usuario.id}/citas/${evento.id}`, {
           method: 'DELETE',
         });
-      } else if (evento.tipo === 'actividad') {
-        res = await fetch(`${API_URL}/asistencias`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id_evento_a_asistir: evento.id,
-            id_usuario_asistente: usuario.id,
-          }),
-        });
+        if (!res.ok) throw new Error('Error al cancelar cita');
       }
 
-      if (!res || !res.ok) {
-        const msg = await res?.text();
-        throw new Error(msg || 'Error al cancelar el evento');
-      }
-
-      // Opcional: refrescar desde backend
-      // await fetchEventos();
     } catch (err) {
-      // Revertir si hay error
       setEventos(eventosPrevios);
       alert('No se pudo cancelar el evento.');
+      console.error("Error al cancelar evento:", err);
     }
   };
 
@@ -191,7 +184,7 @@ const Agenda = () => {
             evento={eventoSeleccionado}
             onClose={() => setEventoSeleccionado(null)}
             onRefresh={fetchEventos}
-            onCancelEvento={cancelarEventoOptimista} // <-- pasa la función
+            onCancelEvento={cancelarEventoOptimista}
           />
         )}
       </AnimatePresence>
