@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
+import axios from "axios";
 import Slider from "react-slick";
 
-import axios from "axios";
 import ServicioInfoCard from "./ServicioInfoCard";
 import ReviewCard from "./ReviewCard";
 import BeneficiosBox from "./BeneficiosBox";
@@ -12,10 +12,10 @@ import AgendarBox from "./AgendarBox";
 import ModalSelectorDeBloque from "../../components/Servicios/ModalSelectorDeBloque";
 import ModalConfirmarCita from "../../components/Servicios/ModalConfirmarCita";
 import ModalCancelarCita from "../../components/Servicios/ModalCancelarCita";
-import { BloqueHorario } from "../../components/Servicios/SelectorDeBloque";
-import { Review } from "./types";
 
 import { createCita, getUserSubscriptions, deleteCita } from "../../services/subscriptionService";
+import { BloqueHorario } from "../../components/Servicios/SelectorDeBloque";
+import { Review } from "./types";
 import { UserContext } from "../../context/UserContext";
 
 interface Servicio {
@@ -34,8 +34,9 @@ interface Servicio {
 
 const ServicePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { isAuthenticated, loginWithRedirect } = useAuth0();
-  const { profile, loading: loadingProfile } = useContext(UserContext);
+  const { profile, reloadProfile, loading: loadingProfile } = useContext(UserContext);
 
   const [servicio, setServicio] = useState<Servicio | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -51,9 +52,13 @@ const ServicePage: React.FC = () => {
   const isSubscribed = citasDelServicio.length > 0;
 
   useEffect(() => {
+    if (isAuthenticated) reloadProfile();
+  }, [isAuthenticated, reloadProfile]);
+
+  useEffect(() => {
     axios.get(`${import.meta.env.VITE_API_URL}/servicios/${id}`)
       .then(res => setServicio(res.data))
-      .catch(err => console.error("Error al cargar servicio:", err));
+      .catch(console.error);
 
     axios.get(`${import.meta.env.VITE_API_URL}/servicios_ratings/servicio/${id}`)
       .then(res => setReviews(res.data))
@@ -74,7 +79,7 @@ const ServicePage: React.FC = () => {
             dia: dia.charAt(0).toUpperCase() + dia.slice(1),
             inicio: start.toTimeString().slice(0, 5),
             fin: end.toTimeString().slice(0, 5),
-            disponible: b.extendedProps.disponible
+            disponible: b.extendedProps?.disponible ?? true
           };
         });
         setBloques(parsed);
@@ -83,10 +88,9 @@ const ServicePage: React.FC = () => {
 
   useEffect(() => {
     if (!id || !profile?.id || loadingProfile) return;
-
     getUserSubscriptions(profile.id)
       .then(citas => {
-        const citasServicio = citas.filter((cita: any) => cita.id_servicio === Number(id));
+        const citasServicio = citas.filter((c: any) => c.id_servicio === Number(id));
         const parsed = citasServicio.map((c: any) => {
           const start = new Date(c.start);
           const end = new Date(c.end);
@@ -120,22 +124,15 @@ const ServicePage: React.FC = () => {
     if (!profile?.id || !bloqueSeleccionado) return;
     setLoadingSub(true);
 
-    // Optimistic update: agrega la cita localmente
-    const tempId = Date.now(); // id temporal para la cita
-    const newCita = {
-      id: tempId,
-      bloque: bloqueSeleccionado
-    };
+    const tempId = Date.now();
+    const newCita = { id: tempId, bloque: bloqueSeleccionado };
     setCitasDelServicio(prev => [...prev, newCita]);
     setShowSubscribeConfirm(false);
 
     try {
       await createCita(profile.id, bloqueSeleccionado.id);
-      
-
-      // Refresca desde backend para asegurar consistencia
       const citas = await getUserSubscriptions(profile.id);
-      const citasServicio = citas.filter((cita: any) => cita.id_servicio === Number(id));
+      const citasServicio = citas.filter((c: any) => c.id_servicio === Number(id));
       const parsed = citasServicio.map((c: any) => {
         const start = new Date(c.start);
         const end = new Date(c.end);
@@ -151,9 +148,8 @@ const ServicePage: React.FC = () => {
           }
         };
       });
-      setCitasDelServicio(parsed); 
+      setCitasDelServicio(parsed);
     } catch (e: any) {
-      // Revertir si hay error
       setCitasDelServicio(prev => prev.filter(c => c.id !== tempId));
       alert(e.message);
     } finally {
@@ -165,21 +161,13 @@ const ServicePage: React.FC = () => {
     if (!profile?.id) return;
     setLoadingSub(true);
 
-    // Optimistic update: elimina la cita localmente
-    const prevCitas = citasDelServicio;
-    setCitasDelServicio(prev => {
-      const updated = prev.filter(c => c.id !== citaId);
-      if (updated.length === 0) setShowConfirmModal(false);
-      return updated;
-    });
+    const prevCitas = [...citasDelServicio];
+    setCitasDelServicio(prev => prev.filter(c => c.id !== citaId));
+    setShowConfirmModal(false);
 
     try {
       await deleteCita(profile.id, citaId);
-      // Opcional: refrescar desde backend para asegurar consistencia
-      // const citas = await getUserSubscriptions(profile.id);
-      // ...parse y setCitasDelServicio...
     } catch (e: any) {
-      // Revertir si hay error
       setCitasDelServicio(prevCitas);
       alert(e.message);
     } finally {
@@ -221,15 +209,28 @@ const ServicePage: React.FC = () => {
         </div>
       )}
 
-      <AgendarBox
-        telefono={servicio.telefono_de_contacto}
-        email={servicio.email_de_contacto}
-        direccion={servicio.direccion_principal_del_prestador}
-        isSubscribed={isSubscribed}
-        loading={loadingSub}
-        onSubscribe={handleSubscribe}
-        onUnsubscribe={() => setShowConfirmModal(true)}
-      />
+      {profile?.rol === "socio" ? (
+        <AgendarBox
+          telefono={servicio.telefono_de_contacto}
+          email={servicio.email_de_contacto}
+          direccion={servicio.direccion_principal_del_prestador}
+          isSubscribed={isSubscribed}
+          loading={loadingSub}
+          onSubscribe={handleSubscribe}
+          onUnsubscribe={() => setShowConfirmModal(true)}
+        />
+      ) : (
+        <div className="bg-yellow-100 text-yellow-900 rounded-lg p-6 text-center">
+          <h3 className="text-xl font-bold">Funcionalidad exclusiva para socios</h3>
+          <p className="mt-2">Hazte <strong>socio</strong> para agendar este servicio y disfrutar de sus beneficios.</p>
+          <button
+            onClick={() => navigate("/user")}
+            className="mt-4 px-6 py-2 bg-yellow-400 text-white rounded-lg font-semibold hover:bg-yellow-500"
+          >
+            Hacerse Socio
+          </button>
+        </div>
+      )}
 
       {showSelectBloqueModal && (
         <ModalSelectorDeBloque

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
-import { getUserByEmail, User } from "../../services/userService";
+import { getUserByEmail, User, updateUserProfile } from "../../services/userService";
 
 import { SubscribedServicesSection } from "../../components/UserPageComponents/SubscribedServicesSection";
 //import { UpcomingActivitiesSection } from "../../components/UserPageComponents/UpcomingActivitiesSection";
@@ -15,9 +15,11 @@ import CalendarIcon from '../../assets/Calendar2.svg?react';
 import HeadsetIcon from '../../assets/Support.svg?react';
 import UserIcon from '../../assets/Person.svg?react';
 
+import TokenTestButton from "../../components/TokenTestButton";
+
 
 const UserPage: React.FC = () => {
-  const { user, isAuthenticated } = useAuth0();
+  const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,13 +37,6 @@ const UserPage: React.FC = () => {
     { text: 'Escucha música que te haga sentir bien y disfruta del momento 🎶' }
   ];
 
-  // const upcomingActivities = [
-  //   { title: 'Yoga',             time: '10:00 AM – 11:00 AM', location: 'Centro comunitario – Sala 2B', tag: 'Hoy' },
-  //   { title: 'Pilates',          time: '11:30 AM – 12:30 PM', location: 'Gimnasio local – Sala 1',      tag: 'Mañana' },
-  //   { title: 'Taller de lectura',time: '2:00 PM – 3:00 PM',   location: 'Biblioteca – Sala de Lectura', tag: 'En 2 días'  },
-  //   { title: 'Manualidades',     time: '4:00 PM – 5:00 PM',   location: 'Centro comunitario – Aula 3',  tag: 'En 3 días' }
-  // ];
-
   useEffect(() => {
     if (isAuthenticated && user?.email) {
       getUserByEmail(user.email)
@@ -50,6 +45,35 @@ const UserPage: React.FC = () => {
         .finally(() => setLoading(false));
     }
   }, [isAuthenticated, user]);
+
+  const handleUpgradeToSocio = async () => {
+    if (!profile || !user?.email) return;
+    try {
+      const token = await getAccessTokenSilently();
+      await updateUserProfile({ ...profile, rol: "socio" }, token);
+      const updated = await getUserByEmail(user.email);
+      setProfile(updated);
+      alert("Ahora eres socio 🎉");
+    } catch (err) {
+      console.error("Error actualizando a socio:", err);
+      alert("No se pudo cambiar a socio.");
+    }
+  };
+
+  const handleDowngradeToGratis = async () => {
+    if (!profile || !user?.email) return;
+    try {
+      const token = await getAccessTokenSilently();
+      await updateUserProfile({ ...profile, rol: "gratis" }, token);
+      const updated = await getUserByEmail(user.email);
+      setProfile(updated);
+      alert("Ahora eres usuario gratis 👤");
+    } catch (err) {
+      console.error("Error actualizando a gratis:", err);
+      alert("No se pudo cambiar a gratis.");
+    }
+  };
+
 
   if (loading) return <p className="text-center mt-10">Cargando perfil…</p>;
 
@@ -85,7 +109,7 @@ const UserPage: React.FC = () => {
           {/* Actividades y Consejos */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w">
             <div className="lg:col-span-2 space-y-4">
-              <SectionTitle title="Siguientes Actividades" />
+              <SectionTitle title="Siguientes Eventos" />
               {/* <div className="bg-white p-4 rounded-lg h-80 overflow-y-auto space-y-4">
                 <UpcomingActivitiesSection />
               </div> */}
@@ -121,6 +145,37 @@ const UserPage: React.FC = () => {
               <SubscribedServicesSection />
             </div>
           </div>
+
+          <TokenTestButton />
+          <div className="flex flex-col sm:flex-row gap-4 mt-4">
+            <button
+              onClick={handleUpgradeToSocio}
+              className="bg-accent text-black font-semibold px-4 py-2 rounded bg-yellow-400 hover:bg-yellow-600 transition"
+            >
+              Cambiar a Socio (test)
+            </button>
+
+            <button
+              onClick={handleDowngradeToGratis}
+              className="bg-accent text-black font-semibold px-4 py-2 rounded bg-yellow-400 hover:bg-yellow-600 transition"
+            >
+              Cambiar a Gratis (test)
+            </button>
+          </div>
+
+          {profile?.rol === "gratis" && (
+            <p className="text-yellow-700 font-medium">
+              Eres usuario gratis.
+            </p>
+          )}
+
+          {profile?.rol === "socio" && (
+            <p className="text-green-700 font-medium">
+              Eres socio!
+            </p>
+          )}
+
+
         </div>
       </div>
     </main>
