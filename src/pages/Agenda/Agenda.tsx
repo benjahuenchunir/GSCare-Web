@@ -7,8 +7,9 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { getUserByEmail } from '../../services/userService';
 import { AnimatePresence } from 'framer-motion';
 import ModalEvento from '../../components/AgendaComponents/ModalEvento';
+import ModalConfirmacion from '../../components/AgendaComponents/ModalConfirmacion'; // ✅ nuevo
 import { mensajesCalendario } from '../../data/MensajesCalendario';
-import { cancelAttendance } from '../../services/actividadService';
+import { cancelAttendanceGrupo } from '../../services/actividadService';
 import { UserContext } from '../../context/UserContext';
 
 const localizer = dateFnsLocalizer({
@@ -40,6 +41,8 @@ const Agenda = () => {
   const { profile } = useContext(UserContext);
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [eventoSeleccionado, setEventoSeleccionado] = useState<Evento | null>(null);
+  const [eventoPendiente, setEventoPendiente] = useState<Evento | null>(null); // ✅ nuevo
+  const [confirmacionVisible, setConfirmacionVisible] = useState(false); // ✅ nuevo
   const [loading, setLoading] = useState<boolean>(true);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [currentView, setCurrentView] = useState<VistaCalendario>('month');
@@ -111,17 +114,28 @@ const Agenda = () => {
 
   if (loading) return <p className="text-center mt-10">Cargando agenda…</p>;
 
+  // ✅ Se llama cuando se hace clic en "Cancelar" en el modal del evento
   const cancelarEventoOptimista = async (evento: Evento) => {
-    if (!isAuthenticated || !user?.email) return;
+    setEventoPendiente(evento);
+    setConfirmacionVisible(true);
+  };
 
-    const confirmar = window.confirm(
-      `¿Estás seguro de que quieres cancelar este ${evento.tipo}?`
-    );
-    if (!confirmar) return;
+  // ✅ Confirmación definitiva de cancelación (se ejecuta si el usuario confirma)
+  const confirmarCancelacion = async () => {
+    if (!eventoPendiente || !user?.email || !isAuthenticated) return;
 
     const eventosPrevios = eventos;
-    setEventos(prev => prev.filter(e => e.id !== evento.id || e.tipo !== evento.tipo));
+    setConfirmacionVisible(false);
     setEventoSeleccionado(null);
+    setEventoPendiente(null);
+
+    setEventos(prev =>
+      prev.filter(e =>
+        eventoPendiente.tipo === 'actividad'
+          ? e.tipo !== 'actividad' || (e.id_foro_actividad !== eventoPendiente.id_foro_actividad && e.id !== eventoPendiente.id)
+          : e.id !== eventoPendiente.id || e.tipo !== eventoPendiente.tipo
+      )
+    );
 
     try {
       const usuario = await getUserByEmail(user.email);
@@ -129,10 +143,10 @@ const Agenda = () => {
 
       if (!usuario?.id) throw new Error('No se encontró el ID del usuario');
 
-      if (evento.tipo === 'actividad') {
-        await cancelAttendance(evento.id, usuario.id, token);
-      } else if (evento.tipo === 'servicio') {
-        const res = await fetch(`${API_URL}/usuarios/usuarios/${usuario.id}/citas/${evento.id}`, {
+      if (eventoPendiente.tipo === 'actividad') {
+        await cancelAttendanceGrupo(eventoPendiente.id, usuario.id, token);
+      } else if (eventoPendiente.tipo === 'servicio') {
+        const res = await fetch(`${API_URL}/usuarios/usuarios/${usuario.id}/citas/${eventoPendiente.id}`, {
           method: 'DELETE',
         });
         if (!res.ok) throw new Error('Error al cancelar cita');
@@ -192,6 +206,14 @@ return (
           />
         )}
       </AnimatePresence>
+
+      <ModalConfirmacion
+        visible={confirmacionVisible}
+        onClose={() => setConfirmacionVisible(false)}
+        onConfirm={confirmarCancelacion}
+        titulo="¿Cancelar inscripción?"
+        mensaje="¿Estás seguro de que deseas cancelar tu inscripción a todos los bloques de esta actividad?"
+      />
     </div>
   );
 };
