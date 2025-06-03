@@ -239,16 +239,23 @@ const ServicePage: React.FC = () => {
 
       {showSelectBloqueModal && (
         <ModalSelectorDeBloque
-          bloques={bloques}
-          selectedId={bloqueSeleccionado?.id || null}
-          onSelect={setBloqueSeleccionado}
           onClose={() => setShowSelectBloqueModal(false)}
-          onContinue={() => {
-            setShowSelectBloqueModal(false);
-            setShowSubscribeConfirm(true);
+          onContinue={(bloque) => {
+            setBloqueSeleccionado({
+              id: bloque.id,
+              dia: bloque.fecha.toLocaleDateString("es-ES", { weekday: "long" }),
+              inicio: bloque.inicio.slice(11, 16),
+              fin: bloque.fin.slice(11, 16),
+              disponible: true,
+            })
+            setShowSelectBloqueModal(false)
+            setShowSubscribeConfirm(true)
           }}
         />
       )}
+
+
+
 
       {showSubscribeConfirm && bloqueSeleccionado && (
         <ModalConfirmarCita
