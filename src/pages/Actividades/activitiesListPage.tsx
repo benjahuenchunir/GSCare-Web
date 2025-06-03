@@ -47,6 +47,13 @@ const ActividadesListPage: React.FC = () => {
         : selectedCategories.includes(a.categoria)
     );
 
+  const agrupadas = filtered.reduce((map, actividad) => {
+    const clave = actividad.id_actividad_base ?? actividad.id;
+    if (!map[clave]) map[clave] = [];
+    map[clave].push(actividad);
+    return map;
+  }, {} as Record<string, Actividad[]>);
+
   return (
     <main className="flex-1">
       <div className="px-10 py-16 bg-gray-50 min-h-screen">
@@ -99,54 +106,58 @@ const ActividadesListPage: React.FC = () => {
             </>
           )}
 
-          {/* Lista de actividades */}
+          {/* Lista agrupada */}
           {loading ? (
             <p className="text-center text-gray-600">Cargando actividades…</p>
-          ) : filtered.length === 0 ? (
+          ) : Object.keys(agrupadas).length === 0 ? (
             <p className="text-center text-gray-600">No se encontraron actividades.</p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filtered.map(a => (
-                <div
-                  key={a.id}
-                  className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 ease-in-out flex flex-col justify-between h-full"
-                >
-                  <div>
-                    <h3 className="text-[1.5em] font-semibold text-[#009982] mb-2">{a.nombre}</h3>
-                    <p className="text-gray-800 text-[1em] mb-4">{a.descripcion}</p>
+              {Object.values(agrupadas).map((grupo, i) => {
+                const a = grupo[0];
+                return (
+                  <div
+                    key={i}
+                    className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 ease-in-out flex flex-col justify-between h-full"
+                  >
+                    <div>
+                      <h3 className="text-[1.5em] font-semibold text-[#009982] mb-2">{a.nombre}</h3>
+                      <p className="text-gray-800 text-[1em] mb-4">{a.descripcion}</p>
 
-                    <div className="space-y-2 mb-4">
-                      <div className="bg-gray-50 rounded-md px-3 py-2 text-[1em] text-gray-800">
-                        <span className="font-semibold">Fecha: </span>{formatearFecha(a.fecha)}
-                      </div>
+                      <div className="space-y-2 mb-4">
+                        <div className="bg-gray-50 rounded-md px-3 py-2 text-[1em] text-gray-800">
+                          <span className="font-semibold">Fechas: </span>
+                          {grupo.map(g => formatearFecha(g.fecha)).join(", ")}
+                        </div>
 
-                      <div className="bg-gray-50 rounded-md px-3 py-2 text-[1em] text-gray-800">
-                        <span className="font-semibold">Modalidad: </span>{a.modalidad === "presencial" ? "Presencial" : "Online"}
-                      </div>
+                        <div className="bg-gray-50 rounded-md px-3 py-2 text-[1em] text-gray-800">
+                          <span className="font-semibold">Modalidad: </span>{a.modalidad === "presencial" ? "Presencial" : "Online"}
+                        </div>
 
-                      <div className="bg-gray-50 rounded-md px-3 py-2 text-[1em] text-gray-800">
-                        <span className="font-semibold">
-                          {a.modalidad === "presencial" ? "Comuna: " : "Link: "}
-                        </span>
-                        {a.modalidad === "presencial"
-                          ? a.comuna // <-- este campo debe existir en tu interfaz Actividad
-                          : a.link
-                            ? <a href={a.link} className="text-[#009982] underline break-all">{a.link}</a>
-                            : "Sin link"}
+                        <div className="bg-gray-50 rounded-md px-3 py-2 text-[1em] text-gray-800">
+                          <span className="font-semibold">
+                            {a.modalidad === "presencial" ? "Comuna: " : "Link: "}
+                          </span>
+                          {a.modalidad === "presencial"
+                            ? a.comuna
+                            : a.link
+                              ? <a href={a.link} className="text-[#009982] underline break-all">{a.link}</a>
+                              : "Sin link"}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex justify-center mt-auto pt-4">
-                    <button
-                      onClick={() => navigate(`/actividades/${a.id}`)}
-                      className="bg-[#009982] hover:bg-[#006E5E] text-white font-medium px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009982] transition"
-                    >
-                      Más información
-                    </button>
+                    <div className="flex justify-center mt-auto pt-4">
+                      <button
+                        onClick={() => navigate(`/actividades/${a.id}`)}
+                        className="bg-[#009982] hover:bg-[#006E5E] text-white font-medium px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009982] transition"
+                      >
+                        Más información
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

@@ -1,26 +1,28 @@
 import React from "react";
 import { FaCheckCircle } from "react-icons/fa";
 
+interface ActividadSimplificada {
+  nombre: string;
+  lugar: string;
+  fecha: string;
+  hora_inicio?: string;
+  hora_final?: string;
+  modalidad: "presencial" | "online";
+  link?: string | null;
+  comuna?: string;
+}
+
 interface Props {
   visible: boolean;
   onClose: () => void;
-  actividad: {
-    nombre: string;
-    lugar: string;
-    fecha: string;
-    hora_inicio?: string;
-    hora_final?: string;
-    modalidad: "presencial" | "online";
-    link?: string | null;
-    comuna?: string;
-  };
+  actividades: ActividadSimplificada[]; // ahora puede haber varias
   yaInscrito: boolean;
 }
 
-const ModalInscripcion: React.FC<Props> = ({ visible, onClose, actividad, yaInscrito }) => {
-  if (!visible) return null;
+const ModalInscripcion: React.FC<Props> = ({ visible, onClose, actividades, yaInscrito }) => {
+  if (!visible || actividades.length === 0) return null;
 
-  const horario = `${actividad.hora_inicio?.slice(0, 5) ?? "?"} - ${actividad.hora_final?.slice(0, 5) ?? "?"}`;
+  const actividad = actividades[0]; // usamos la primera para título, modalidad, etc.
   const esOnline = actividad.modalidad === "online";
 
   return (
@@ -51,8 +53,16 @@ const ModalInscripcion: React.FC<Props> = ({ visible, onClose, actividad, yaInsc
                 )}
               </>
             )}
-            <p className="mb-2"><strong>Fecha:</strong> {new Date(actividad.fecha).toLocaleDateString()}</p>
-            <p className="mb-4"><strong>Horario:</strong> {horario}</p>
+            <div className="text-left mt-4">
+              <p className="font-semibold mb-2">Sesiones inscritas:</p>
+              <ul className="list-disc list-inside text-gray-700 text-sm">
+                {actividades.map((a, i) => (
+                  <li key={i}>
+                    {new Date(a.fecha).toLocaleDateString()} — {a.hora_inicio?.slice(0, 5)} a {a.hora_final?.slice(0, 5)}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </>
         ) : (
           <>
@@ -78,8 +88,16 @@ const ModalInscripcion: React.FC<Props> = ({ visible, onClose, actividad, yaInsc
                 )}
               </>
             )}
-            <p><strong>Fecha:</strong> {new Date(actividad.fecha).toLocaleDateString()}</p>
-            <p><strong>Horario:</strong> {horario}</p>
+            <div className="text-left mt-4">
+              <p className="font-semibold mb-2">Sesiones:</p>
+              <ul className="list-disc list-inside text-gray-700 text-sm">
+                {actividades.map((a, i) => (
+                  <li key={i}>
+                    {new Date(a.fecha).toLocaleDateString()} — {a.hora_inicio?.slice(0, 5)} a {a.hora_final?.slice(0, 5)}
+                  </li>
+                ))}
+              </ul>
+            </div>
             <p className="text-[1em] mt-4 text-gray-600">
               Si deseas cancelar tu inscripción, puedes hacerlo desde el botón en la página.
             </p>
