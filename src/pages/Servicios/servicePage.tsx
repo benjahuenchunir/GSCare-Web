@@ -208,27 +208,32 @@ const ServicePage: React.FC = () => {
           </Slider>
         </div>
       )}
-
-      {profile?.rol === "socio" ? (
-        <AgendarBox
-          telefono={servicio.telefono_de_contacto}
-          email={servicio.email_de_contacto}
-          direccion={servicio.direccion_principal_del_prestador}
-          isSubscribed={isSubscribed}
-          loading={loadingSub}
-          onSubscribe={handleSubscribe}
-          onUnsubscribe={() => setShowConfirmModal(true)}
-        />
+      
+      {isAuthenticated ? (
+        profile?.rol === "socio" ? (
+          <AgendarBox
+            telefono={servicio.telefono_de_contacto}
+            email={servicio.email_de_contacto}
+            direccion={servicio.direccion_principal_del_prestador}
+            isSubscribed={isSubscribed}
+            loading={loadingSub}
+            onSubscribe={handleSubscribe}
+            onUnsubscribe={() => setShowConfirmModal(true)}
+          />
+        ) : (
+          <div className="bg-yellow-100 text-yellow-900 rounded-lg p-6 text-center">
+            <h3 className="text-xl font-bold">Funcionalidad exclusiva para socios</h3>
+            <p className="mt-2">Hazte <strong>socio</strong> para agendar este servicio y disfrutar de sus beneficios.</p>
+            <button
+              onClick={() => navigate("/user")}
+              className="mt-4 px-6 py-2 bg-yellow-400 text-white rounded-lg font-semibold hover:bg-yellow-500"
+            >
+              Hacerse Socio
+            </button>
+          </div>
+        )
       ) : (
-        <div className="bg-yellow-100 text-yellow-900 rounded-lg p-6 text-center">
-          <h3 className="text-xl font-bold">Funcionalidad exclusiva para socios</h3>
-          <p className="mt-2">Hazte <strong>socio</strong> para agendar este servicio y disfrutar de sus beneficios.</p>
-          <button
-            onClick={() => navigate("/user")}
-            className="mt-4 px-6 py-2 bg-yellow-400 text-white rounded-lg font-semibold hover:bg-yellow-500"
-          >
-            Hacerse Socio
-          </button>
+        <div>
         </div>
       )}
 
