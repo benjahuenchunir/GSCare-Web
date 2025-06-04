@@ -109,7 +109,7 @@ export default function EditProfilePage() {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 pt-16 pb-20 px-6">
       <form
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded-lg shadow max-w-md w-full space-y-4"

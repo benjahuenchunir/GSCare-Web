@@ -2,7 +2,7 @@ import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { getUserByEmail } from '../../services/userService';
 import { AnimatePresence } from 'framer-motion';
@@ -10,6 +10,7 @@ import ModalEvento from '../../components/AgendaComponents/ModalEvento';
 import ModalConfirmacion from '../../components/AgendaComponents/ModalConfirmacion'; // ✅ nuevo
 import { mensajesCalendario } from '../../data/MensajesCalendario';
 import { cancelAttendanceGrupo } from '../../services/actividadService';
+import { UserContext } from '../../context/UserContext';
 
 const localizer = dateFnsLocalizer({
   format,
@@ -37,6 +38,7 @@ type VistaCalendario = 'month' | 'week' | 'day';
 
 const Agenda = () => {
   const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
+  const { profile } = useContext(UserContext);
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [eventoSeleccionado, setEventoSeleccionado] = useState<Evento | null>(null);
   const [eventoPendiente, setEventoPendiente] = useState<Evento | null>(null); // ✅ nuevo
@@ -157,9 +159,11 @@ const Agenda = () => {
     }
   };
 
-  return (
+return (
     <div className="min-h-screen flex-1 bg-gray-100 p-6">
-      <h1 className="text-[2em] font-bold flex-1 text-center mb-6 text-primary mt-8">Mi Agenda</h1>
+      <h1 className="text-[2em] font-bold flex-1 text-center mb-6 text-primary mt-8">
+        {profile?.rol === 'socio' ? 'Mi Agenda' : 'Calendario'}
+      </h1>
 
       <div className="bg-white p-4 rounded-xl shadow">
         <Calendar
