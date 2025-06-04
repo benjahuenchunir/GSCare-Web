@@ -32,7 +32,7 @@ export default function ProductForm({
   return (
     <form
       onSubmit={onSubmit}
-      className="flex flex-col gap-2 text-lg max-h-[70vh] overflow-y-auto"
+      className="flex flex-col gap-2 text-lg overflow-y-auto"
   >
     <h2 className="text-2xl font-bold mb-2">Agregar Producto</h2>
     <label className="text-left font-semibold" htmlFor="nombre_producto">
@@ -137,7 +137,7 @@ export default function ProductForm({
       </button>
       <button
         type="button"
-        className="flex-1 bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400 transition"
+        className="flex-1 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
         onClick={onCancel}
       >
         Volver

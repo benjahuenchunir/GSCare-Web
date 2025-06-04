@@ -1,8 +1,8 @@
 import React, { ChangeEvent, FormEvent } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
-export interface ActividadForm {
+export interface RecurrentActivityForm {
   nombre: string;
   descripcion: string;
   modalidad: string;
@@ -13,10 +13,13 @@ export interface ActividadForm {
   hora_final: string;
   imagen?: string;
   categoria?: string;
+  duracion_minutos: number;
+  semanas_recurrencia: number;
+  horarios_por_dia: string[][];
 }
 
-interface ActivityFormProps {
-  actividad: ActividadForm;
+interface RecurrentActivityFormProps {
+  actividad: RecurrentActivityForm;
   onChange: (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => void;
@@ -25,10 +28,10 @@ interface ActivityFormProps {
   loading: boolean;
   error: string;
   success: string;
-  onSwitchToRecurrente: () => void;
+  onSwitchToUnique: () => void;
 }
 
-export default function ActivityForm({
+export default function RecurrentActivityForm({
   actividad,
   onChange,
   onSubmit,
@@ -36,22 +39,46 @@ export default function ActivityForm({
   loading,
   error,
   success,
-  onSwitchToRecurrente,
-}: ActivityFormProps) {
+  onSwitchToUnique,
+}: RecurrentActivityFormProps) {
+  const handleHorarioChange = (
+    dia: number,
+    index: number,
+    e: ChangeEvent<HTMLInputElement>
+  ) => {
+    const { value } = e.target;
+    const nuevosHorarios = [...actividad.horarios_por_dia];
+    nuevosHorarios[dia] = [...nuevosHorarios[dia]];
+    nuevosHorarios[dia][index] = value;
+    onChange({
+      target: { name: "horarios_por_dia", value: nuevosHorarios },
+    } as any);
+  };
+
+  const diasSemana = [
+    "Lunes",
+    "Martes",
+    "Miércoles",
+    "Jueves",
+    "Viernes",
+    "Sábado",
+    "Domingo",
+  ];
+
   return (
-    <div className="flex flex-col gap-3 text-base w-full p-3 max-w-3xl mx-auto">
+    <div className="flex flex-col gap-3 text-base w-full p-3  mx-auto">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold flex-1 text-center">
-          Crear Actividad
+          Crear Actividad Recurrente
         </h2>
         <button
           type="button"
-          onClick={onSwitchToRecurrente}
+          onClick={onSwitchToUnique}
           className="flex items-center gap-2 text-purple-600 hover:text-purple-700 transition"
-          title="Cambiar a actividad recurrente"
+          title="Volver a actividad única"
         >
-          <FontAwesomeIcon icon={faCalendarAlt} className="w-5 h-5" />
-          <span>Repetir</span>
+          <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
+          <span>Volver</span>
         </button>
       </div>
       <form onSubmit={onSubmit} className="flex flex-col gap-3">
@@ -139,7 +166,35 @@ export default function ActivityForm({
 
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="block mb-1 font-bold text-left">Fecha</label>
+            <label className="block mb-1 font-bold text-left">
+              Duración (minutos)
+            </label>
+            <input
+              type="number"
+              name="duracion_minutos"
+              value={actividad.duracion_minutos}
+              onChange={onChange}
+              className="w-full p-2 border rounded"
+              min="1"
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-bold text-left">
+              Semanas de recurrencia
+            </label>
+            <input
+              type="number"
+              name="semanas_recurrencia"
+              value={actividad.semanas_recurrencia}
+              onChange={onChange}
+              className="w-full p-2 border rounded"
+              min="1"
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-bold text-left">
+              Fecha inicial
+            </label>
             <input
               type="date"
               name="fecha"
@@ -148,27 +203,30 @@ export default function ActivityForm({
               className="w-full p-2 border rounded"
             />
           </div>
-          <div>
-            <label className="block mb-1 font-bold text-left">
-              Hora inicio
-            </label>
-            <input
-              type="time"
-              name="hora_inicio"
-              value={actividad.hora_inicio}
-              onChange={onChange}
-              className="w-full p-2 border rounded"
-            />
-          </div>
-          <div>
-            <label className="block mb-1 font-bold text-left">Hora final</label>
-            <input
-              type="time"
-              name="hora_final"
-              value={actividad.hora_final}
-              onChange={onChange}
-              className="w-full p-2 border rounded"
-            />
+        </div>
+
+        <div className="border rounded p-4">
+          <h3 className="font-bold mb-3 text-center">Horarios por día</h3>
+          <div className="grid grid-cols-7 gap-2">
+            {diasSemana.map((dia, index) => (
+              <div key={dia} className="flex flex-col gap-2">
+                <span className="font-bold text-sm text-center">{dia}</span>
+                <div className="grid grid-cols-2 gap-1">
+                  <input
+                    type="time"
+                    value={actividad.horarios_por_dia[index][0] || ""}
+                    onChange={(e) => handleHorarioChange(index, 0, e)}
+                    className="w-full p-1.5 border rounded text-sm min-w-[100px]"
+                  />
+                  <input
+                    type="time"
+                    value={actividad.horarios_por_dia[index][1] || ""}
+                    onChange={(e) => handleHorarioChange(index, 1, e)}
+                    className="w-full p-1.5 border rounded text-sm min-w-[100px]"
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

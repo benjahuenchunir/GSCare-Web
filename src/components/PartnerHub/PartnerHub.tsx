@@ -1,17 +1,37 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import axios from "axios";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import ActivityForm, { ActividadForm } from "./ActivityForm";
+import RecurrentActivityForm, {
+  RecurrentActivityForm as RecurrentActivityFormType,
+} from "./RecurrentActivityForm";
 import ProductForm, { ProductoForm } from "./ProductForm";
 
 const initialActividad: ActividadForm = {
   nombre: "",
   descripcion: "",
+  modalidad: "presencial",
   lugar: "",
   comuna: "",
   fecha: "",
   hora_inicio: "",
   hora_final: "",
+};
+
+const initialRecurrentActividad: RecurrentActivityFormType = {
+  nombre: "",
+  descripcion: "",
+  modalidad: "presencial",
+  lugar: "",
+  comuna: "",
+  fecha: "",
+  hora_inicio: "",
+  hora_final: "",
+  duracion_minutos: 60,
+  semanas_recurrencia: 1,
+  horarios_por_dia: Array(7).fill([]),
 };
 
 const initialProducto: ProductoForm = {
@@ -25,29 +45,37 @@ const initialProducto: ProductoForm = {
 };
 
 export default function PartnerHub() {
-  const { isAuthenticated, user, getAccessTokenSilently} = useAuth0();
-  const [open, setOpen] = useState(false);
+  const { isAuthenticated, user, getAccessTokenSilently } = useAuth0();
+  const [expanded, setExpanded] = useState(false);
   const [modalView, setModalView] = useState<
-    "main" | "actividad" | "producto" | "servicio"
+    "main" | "actividad" | "actividad_recurrente" | "producto" | "servicio"
   >("main");
   const [actividad, setActividad] = useState<ActividadForm>(initialActividad);
+  const [actividadRecurrente, setActividadRecurrente] =
+    useState<RecurrentActivityFormType>(initialRecurrentActividad);
   const [producto, setProducto] = useState<ProductoForm>(initialProducto);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-
   if (!isAuthenticated) return null;
 
   const handleActividadChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setActividad((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleActividadRecurrenteChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setActividadRecurrente((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleProductoChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setProducto((prev) => ({ ...prev, [name]: value }));
@@ -62,8 +90,7 @@ export default function PartnerHub() {
     const required: (keyof ActividadForm)[] = [
       "nombre",
       "descripcion",
-      "lugar",
-      "comuna",
+      "modalidad",
       "fecha",
       "hora_inicio",
       "hora_final",
@@ -82,6 +109,7 @@ export default function PartnerHub() {
       const userPartner = await axios.get(
         `${import.meta.env.VITE_API_URL}/usuarios/email/${user?.email}`
       );
+
       await axios.post(
         `${import.meta.env.VITE_API_URL}/actividades`,
         {
@@ -94,8 +122,77 @@ export default function PartnerHub() {
           },
         }
       );
+
       setSuccess("¡Actividad creada exitosamente!");
       setActividad(initialActividad);
+      setModalView("main");
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response) {
+        setError(err.response.data?.message || "Error desconocido");
+      } else {
+        setError(err instanceof Error ? err.message : "Error desconocido");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleActividadRecurrenteSubmit = async (
+    e: FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    const required: (keyof RecurrentActivityFormType)[] = [
+      "nombre",
+      "descripcion",
+      "modalidad",
+      "fecha",
+      "duracion_minutos",
+      "semanas_recurrencia",
+      "horarios_por_dia",
+    ];
+
+    const missing = required.filter((f) => !actividadRecurrente[f]);
+    const token = await getAccessTokenSilently();
+
+    if (missing.length > 0) {
+      setError("Faltan campos obligatorios: " + missing.join(", "));
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const userPartner = await axios.get(
+        `${import.meta.env.VITE_API_URL}/usuarios/email/${user?.email}`
+      );
+
+      // Convertir la fecha a lunes de la semana
+      const fecha = new Date(actividadRecurrente.fecha);
+      const diaSemana = fecha.getDay();
+      const diasHastaLunes = diaSemana === 0 ? -6 : 1 - diaSemana;
+      const lunes = new Date(fecha);
+      lunes.setDate(fecha.getDate() + diasHastaLunes);
+
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/actividades/bulk`,
+        {
+          ...actividadRecurrente,
+          monday: lunes.toISOString().split("T")[0],
+          id_creador_del_evento: userPartner.data.id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setSuccess("¡Actividad recurrente creada exitosamente!");
+      setActividadRecurrente(initialRecurrentActividad);
+      setModalView("main");
     } catch (err) {
       if (axios.isAxiosError(err) && err.response) {
         setError(err.response.data?.message || "Error desconocido");
@@ -144,20 +241,17 @@ export default function PartnerHub() {
 
     try {
       const token = await getAccessTokenSilently();
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/productos`,
-          producto,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setSuccess("¡Producto creado exitosamente!");
-        setProducto(initialProducto);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Error desconocido");
-      } finally {
+      await axios.post(`${import.meta.env.VITE_API_URL}/productos`, producto, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setSuccess("¡Producto creado exitosamente!");
+      setProducto(initialProducto);
+      setModalView("main");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
       setLoading(false);
     }
   };
@@ -203,6 +297,24 @@ export default function PartnerHub() {
           setError("");
           setSuccess("");
         }}
+        onSwitchToRecurrente={() => setModalView("actividad_recurrente")}
+      />
+    );
+  } else if (modalView === "actividad_recurrente") {
+    modalContent = (
+      <RecurrentActivityForm
+        actividad={actividadRecurrente}
+        onChange={handleActividadRecurrenteChange}
+        onSubmit={handleActividadRecurrenteSubmit}
+        loading={loading}
+        error={error}
+        success={success}
+        onCancel={() => {
+          setModalView("main");
+          setError("");
+          setSuccess("");
+        }}
+        onSwitchToUnique={() => setModalView("actividad")}
       />
     );
   } else if (modalView === "producto") {
@@ -238,40 +350,62 @@ export default function PartnerHub() {
   }
 
   return (
-    <>
-      <div className="fixed bottom-4 left-4 z-50 flex flex-row gap-2">
+    <div className="fixed bottom-4 left-4 z-50">
+      <div className="flex items-center gap-4">
         <button
           onClick={() => {
-            setOpen(true);
+            setExpanded(true);
             setModalView("main");
             setError("");
             setSuccess("");
           }}
-          className="bg-[#009982] hover:bg-[#007766] text-white p-4 rounded-full shadow-lg transition-all font-bold text-lg"
+          className={`bg-[#009982] hover:bg-[#007766] text-white p-4 rounded-l-full shadow-lg transition-all font-bold text-lg flex items-center h-[56px] ${
+            expanded ? "rounded-r-none" : "rounded-full"
+          }`}
           title="Panel de socio"
         >
-          Panel de socio
+          Socio
         </button>
+
+        <div
+          className={`flex items-center gap-2 transition-all duration-300 ease-in-out overflow-hidden h-[56px] ${
+            expanded ? "w-auto opacity-100" : "w-0 opacity-0"
+          }`}
+        >
+          <button
+            className="bg-blue-500 text-white text-lg font-bold px-4 py-2 rounded hover:bg-blue-600 transition flex items-center gap-2 whitespace-nowrap h-full"
+            onClick={() => setModalView("actividad")}
+          >
+            Añadir Actividad
+          </button>
+          <button
+            className="bg-green-500 text-white text-lg font-bold px-4 py-2 rounded hover:bg-green-600 transition flex items-center gap-2 whitespace-nowrap h-full"
+            onClick={() => setModalView("producto")}
+          >
+            Añadir Producto
+          </button>
+          <button
+            className="bg-purple-500 text-white text-lg font-bold px-4 py-2 rounded hover:bg-purple-600 transition flex items-center gap-2 whitespace-nowrap h-full"
+            onClick={() => setModalView("servicio")}
+          >
+            Añadir Servicio
+          </button>
+          <button
+            onClick={() => setExpanded(false)}
+            className="bg-red-500 text-white px-4 py-2 rounded-r-full hover:bg-red-600 transition h-full flex items-center justify-center"
+          >
+            <FontAwesomeIcon icon={faTimes} className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
-      {open && (
+      {modalView !== "main" && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg max-w-[45vw] w-full text-center">
+          <div className="bg-white p-5 rounded-lg shadow-lg text-center">
             {modalContent}
-            <button
-              className="mt-8 text-4xl bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 w-full"
-              onClick={() => {
-                setOpen(false);
-                setModalView("main");
-                setError("");
-                setSuccess("");
-              }}
-            >
-              Cerrar
-            </button>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
