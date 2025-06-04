@@ -1,13 +1,17 @@
 // src/components/Navbar.jsx
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import LoginButton from "../components/LoginButton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { FaUserAlt } from "react-icons/fa";
+import { FaCrown } from "react-icons/fa6";
+import { UserContext } from "../context/UserContext";
 
 export default function Navbar() {
   const { isAuthenticated, logout, isLoading } = useAuth0();
+  const { profile } = useContext(UserContext);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () =>
@@ -29,11 +33,35 @@ export default function Navbar() {
             />
             <span className="text-[1.5em] font-semibold text-[#368990]">GSCare</span>
           </Link>
+
           {!isAuthenticated && (
             <div className="hidden md:block">
               <Link to="/" className="text-[1.1em] text-gray-700 hover:text-gray-900">
                 Página Principal
               </Link>
+            </div>
+          )}
+
+          {/* Badge condicional por rol */}
+          {!isLoading && isAuthenticated && profile?.rol && (
+            <div className="flex items-center gap-2 bg-gray-100 px-2 py-1 rounded-md ml-2 text-[#006881] text-[0.9em] font-semibold">
+              {profile.rol === "socio" ? (
+                <>
+                  <FaCrown className="text-yellow-500 text-[1.4em]" />
+                  <div className="flex flex-col leading-tight text-left">
+                    <span className="text-yellow-700">Usuario</span>
+                    <span className="text-yellow-700">Socio</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <FaUserAlt className="text-[#009982] text-[1.4em]" />
+                  <div className="flex flex-col leading-tight text-left">
+                    <span>Usuario</span>
+                    <span>Gratuito</span>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -48,11 +76,11 @@ export default function Navbar() {
               <Link to="/games" className="text-gray-700 hover:text-gray-900">
                 Ver Juegos
               </Link>
-              <Link to="/servicios" className="text-gray-700 hover:text-gray-900">
-                Servicios
-              </Link>
               <Link to="/productos" className="text-gray-700 hover:text-gray-900">
                 Productos
+              </Link>
+              <Link to="/servicios" className="text-gray-700 hover:text-gray-900">
+                Servicios
               </Link>
               <Link to="/actividades" className="text-gray-700 hover:text-gray-900">
                 Actividades
@@ -114,18 +142,18 @@ export default function Navbar() {
                   Ver Juegos
                 </Link>
                 <Link
-                  to="/servicios"
-                  className="block text-gray-700 hover:text-gray-900 "
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Servicios
-                </Link>
-                <Link
                   to="/productos"
                   className="block text-gray-700 hover:text-gray-900 "
                   onClick={() => setMenuOpen(false)}
                 >
                   Productos
+                </Link>
+                <Link
+                  to="/servicios"
+                  className="block text-gray-700 hover:text-gray-900 "
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Servicios
                 </Link>
                 <Link
                   to="/actividades"

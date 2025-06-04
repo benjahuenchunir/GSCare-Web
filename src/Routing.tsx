@@ -15,6 +15,7 @@ import ActivitiesListPage from "./pages/Actividades/activitiesListPage.tsx";
 import ProductPage from "./pages/Productos/productosPage.tsx";
 import ProductsListPage from "./pages/Productos/productosListPage.tsx";
 import Agenda from "./pages/Agenda/Agenda.tsx";
+import PricingPage from "./pages/Usuarios/PricingPage.tsx";
 
 export default function Routing() {
     return (
@@ -68,6 +69,11 @@ export default function Routing() {
                         <div className="w-full h-screen flex items-center justify-center">
                             <h1 className="text-[3rem] font-bold text-[#006881] w-full text-center m-0">Productos</h1>
                         </div>
+                    </ProtectedRoute> } />
+                    
+                <Route path="/pricing" element={
+                    <ProtectedRoute>
+                        <PricingPage />
                     </ProtectedRoute> } />
             </Route>
 

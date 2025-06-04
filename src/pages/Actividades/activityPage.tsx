@@ -129,61 +129,65 @@ const ActivityPage: React.FC = () => {
   if (!actividad) return <div className="p-4">Cargando actividad...</div>;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6 bg-white rounded-xl shadow-md mt-16">
+    <div className="max-w-5xl mx-auto p-6 space-y-8 pt-20">
       <ActividadInfoCard
         nombre={actividad.nombre}
         descripcion={actividad.descripcion}
         imagen={actividad.imagen ?? ""}
       />
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">Modalidad</h2>
-        {actividad.modalidad === "presencial" ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-800">
-            <div className="flex items-start gap-3">
-              <FaMapMarkerAlt className="text-[#009982]" />
-              <div>
-                <h3 className="font-semibold">Lugar</h3>
-                <p>{actividad.lugar}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Modalidad */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">Modalidad</h2>
+          {actividad.modalidad === "presencial" ? (
+            <div className="grid grid-cols-1 gap-4 text-gray-800">
+              <div className="flex items-start gap-3">
+                <FaMapMarkerAlt className="text-[#009982]" />
+                <div>
+                  <h3 className="font-semibold">Lugar</h3>
+                  <p>{actividad.lugar}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <FaCity className="text-[#009982] text-3xl" />
+                <div>
+                  <h3 className="font-semibold">Comuna</h3>
+                  <p>{actividad.comuna}</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <FaCity className="text-[#009982] text-3xl" />
-              <div>
-                <h3 className="font-semibold">Comuna</h3>
-                <p>{actividad.comuna}</p>
+          ) : (
+            <div className="text-gray-800">
+              <div className="flex items-start gap-3">
+                <FaMapMarkerAlt className="text-[#009982]" />
+                <div>
+                  <h3 className="font-semibold">Link de acceso</h3>
+                  <a
+                    href={actividad.link ?? "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline hover:text-blue-800"
+                  >
+                    {actividad.link}
+                  </a>
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="text-gray-800">
-            <div className="flex items-start gap-3">
-              <FaMapMarkerAlt className="text-[#009982]" />
-              <div>
-                <h3 className="font-semibold">Link de acceso</h3>
-                <a
-                  href={actividad.link ?? "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 underline hover:text-blue-800"
-                >
-                  {actividad.link}
-                </a>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">Fechas y Horarios</h2>
-        <ul className="list-disc list-inside text-gray-800 space-y-1">
-          {grupoActividades.map((a, i) => (
-            <li key={i}>
-              {formatearFecha(a.fecha)} — {a.hora_inicio?.slice(0, 5)} a {a.hora_final?.slice(0, 5)}
-            </li>
-          ))}
-        </ul>
+        {/* Fechas y horarios */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">Fechas y Horarios</h2>
+          <ul className="list-disc list-inside text-gray-800 space-y-1">
+            {grupoActividades.map((a, i) => (
+              <li key={i}>
+                {formatearFecha(a.fecha)} — {a.hora_inicio?.slice(0, 5)} a {a.hora_final?.slice(0, 5)}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
       {profile?.rol === "socio" ? (
@@ -215,14 +219,19 @@ const ActivityPage: React.FC = () => {
           )}
         </div>
       ) : (
-        <div className="bg-yellow-100 text-yellow-900 rounded-lg p-6 text-center">
-          <h3 className="text-xl font-bold">Actividad exclusiva para socios</h3>
-          <p className="mt-2">Hazte socio para participar en nuestras actividades exclusivas.</p>
+        <div className="bg-[#fef9e5] text-yellow-900 rounded-xl shadow p-6 border-4 border-yellow-400 flex flex-col items-center text-center">
+          <h2 className="text-[1.2em] font-bold text-yellow-700 mb-2">
+            Esta funcionalidad es exclusiva para socios
+          </h2>
+          <p className="text-gray-700 mb-4 text-[1em] leading-relaxed">
+            Solo los usuarios con <strong>membresía activa</strong> pueden participar en actividades dadas por otros usuarios.
+            Forma parte de la comunidad GSCare y aprovecha todos los beneficios pensados para ti.
+          </p>
           <button
-            onClick={() => window.location.href = "/user"}
-            className="mt-4 px-6 py-2 bg-yellow-400 text-white rounded-lg font-semibold hover:bg-yellow-500"
+            onClick={() => window.location.href = "/pricing"}
+            className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded hover:bg-yellow-500 transition"
           >
-            Hacerse socio
+            Conocer beneficios de Socio
           </button>
         </div>
       )}
