@@ -52,6 +52,14 @@ const AgendarBox: React.FC<Props> = ({
         >
           Cancelar suscripción
         </button>
+
+        {/* 👉 Nuevo botón para agendar otra hora */}
+        <button
+          onClick={onSubscribe}
+          className="mt-2 px-6 py-2 bg-white text-[#00495C] rounded-lg font-semibold hover:bg-gray-100"
+        >
+          Agendar otra hora
+        </button>
       </div>
     ) : (
       <button

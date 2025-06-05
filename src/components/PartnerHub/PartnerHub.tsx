@@ -27,11 +27,10 @@ const initialRecurrentActividad: RecurrentActivityFormType = {
   lugar: "",
   comuna: "",
   fecha: "",
-  hora_inicio: "",
-  hora_final: "",
-  duracion_minutos: 60,
-  semanas_recurrencia: 1,
+  fecha_termino: "", // Nuevo campo inicializado
+  semanas_recurrencia: 2,
   horarios_por_dia: Array(7).fill([]),
+  dias_seleccionados: Array(7).fill(false),
 };
 
 const initialProducto: ProductoForm = {
@@ -43,6 +42,15 @@ const initialProducto: ProductoForm = {
   link_al_producto: "",
   imagen: "",
 };
+
+const calcularLunes = (fechaInput: string) => {
+  const fecha = new Date(fechaInput + "T00:00:00");
+  const diaSemana = fecha.getDay(); // 0 = domingo, 1 = lunes, ..., 6 = sábado
+  const diasHastaLunes = diaSemana === 0 ? -6 : 1 - diaSemana;
+  fecha.setDate(fecha.getDate() + diasHastaLunes);
+  return fecha.toISOString().split("T")[0];
+};
+
 
 export default function PartnerHub() {
   const { isAuthenticated, user, getAccessTokenSilently } = useAuth0();
@@ -68,7 +76,9 @@ export default function PartnerHub() {
   };
 
   const handleActividadRecurrenteChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e:
+      | ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+      | { target: { name: string; value: any } }
   ) => {
     const { name, value } = e.target;
     setActividadRecurrente((prev) => ({ ...prev, [name]: value }));
@@ -110,6 +120,11 @@ export default function PartnerHub() {
         `${import.meta.env.VITE_API_URL}/usuarios/email/${user?.email}`
       );
 
+      console.log("Se enviará al backend:" , {
+        ...actividad,
+        id_creador_del_evento: userPartner.data.id,
+      })
+
       await axios.post(
         `${import.meta.env.VITE_API_URL}/actividades`,
         {
@@ -125,7 +140,6 @@ export default function PartnerHub() {
 
       setSuccess("¡Actividad creada exitosamente!");
       setActividad(initialActividad);
-      setModalView("main");
     } catch (err) {
       if (axios.isAxiosError(err) && err.response) {
         setError(err.response.data?.message || "Error desconocido");
@@ -145,42 +159,67 @@ export default function PartnerHub() {
     setError("");
     setSuccess("");
 
+    console.log("Datos de actividad recurrente:", actividadRecurrente);
+
     const required: (keyof RecurrentActivityFormType)[] = [
       "nombre",
       "descripcion",
       "modalidad",
       "fecha",
-      "duracion_minutos",
+      "fecha_termino", // Añadido a requeridos
       "semanas_recurrencia",
       "horarios_por_dia",
+      "dias_seleccionados",
     ];
 
-    const missing = required.filter((f) => !actividadRecurrente[f]);
-    const token = await getAccessTokenSilently();
+    const missing = required.filter((f) => {
+      if (f === "horarios_por_dia") {
+        const diaSeleccionadoConHorario = actividadRecurrente.dias_seleccionados.some(
+          (seleccionado, diaIndex) =>
+            seleccionado &&
+            actividadRecurrente.horarios_por_dia[diaIndex]?.length === 2 &&
+            actividadRecurrente.horarios_por_dia[diaIndex].every((h) => h)
+        );
+        return !diaSeleccionadoConHorario;
+      }
+      if (f === "dias_seleccionados") {
+        return !actividadRecurrente.dias_seleccionados.some((s) => s);
+      }
+      return !actividadRecurrente[f];
+    });
 
     if (missing.length > 0) {
-      setError("Faltan campos obligatorios: " + missing.join(", "));
+      setError(
+        "Faltan campos obligatorios o no hay días/horarios seleccionados: " +
+          missing.join(", ")
+      );
       setLoading(false);
       return;
     }
+
+    // Validación de fecha de término posterior a fecha de inicio
+    if (
+      new Date(actividadRecurrente.fecha_termino) <=
+      new Date(actividadRecurrente.fecha)
+    ) {
+      setError("La fecha de término debe ser posterior a la fecha de partida.");
+      setLoading(false);
+      return;
+    }
+
+    const token = await getAccessTokenSilently();
 
     try {
       const userPartner = await axios.get(
         `${import.meta.env.VITE_API_URL}/usuarios/email/${user?.email}`
       );
-
-      // Convertir la fecha a lunes de la semana
-      const fecha = new Date(actividadRecurrente.fecha);
-      const diaSemana = fecha.getDay();
-      const diasHastaLunes = diaSemana === 0 ? -6 : 1 - diaSemana;
-      const lunes = new Date(fecha);
-      lunes.setDate(fecha.getDate() + diasHastaLunes);
+      const monday = calcularLunes(actividadRecurrente.fecha);
 
       await axios.post(
         `${import.meta.env.VITE_API_URL}/actividades/bulk`,
         {
-          ...actividadRecurrente,
-          monday: lunes.toISOString().split("T")[0],
+          ...actividadRecurrente, // fecha_termino ya está aquí
+          monday: monday,
           id_creador_del_evento: userPartner.data.id,
         },
         {
@@ -192,7 +231,6 @@ export default function PartnerHub() {
 
       setSuccess("¡Actividad recurrente creada exitosamente!");
       setActividadRecurrente(initialRecurrentActividad);
-      setModalView("main");
     } catch (err) {
       if (axios.isAxiosError(err) && err.response) {
         setError(err.response.data?.message || "Error desconocido");
@@ -248,7 +286,6 @@ export default function PartnerHub() {
       });
       setSuccess("¡Producto creado exitosamente!");
       setProducto(initialProducto);
-      setModalView("main");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
@@ -373,23 +410,23 @@ export default function PartnerHub() {
           }`}
         >
           <button
-            className="bg-blue-500 text-white text-lg font-bold px-4 py-2 rounded hover:bg-blue-600 transition flex items-center gap-2 whitespace-nowrap h-full"
+            className="bg-purple-400 text-white text-lg font-bold px-4 py-2 rounded hover:bg-purple-500 transition flex items-center gap-2 whitespace-nowrap h-full"
             onClick={() => setModalView("actividad")}
           >
             Añadir Actividad
           </button>
           <button
-            className="bg-green-500 text-white text-lg font-bold px-4 py-2 rounded hover:bg-green-600 transition flex items-center gap-2 whitespace-nowrap h-full"
+            className="bg-orange-400 text-white text-lg font-bold px-4 py-2 rounded hover:bg-orange-500 transition flex items-center gap-2 whitespace-nowrap h-full"
             onClick={() => setModalView("producto")}
           >
             Añadir Producto
           </button>
-          <button
+          {/* <button
             className="bg-purple-500 text-white text-lg font-bold px-4 py-2 rounded hover:bg-purple-600 transition flex items-center gap-2 whitespace-nowrap h-full"
             onClick={() => setModalView("servicio")}
           >
             Añadir Servicio
-          </button>
+          </button> */}
           <button
             onClick={() => setExpanded(false)}
             className="bg-red-500 text-white px-4 py-2 rounded-r-full hover:bg-red-600 transition h-full flex items-center justify-center"

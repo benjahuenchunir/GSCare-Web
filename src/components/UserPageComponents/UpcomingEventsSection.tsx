@@ -2,7 +2,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 
-import { getUserSubscriptions } from "../../services/subscriptionService";
+import { getServiciosConCitas } from "../../services/subscriptionService";
 import { getNextSessionDate, formatSessionTag } from "../../utils/dateHelper";
 import { getUserActivities, Actividad } from "../../services/actividadService";
 import { UserContext } from "../../context/UserContext";
@@ -45,29 +45,25 @@ export const UpcomingEventsSection: React.FC = () => {
     setLoading(true);
 
     // 1) Flujo de servicios periódicos
-    const pServices = getUserSubscriptions(profile.id).then((servs) =>
-      Promise.all<(EventItem | null)>(
-        servs.map(async (svc) => {
-          // parseamos CSV a número
-          const diasArr = (svc.dias_disponibles || "")
-            .split(",")
-            .map((d: string) => parseInt(d, 10))
-            .filter((n: number) => !isNaN(n));
-
-          const sd = getNextSessionDate(diasArr, svc.hora_inicio!);
-          if (!sd) return null;
+    const pServices = getServiciosConCitas(profile.id).then((servicios): EventItem[] => {
+      return servicios.flatMap((s: any) =>
+        s.citas.map((cita: any) => {
+          const [h, m] = cita.hora_inicio.split(":").map(Number);
+          const sessionDate = new Date(cita.fecha);
+          sessionDate.setHours(h, m, 0, 0);
 
           return {
-            type: "service",
-            id: svc.id,
-            nombre: svc.nombre,
-            direccion: svc.direccion_principal_del_prestador,
-            sessionDate: sd,
-            tag: formatSessionTag(sd),
+            type: "service" as const,
+            id: cita.id_cita,
+            nombre: s.nombre_servicio,
+            direccion: "", // Puedes extender el endpoint para incluir dirección si se necesita
+            sessionDate,
+            tag: formatSessionTag(sessionDate)
           };
         })
-      ).then((arr) => arr.filter((x): x is EventItem => x !== null))
-    );
+      );
+    });
+
 
     // 2) Flujo de actividades puntuales
     const pActivities = getUserActivities(profile.id).then((acts) =>

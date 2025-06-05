@@ -54,6 +54,14 @@ const ServicesListPage: React.FC = () => {
         : s.beneficios.some(b => selectedBenefits.includes(b.id))
     );
 
+  const agrupados = displayed.reduce((map, servicio) => {
+    const clave = servicio.id_servicio_base ?? servicio.id; // Usa id si no hay base
+    if (!map[clave]) map[clave] = [];
+    map[clave].push(servicio);
+    return map;
+  }, {} as Record<string, (Servicio & { beneficios: Beneficio[] })[]>);
+
+
   return (
     <main className="flex-1">
       <div className="px-10 py-16 bg-gray-50 min-h-screen">
@@ -115,7 +123,9 @@ const ServicesListPage: React.FC = () => {
             <EmptyState mensaje="No se encontraron servicios." />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayed.map(s => {
+              {Object.values(agrupados).map((grupo) => {
+                // Usamos el primero del grupo para mostrar info general
+                const s = grupo[0];
                 const comunas = s.comunas_a_las_que_hace_domicilio
                   ?.split(",")
                   .map(c => c.trim())

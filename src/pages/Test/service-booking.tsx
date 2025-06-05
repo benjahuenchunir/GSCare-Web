@@ -148,21 +148,12 @@ export default function Component() {
         <h1 className="text-xl font-medium text-gray-800 mb-6">Selecciona fecha y hora de tu servicio</h1>
 
         {/* Progress Steps */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center mb-8">
           <div className="flex items-center">
             <div className="flex items-center justify-center w-8 h-8 bg-blue-500 text-white rounded-full text-sm font-medium">
               1
             </div>
             <span className="ml-3 text-blue-500 font-medium">Fecha y hora</span>
-          </div>
-
-          <div className="flex-1 mx-4 h-px bg-gray-200"></div>
-
-          <div className="flex items-center">
-            <div className="flex items-center justify-center w-8 h-8 bg-gray-200 text-gray-500 rounded-full text-sm font-medium">
-              3
-            </div>
-            <span className="ml-3 text-gray-500">Datos de contacto</span>
           </div>
         </div>
       </div>

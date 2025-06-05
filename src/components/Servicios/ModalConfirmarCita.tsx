@@ -14,7 +14,7 @@ const ModalConfirmarCita: React.FC<ModalConfirmarCitaProps> = ({
   onConfirm
 }) => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-40 items-center justify-center flex">
       <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md border border-[#009982]">
         <h2 className="text-[2em]  font-bold text-[#009982] mb-6 text-center leading-relaxed">
           ¿Confirmar suscripción?

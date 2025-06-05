@@ -47,3 +47,14 @@ export const getUserSubscriptions = async (userId: number): Promise<any[]> => {
     return [];
   }
 };
+
+export const getServiciosConCitas = async (userId: number): Promise<any[]> => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/usuarios/${userId}/servicios-con-citas`);
+    if (!res.ok) throw new Error("Error al obtener servicios con citas");
+    return await res.json();
+  } catch (err) {
+    console.error("Error:", err);
+    return [];
+  }
+};

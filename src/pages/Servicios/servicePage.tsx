@@ -48,6 +48,7 @@ const ServicePage: React.FC = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSelectBloqueModal, setShowSelectBloqueModal] = useState(false);
   const [showSubscribeConfirm, setShowSubscribeConfirm] = useState(false);
+  const [showRepeatModal, setShowRepeatModal] = useState(false);
 
   const isSubscribed = citasDelServicio.length > 0;
 
@@ -149,6 +150,7 @@ const ServicePage: React.FC = () => {
         };
       });
       setCitasDelServicio(parsed);
+      setShowRepeatModal(true); // <-- Mostrar modal de repetir
     } catch (e: any) {
       setCitasDelServicio(prev => prev.filter(c => c.id !== tempId));
       alert(e.message);

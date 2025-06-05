@@ -115,14 +115,14 @@ export default function BloqueSelectorAutosuficiente({ onContinue, onClose }: Pr
         <h1 className="text-xl font-medium text-gray-800 mb-6">Selecciona fecha y hora de tu servicio</h1>
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
-            <div className="flex items-center justify-center w-8 h-8 bg-blue-500 text-white rounded-full text-sm font-medium">1</div>
+            <div className="flex items-center justify-center w-8 h-8 bg-blue-500 text-white rounded-full text-sm font-medium"></div>
             <span className="ml-3 text-blue-500 font-medium">Fecha y hora</span>
           </div>
           <div className="flex-1 mx-4 h-px bg-gray-200" />
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <div className="flex items-center justify-center w-8 h-8 bg-gray-200 text-gray-500 rounded-full text-sm font-medium">3</div>
             <span className="ml-3 text-gray-500">Datos de contacto</span>
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -145,13 +145,20 @@ export default function BloqueSelectorAutosuficiente({ onContinue, onClose }: Pr
 
         <div className="flex items-center mb-8">
           <button onClick={() => setCurrentWeekOffset(o => o - 1)} className="p-1 hover:bg-gray-200 rounded mr-4 transition-colors">
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
+            <ChevronLeft className="w-5 h- text-gray-600" />
           </button>
           <div className="flex space-x-2 overflow-x-auto">
             {days.map((d) => {
               const bloquesDelDia = groupedBloques[d.key] || []
               const isAvailable = bloquesDelDia.some(b => b.disponible)
               const isSelected = selectedDate === d.key
+
+              const today = new Date()
+              const isToday =
+                today.getDate() === d.date.getDate() &&
+                today.getMonth() === d.date.getMonth() &&
+                today.getFullYear() === d.date.getFullYear()
+
               return (
                 <button
                   key={d.key}
@@ -168,7 +175,9 @@ export default function BloqueSelectorAutosuficiente({ onContinue, onClose }: Pr
                         ? "bg-blue-500 text-white border-blue-500"
                         : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
                       : "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
-                    }`}
+                    }
+                    ${isToday ? "text-gray-500" : ""}
+                  `}
                 >
                   <span className="text-xs font-medium mb-1">{d.day}</span>
                   <span className="text-sm font-bold">{d.num.toString().padStart(2, "0")}</span>
