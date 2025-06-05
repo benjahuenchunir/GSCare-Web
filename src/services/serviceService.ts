@@ -10,6 +10,7 @@ export interface Beneficio {
 
 export interface Servicio {
   id: number;
+  id_servicio_base: number; 
   nombre: string;
   descripcion: string;
   prestador_del_servicio: string;

@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState, useRef } from "react";
 import Slider from "react-slick";
 import { useNavigate } from "react-router-dom";
 
-import { getUserSubscriptions } from "../../services/subscriptionService";
+import { getServiciosConCitas } from "../../services/subscriptionService";
 import { fetchBeneficios, fetchBeneficiosPorServicio } from "../../services/serviceService";
 import { UserContext } from "../../context/UserContext";
 import SectionTitle from "../../common/SectionTitle";
@@ -39,22 +39,33 @@ export const SubscribedServicesSection: React.FC = () => {
   useEffect(() => {
     if (!profile?.id) return;
     setLoading(true);
-    getUserSubscriptions(profile.id)
-      .then(async servs => {
-        const list = await Promise.all(
-          servs.map(async svc => {
-            const bs = await fetchBeneficiosPorServicio(svc.id);
-            return { ...svc, beneficios: bs };
-          })
-        );
-        setServices(list);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [profile]);
+
+    getServiciosConCitas(profile.id)
+    .then(async servs => {
+      const list = await Promise.all(
+        servs.map(async (svc) => {
+          let beneficios: { id: number; nombre: string }[] = [];
+          try {
+            beneficios = await fetchBeneficiosPorServicio(svc.id_servicio);
+          } catch (e) {
+            console.error(`No se pudieron cargar beneficios para el servicio ${svc.id_servicio}:`, e);
+          }
+
+          return {
+            id: svc.id_servicio,
+            nombre: svc.nombre_servicio,
+            beneficios,
+          };
+        })
+      );
+      setServices(list);
+    })
+    .catch(console.error)
+    .finally(() => setLoading(false));
+}, [profile]);
 
   const filtered = services
-    .filter(s => s.nombre.toLowerCase().includes(searchTerm.toLowerCase()))
+    .filter(s => typeof s.nombre === "string" && s.nombre.toLowerCase().includes(searchTerm.toLowerCase()))
     .filter(s =>
       selectedBenefits.length === 0
         ? true

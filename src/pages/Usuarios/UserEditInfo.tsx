@@ -2,11 +2,11 @@
 import React, { useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
-import { getUserByEmail, updateUserProfile, deleteUserById, User } from "../../services/userService";
+import { getUserByEmail, updateUserProfile, deleteCurrentUser, User } from "../../services/userService";
 import regionesData from "../../assets/data/comunas-regiones.json";
 
 export default function EditProfilePage() {
-  const { user, logout } = useAuth0();
+  const { user, logout, getAccessTokenSilently } = useAuth0();
   const navigate = useNavigate();
 
   const [form, setForm] = useState<User>({
@@ -73,35 +73,43 @@ export default function EditProfilePage() {
     }
 
     try {
-      await updateUserProfile(form);
-      navigate("/user"); // ✅ redirección al perfil del usuario
-    } catch {
-      setErrors({ general: "Error al guardar los cambios. Intenta más tarde." });
+      const token = await getAccessTokenSilently();
+      const {rol, ...safeData} = form; // Excluimos el rol del objeto
+      await updateUserProfile(safeData as User, token);
+      navigate("/user");
+    } catch (err) {
+      console.error("Error al obtener token:", err);
+      setErrors({ general: "No se pudo obtener el token. Intenta iniciar sesión nuevamente." });
     }
   };
 
   const handleDeleteAccount = async () => {
-    if (
-      window.confirm(
-        "¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer."
-      )
-    ) {
-      try {
-        await deleteUserById(form.id);
-        // cierra sesión y redirige al home
-        logout({
-          logoutParams: {
-            returnTo: window.location.origin,
-          },
-        });
-      } catch {
-        setErrors({ general: "No se pudo eliminar la cuenta. Intenta más tarde." });
-      }
+  if (
+    window.confirm(
+      "¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer."
+    )
+  ) {
+    try {
+      const token = await getAccessTokenSilently(); // ✅ dentro de función async
+      await deleteCurrentUser(token, form.id); // ✅ token es un string
+
+      logout({
+        logoutParams: {
+          returnTo: window.location.origin,
+        },
+      });
+    } catch (err) {
+      console.error("Error al eliminar la cuenta:", err);
+      setErrors({
+        general: "No se pudo eliminar la cuenta. Intenta más tarde.",
+      });
     }
-  };
+  }
+};
+
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 pt-16 pb-20 px-6">
       <form
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded-lg shadow max-w-md w-full space-y-4"

@@ -53,7 +53,7 @@ export default function GamesView() {
         ))}
       </div>
     </section>
-  /</main>
+  </main>
   );
 
 }

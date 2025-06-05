@@ -1,67 +1,60 @@
+import axios from "axios";
+
 const API_URL = import.meta.env.VITE_API_URL;
-import { Servicio } from "./serviceService"; 
 
-export interface Suscripcion {
-  id: number;
-  id_usuario: number;
-  id_servicio: number;
-  createdAt: string;
-  updatedAt: string;
-  Usuario?: { id: number; nombre: string; email: string };
-}
-
-// 1.1 Comprobar si el usuario está suscrito a un servicio
-export async function isUserSubscribed(
-  servicioId: number,
-  usuarioId: number
-): Promise<boolean> {
-  const res = await fetch(`${API_URL}/servicios/${servicioId}/suscripciones`);
-  if (!res.ok) throw new Error("Error al comprobar suscripción");
-  const list: Suscripcion[] = await res.json();
-  return list.some(s => s.id_usuario === usuarioId);
-}
-
-// 1.2 Suscribirse
-export async function subscribeToService(
-  servicioId: number,
-  usuarioId: number
-): Promise<Suscripcion> {
-  const res = await fetch(`${API_URL}/servicios/${servicioId}/suscribirse`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id_usuario: usuarioId })
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.message || "Error al suscribirse");
+export const isUserSubscribed = async (servicioId: number, userId: number): Promise<boolean> => {
+  try {
+    const res = await axios.get(`${API_URL}/usuarios/usuarios/${userId}/citas`);
+    return res.data.some((cita: any) => cita.id_servicio === servicioId);
+  } catch (error) {
+    console.error("Error verificando suscripción:", error);
+    return false;
   }
-  const body = await res.json();
-  return body.suscripcion as Suscripcion;
-}
+};
 
-// 1.3 Desuscribirse
-export async function unsubscribeFromService(
-  servicioId: number,
-  usuarioId: number
-): Promise<void> {
-  const res = await fetch(`${API_URL}/servicios/${servicioId}/desuscribirse`, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id_usuario: usuarioId })
-  });
-  if (!(res.ok || res.status === 204)) {
-    const err = await res.json();
-    throw new Error(err.message || "Error al cancelar suscripción");
+export const createCita = async (userId: number, bloqueHorarioId: number): Promise<void> => {
+  try {
+    const res = await axios.post(`${API_URL}/citas`, {
+      id_usuario: userId,
+      id_bloque: bloqueHorarioId
+    });
+    console.log("Cita creada exitosamente", res.data);
+  } catch (error: any) {
+    console.error("Error al agendar cita:", error.response?.data || error.message);
+    throw new Error("No se pudo agendar la cita. Intenta nuevamente.");
   }
-}
+  return;
+};
 
-// 1.4 Obtener suscripciones de un usuario
-export async function getUserSubscriptions(
-  usuarioId: number
-): Promise<Servicio[]> {
-  const res = await fetch(
-    `${API_URL}/usuarios/servicios?id_usuario=${usuarioId}`
-  );
-  if (!res.ok) throw new Error("Error al obtener servicios suscritos");
-  return (await res.json()) as Servicio[];
-}
+export const deleteCita = async (userId: number, citaId: number): Promise<void> => {
+  axios.delete(`${API_URL}/usuarios/usuarios/${userId}/citas/${citaId}`)
+    .then(() => {
+      console.log("Cita eliminada exitosamente");
+    })
+    .catch((error: any) => {
+      console.error("Error al cancelar la cita:", error.response?.data || error.message);
+      throw new Error("No se pudo cancelar la cita.");
+    });
+  return;
+};
+
+export const getUserSubscriptions = async (userId: number): Promise<any[]> => {
+  try {
+    const res = await axios.get(`${API_URL}/usuarios/usuarios/${userId}/citas`);
+    return res.data;
+  } catch (error) {
+    console.error("Error al obtener citas del usuario:", error);
+    return [];
+  }
+};
+
+export const getServiciosConCitas = async (userId: number): Promise<any[]> => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/usuarios/${userId}/servicios-con-citas`);
+    if (!res.ok) throw new Error("Error al obtener servicios con citas");
+    return await res.json();
+  } catch (err) {
+    console.error("Error:", err);
+    return [];
+  }
+};

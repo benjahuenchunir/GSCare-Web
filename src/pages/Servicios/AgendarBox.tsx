@@ -1,4 +1,3 @@
-// src/pages/AgendarBox.tsx
 import React from "react";
 
 interface Props {
@@ -29,14 +28,12 @@ const AgendarBox: React.FC<Props> = ({
       </p>
     )}
 
-    {/* Datos de contacto */}
     <div className="bg-white text-[#00495C] rounded-md p-4 w-full max-w-md text-left space-y-2">
       <p><strong>Teléfono:</strong> {telefono}</p>
       <p><strong>Email:</strong> {email}</p>
       <p><strong>Dirección:</strong> {direccion}</p>
     </div>
 
-    {/* Botones */}
     {loading ? (
       <button disabled className="mt-4 px-6 py-2 bg-gray-400 text-white rounded-lg">
         Cargando…
@@ -54,6 +51,14 @@ const AgendarBox: React.FC<Props> = ({
           className="py-2 px-6 bg-red-100 text-red-700 rounded-lg font-semibold hover:bg-red-200 border border-red-300"
         >
           Cancelar suscripción
+        </button>
+
+        {/* 👉 Nuevo botón para agendar otra hora */}
+        <button
+          onClick={onSubscribe}
+          className="mt-2 px-6 py-2 bg-white text-[#00495C] rounded-lg font-semibold hover:bg-gray-100"
+        >
+          Agendar otra hora
         </button>
       </div>
     ) : (

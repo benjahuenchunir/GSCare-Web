@@ -1,21 +1,21 @@
 import React, { useContext, useEffect, useState } from "react";
-import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
-import Slider from "react-slick"; // Importa el slider
+import axios from "axios";
+import Slider from "react-slick";
 
 import ServicioInfoCard from "./ServicioInfoCard";
 import ReviewCard from "./ReviewCard";
 import BeneficiosBox from "./BeneficiosBox";
 import DisponibilidadBox from "./DisponibilidadBox";
 import AgendarBox from "./AgendarBox";
-import { Review } from "./types";
+import ModalSelectorDeBloque from "../../components/Servicios/ModalSelectorDeBloque";
+import ModalConfirmarCita from "../../components/Servicios/ModalConfirmarCita";
+import ModalCancelarCita from "../../components/Servicios/ModalCancelarCita";
 
-import { 
-  isUserSubscribed, 
-  subscribeToService, 
-  unsubscribeFromService 
-} from "../../services/subscriptionService";
+import { createCita, getUserSubscriptions, deleteCita } from "../../services/subscriptionService";
+import { BloqueHorario } from "../../components/Servicios/SelectorDeBloque";
+import { Review } from "./types";
 import { UserContext } from "../../context/UserContext";
 
 interface Servicio {
@@ -32,33 +32,34 @@ interface Servicio {
   hora_termino: string;
 }
 
-interface Beneficio {
-  id: number;
-  nombre: string;
-  descripcion: string;
-  icono: string;
-}
-
 const ServicePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const {isAuthenticated, loginWithRedirect } = useAuth0();
-  const { profile, loading: loadingProfile } = useContext(UserContext);
+  const navigate = useNavigate();
+  const { isAuthenticated, loginWithRedirect } = useAuth0();
+  const { profile, reloadProfile, loading: loadingProfile } = useContext(UserContext);
 
-  // Para datos del servicio
   const [servicio, setServicio] = useState<Servicio | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [beneficios, setBeneficios] = useState<Beneficio[]>([]);
-
-  // Para subscripciones
-  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [beneficios, setBeneficios] = useState<any[]>([]);
+  const [bloques, setBloques] = useState<BloqueHorario[]>([]);
+  const [bloqueSeleccionado, setBloqueSeleccionado] = useState<BloqueHorario | null>(null);
+  const [citasDelServicio, setCitasDelServicio] = useState<{ id: number; bloque: BloqueHorario }[]>([]);
   const [loadingSub, setLoadingSub] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSelectBloqueModal, setShowSelectBloqueModal] = useState(false);
   const [showSubscribeConfirm, setShowSubscribeConfirm] = useState(false);
+  const [showRepeatModal, setShowRepeatModal] = useState(false);
+
+  const isSubscribed = citasDelServicio.length > 0;
+
+  useEffect(() => {
+    if (isAuthenticated) reloadProfile();
+  }, [isAuthenticated, reloadProfile]);
 
   useEffect(() => {
     axios.get(`${import.meta.env.VITE_API_URL}/servicios/${id}`)
       .then(res => setServicio(res.data))
-      .catch(err => console.error("Error al cargar servicio:", err));
+      .catch(console.error);
 
     axios.get(`${import.meta.env.VITE_API_URL}/servicios_ratings/servicio/${id}`)
       .then(res => setReviews(res.data))
@@ -67,92 +68,131 @@ const ServicePage: React.FC = () => {
     axios.get(`${import.meta.env.VITE_API_URL}/beneficios/servicio/${id}`)
       .then(res => setBeneficios(res.data))
       .catch(() => {});
+
+    axios.get(`${import.meta.env.VITE_API_URL}/servicios/${id}/bloques`)
+      .then(res => {
+        const parsed = res.data.map((b: any) => {
+          const start = new Date(b.start);
+          const end = new Date(b.end);
+          const dia = start.toLocaleDateString("es-ES", { weekday: "long" });
+          return {
+            id: b.id,
+            dia: dia.charAt(0).toUpperCase() + dia.slice(1),
+            inicio: start.toTimeString().slice(0, 5),
+            fin: end.toTimeString().slice(0, 5),
+            disponible: b.extendedProps?.disponible ?? true
+          };
+        });
+        setBloques(parsed);
+      });
   }, [id]);
 
-  const chunkedReviews = (arr: Review[], size: number) => {
-    const chunks: Review[][] = [];
-    for (let i = 0; i < arr.length; i += size) {
-      chunks.push(arr.slice(i, i + size));
-    }
-    return chunks;
-  };
-  const reviewChunks = chunkedReviews(reviews, 4);
-  const carouselSettings = {
-    slidesToShow: 1, slidesToScroll: 1, infinite: false, dots: true, arrows: true
-  };
-
-  // 2.1 Check if user is subscribed
   useEffect(() => {
-    if (loadingProfile) return;
-  
-    if (isAuthenticated && profile?.id) {
-      isUserSubscribed(Number(id), profile.id)
-        .then(setIsSubscribed)
-        .catch(console.error)
-        .finally(() => setLoadingSub(false));
-    } else {
-      setLoadingSub(false);
-    }
-  }, [isAuthenticated, loadingProfile, profile, id]);
+    if (!id || !profile?.id || loadingProfile) return;
+    getUserSubscriptions(profile.id)
+      .then(citas => {
+        const citasServicio = citas.filter((c: any) => c.id_servicio === Number(id));
+        const parsed = citasServicio.map((c: any) => {
+          const start = new Date(c.start);
+          const end = new Date(c.end);
+          const dia = start.toLocaleDateString("es-ES", { weekday: "long" });
+          return {
+            id: c.id,
+            bloque: {
+              id: c.id_bloque,
+              dia: dia.charAt(0).toUpperCase() + dia.slice(1),
+              inicio: start.toTimeString().slice(0, 5),
+              fin: end.toTimeString().slice(0, 5),
+              disponible: c.extendedProps?.disponible ?? true
+            }
+          };
+        });
+        setCitasDelServicio(parsed);
+      })
+      .catch(console.error)
+      .finally(() => setLoadingSub(false));
+  }, [id, profile, loadingProfile]);
 
-  // 2.2 Handler Suscribirse
   const handleSubscribe = async () => {
     if (!isAuthenticated) {
       await loginWithRedirect({ appState: { returnTo: `/servicios/${id}` } });
       return;
     }
-    setShowSubscribeConfirm(true); // Mostrar confirmación
+    setShowSelectBloqueModal(true);
   };
 
   const handleConfirmSubscribe = async () => {
+    if (!profile?.id || !bloqueSeleccionado) return;
+    setLoadingSub(true);
+
+    const tempId = Date.now();
+    const newCita = { id: tempId, bloque: bloqueSeleccionado };
+    setCitasDelServicio(prev => [...prev, newCita]);
     setShowSubscribeConfirm(false);
-    if (!profile?.id) return;
-    setLoadingSub(true);
+
     try {
-      await subscribeToService(Number(id), profile.id);
-      setIsSubscribed(true);
+      await createCita(profile.id, bloqueSeleccionado.id);
+      const citas = await getUserSubscriptions(profile.id);
+      const citasServicio = citas.filter((c: any) => c.id_servicio === Number(id));
+      const parsed = citasServicio.map((c: any) => {
+        const start = new Date(c.start);
+        const end = new Date(c.end);
+        const dia = start.toLocaleDateString("es-ES", { weekday: "long" });
+        return {
+          id: c.id,
+          bloque: {
+            id: c.id_bloque,
+            dia: dia.charAt(0).toUpperCase() + dia.slice(1),
+            inicio: start.toTimeString().slice(0, 5),
+            fin: end.toTimeString().slice(0, 5),
+            disponible: c.extendedProps?.disponible ?? true
+          }
+        };
+      });
+      setCitasDelServicio(parsed);
+      setShowRepeatModal(true); // <-- Mostrar modal de repetir
     } catch (e: any) {
+      setCitasDelServicio(prev => prev.filter(c => c.id !== tempId));
       alert(e.message);
     } finally {
       setLoadingSub(false);
     }
   };
 
+  const handleCancelCita = async (citaId: number) => {
+    if (!profile?.id) return;
+    setLoadingSub(true);
 
-  const handleUnsubscribe = () => {
-    setShowConfirmModal(true);
-  };
-
-  const handleConfirmCancel = async () => {
+    const prevCitas = [...citasDelServicio];
+    setCitasDelServicio(prev => prev.filter(c => c.id !== citaId));
     setShowConfirmModal(false);
-    if (!profile?.id) return;
-    setLoadingSub(true);
+
     try {
-      await unsubscribeFromService(Number(id), profile.id);
-      setIsSubscribed(false);
+      await deleteCita(profile.id, citaId);
     } catch (e: any) {
+      setCitasDelServicio(prevCitas);
       alert(e.message);
     } finally {
       setLoadingSub(false);
     }
   };
+
+  const chunkedReviews = (arr: Review[], size: number) => {
+    const chunks: Review[][] = [];
+    for (let i = 0; i < arr.length; i += size) chunks.push(arr.slice(i, i + size));
+    return chunks;
+  };
+
+  const reviewChunks = chunkedReviews(reviews, 4);
+  const carouselSettings = { slidesToShow: 1, slidesToScroll: 1, infinite: false, dots: true, arrows: true };
 
   if (!servicio) return <div className="p-4">Cargando servicio...</div>;
+
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8 pt-20">
-      <ServicioInfoCard
-        nombre={servicio.nombre}
-        descripcion={servicio.descripcion}
-        imagen={servicio.imagen}
-      />
-
+      <ServicioInfoCard nombre={servicio.nombre} descripcion={servicio.descripcion} imagen={servicio.imagen} />
       <BeneficiosBox beneficios={beneficios} />
-
-      <DisponibilidadBox
-        dias_disponibles={servicio.dias_disponibles}
-        hora_inicio={servicio.hora_inicio}
-        hora_termino={servicio.hora_termino}
-      />
+      <DisponibilidadBox dias_disponibles={servicio.dias_disponibles} hora_inicio={servicio.hora_inicio} hora_termino={servicio.hora_termino} />
 
       {reviews.length > 0 && (
         <div className="bg-white shadow-lg rounded-lg p-6">
@@ -162,13 +202,7 @@ const ServicePage: React.FC = () => {
               <div key={idx} className="p-4">
                 <div className="grid grid-cols-2 gap-6">
                   {chunk.map(r => (
-                    <ReviewCard
-                      key={r.id}
-                      nombre={r.Usuario.nombre}
-                      review={r.review}
-                      rating={r.rating}
-                      createdAt={r.createdAt}
-                    />
+                    <ReviewCard key={r.id} nombre={r.Usuario.nombre} review={r.review} rating={r.rating} createdAt={r.createdAt} />
                   ))}
                 </div>
               </div>
@@ -176,68 +210,70 @@ const ServicePage: React.FC = () => {
           </Slider>
         </div>
       )}
+      
+      {isAuthenticated ? (
+        profile?.rol === "socio" ? (
+          <AgendarBox
+            telefono={servicio.telefono_de_contacto}
+            email={servicio.email_de_contacto}
+            direccion={servicio.direccion_principal_del_prestador}
+            isSubscribed={isSubscribed}
+            loading={loadingSub}
+            onSubscribe={handleSubscribe}
+            onUnsubscribe={() => setShowConfirmModal(true)}
+          />
+        ) : (
+          <div className="bg-[#fef9e5] text-yellow-900 rounded-xl shadow p-6 mb-6 border-4 border-yellow-400 flex flex-col items-center text-center">
+            <h3 className="text-xl font-bold">Suscribirse es una funcionalidad exclusiva para socios</h3>
+            <p className="mt-2 py-3">Solo los usuarios con una <strong>membresía activa</strong> pueden suscribirse a los servicios. Únete a la comunidad para disfrutar de estos beneficios</p>
+            <button
+              onClick={() => navigate("/pricing")}
+              className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded hover:bg-yellow-500 transition"
+            >
+              Conocer beneficios de Socio
+            </button>
+          </div>
+        )
+      ) : (
+        <div>
+        </div>
+      )}
 
-      <div className="mt-8">
-      <AgendarBox
-        telefono={servicio.telefono_de_contacto}
-        email={servicio.email_de_contacto}
-        direccion={servicio.direccion_principal_del_prestador}
-        isSubscribed={isSubscribed}
-        loading={loadingSub}
-        onSubscribe={handleSubscribe}
-        onUnsubscribe={handleUnsubscribe}
-      />
+      {showSelectBloqueModal && (
+        <ModalSelectorDeBloque
+          onClose={() => setShowSelectBloqueModal(false)}
+          onContinue={(bloque) => {
+            setBloqueSeleccionado({
+              id: bloque.id,
+              dia: bloque.fecha.toLocaleDateString("es-ES", { weekday: "long" }),
+              inicio: bloque.inicio.slice(11, 16),
+              fin: bloque.fin.slice(11, 16),
+              disponible: true,
+            })
+            setShowSelectBloqueModal(false)
+            setShowSubscribeConfirm(true)
+          }}
+        />
+      )}
+
+
+
+
+      {showSubscribeConfirm && bloqueSeleccionado && (
+        <ModalConfirmarCita
+          bloque={bloqueSeleccionado}
+          onCancel={() => setShowSubscribeConfirm(false)}
+          onConfirm={handleConfirmSubscribe}
+        />
+      )}
 
       {showConfirmModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-            <h2 className="text-[1.5em] font-bold text-red-600 mb-4">¿Cancelar suscripción?</h2>
-            <p className="text-gray-700 mb-6">
-              ¿Estás seguro de que deseas cancelar tu suscripción a este servicio?
-            </p>
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={() => setShowConfirmModal(false)}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-              >
-                No, mantener
-              </button>
-              <button
-                onClick={handleConfirmCancel}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-              >
-                Sí, cancelar
-              </button>
-            </div>
-          </div>
-        </div>
+        <ModalCancelarCita
+          citas={citasDelServicio}
+          onCancelCita={handleCancelCita}
+          onClose={() => setShowConfirmModal(false)}
+        />
       )}
-
-      {showSubscribeConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-            <h2 className="text-[1.5em] font-bold text-[#009982] mb-4">¿Confirmar suscripción?</h2>
-            <p className="text-gray-700 mb-6">
-              ¿Estás seguro de que deseas suscribirte a este servicio?
-            </p>
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={() => setShowSubscribeConfirm(false)}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-              >
-                No, cancelar
-              </button>
-              <button
-                onClick={handleConfirmSubscribe}
-                className="px-4 py-2 bg-[#009982] text-white rounded hover:bg-[#007f6e]"
-              >
-                Sí, suscribirme
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      </div>
     </div>
   );
 };
