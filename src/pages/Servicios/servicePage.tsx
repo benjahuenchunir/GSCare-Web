@@ -52,6 +52,7 @@ const ServicePage: React.FC = () => {
 
   const isSubscribed = citasDelServicio.length > 0;
 
+  console.log(bloques, showRepeatModal)
   useEffect(() => {
     if (isAuthenticated) reloadProfile();
   }, [isAuthenticated, reloadProfile]);
