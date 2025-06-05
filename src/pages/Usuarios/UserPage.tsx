@@ -1,8 +1,7 @@
 //src/pages/Usuarios/UserPage.tsx
-import React, { useEffect, useState, useContext } from "react";
+import { useContext } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
-import { getUserByEmail, User, updateUserProfile } from "../../services/userService";
 import { UserContext } from "../../context/UserContext";
 import { Link } from "react-router-dom";
 
@@ -23,9 +22,9 @@ import UserIcon from '../../assets/Person.svg?react';
 // import TokenTestButton from "../../components/TokenTestButton";
 
 export default function UserPage() {
-  const { user, isAuthenticated } = useAuth0();
+  const { isAuthenticated } = useAuth0();
   const navigate = useNavigate();
-  const { profile, loading, reloadProfile } = useContext(UserContext);
+  const { profile, loading } = useContext(UserContext);
 
   const consejos = [
     { text: 'Bebe agua cada 2 horas para mantenerte hidratado 💧' },

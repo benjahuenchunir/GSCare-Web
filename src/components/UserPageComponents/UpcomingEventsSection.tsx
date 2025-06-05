@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 
 import { getServiciosConCitas } from "../../services/subscriptionService";
-import { getNextSessionDate, formatSessionTag } from "../../utils/dateHelper";
+import { formatSessionTag } from "../../utils/dateHelper";
 import { getUserActivities, Actividad } from "../../services/actividadService";
 import { UserContext } from "../../context/UserContext";
 import EmptyState from "../../common/EmptyState";
