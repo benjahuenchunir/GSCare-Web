@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import axios from "axios";
 import Slider from "react-slick";
@@ -12,6 +12,7 @@ import AgendarBox from "./AgendarBox";
 import ModalSelectorDeBloque from "../../components/Servicios/ModalSelectorDeBloque";
 import ModalConfirmarCita from "../../components/Servicios/ModalConfirmarCita";
 import ModalCancelarCita from "../../components/Servicios/ModalCancelarCita";
+import ExclusiveSubscriptionCard from "../../components/ExclusiveSubscriptionCard";
 
 import { createCita, getUserSubscriptions, deleteCita } from "../../services/subscriptionService";
 import { BloqueHorario } from "../../components/Servicios/SelectorDeBloque";
@@ -34,7 +35,6 @@ interface Servicio {
 
 const ServicePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { isAuthenticated, loginWithRedirect } = useAuth0();
   const { profile, reloadProfile, loading: loadingProfile } = useContext(UserContext);
 
@@ -224,16 +224,8 @@ const ServicePage: React.FC = () => {
             onUnsubscribe={() => setShowConfirmModal(true)}
           />
         ) : (
-          <div className="bg-[#fef9e5] text-yellow-900 rounded-xl shadow p-6 mb-6 border-4 border-yellow-400 flex flex-col items-center text-center">
-            <h3 className="text-xl font-bold">Suscribirse es una funcionalidad exclusiva para socios</h3>
-            <p className="mt-2 py-3">Solo los usuarios con una <strong>membresía activa</strong> pueden suscribirse a los servicios. Únete a la comunidad para disfrutar de estos beneficios</p>
-            <button
-              onClick={() => navigate("/pricing")}
-              className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded hover:bg-yellow-500 transition"
-            >
-              Conocer beneficios de Socio
-            </button>
-          </div>
+          <ExclusiveSubscriptionCard />
+
         )
       ) : (
         <div>

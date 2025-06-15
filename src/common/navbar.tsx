@@ -58,7 +58,6 @@ export default function Navbar() {
                   <FaUserAlt className="text-[#009982] text-[1.4em]" />
                   <div className="flex flex-col leading-tight text-left">
                     <span>Usuario</span>
-                    <span>Gratuito</span>
                   </div>
                 </>
               )}

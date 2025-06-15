@@ -13,6 +13,8 @@ import { SubscribedServicesSection } from "../../components/UserPageComponents/S
 import { UpcomingEventsSection }     from "../../components/UserPageComponents/UpcomingEventsSection";
 import QuickNavSection from "../../components/UserPageComponents/QuickNavSection";
 import RoleSwitcherButton from "../../components/RoleSwitcherButton";
+import BenefitsCard from "../../components/UserPageComponents/BenefictsCard";
+
 
 // Iconos SVG
 import CalendarIcon from '../../assets/Calendar2.svg?react';
@@ -102,6 +104,7 @@ export default function UserPage() {
         {/* === SI ES USUARIO GRATIS === */}
         {rol === "gratis" && (
           <>
+
             {/* Botones rápidos */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <QuickAccessButton
@@ -119,6 +122,10 @@ export default function UserPage() {
                 onClick={() => navigate("/edit-profile")}
               />
             </div>
+
+            {/* Mensaje de promocion socio */}
+            <BenefitsCard onClickCTA={() => navigate("/pricing")} />
+
 
             {/* QuickNav + Consejos en columnas */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -146,24 +153,7 @@ export default function UserPage() {
                 </div>
               </div>
             </div>
-            
-            <div className="bg-[#fef9e5] rounded-lg shadow p-6 mb-6 border-4 border-yellow-400 mx-auto w-full max-w-xl flex flex-col items-center text-center">
-              <h2 className="text-[1.2em] font-bold text-yellow-700 mb-2">
-                ¿Quieres acceder a más beneficios?
-              </h2>
-              <p className="text-gray-700 mb-4 text-[1em] leading-relaxed">
-                Forma parte de una comunidad activa de personas mayores que comparten intereses, se apoyan mutuamente y 
-                aprovechan todas las funcionalidades que GSCare tiene para ofrecer.
-              </p>
-              <button
-                onClick={() => navigate("/pricing")}
-                className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded hover:bg-yellow-500 transition"
-              >
-                Conocer beneficios de Socio
-              </button>
-            </div>
-
-            
+              
           </>
         )}
 
