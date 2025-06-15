@@ -24,10 +24,10 @@ const ExclusiveSubscriptionCard = () => {
             <Unlock className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h3 className="text-2xl font-bold bg-gradient-to-r from-[#006E5E] to-[#009982] bg-clip-text text-transparent mb-2">
+            <h3 className="text-[1.6em] font-bold bg-gradient-to-r from-[#006E5E] to-[#009982] bg-clip-text text-transparent mb-2">
               Suscríbete a funcionalidades exclusivas
             </h3>
-            <p className="text-gray-700 text-lg">
+            <p className="text-gray-700 text-[1.2em]">
               Solo los usuarios con una <span className="font-semibold text-[#006E5E]">membresía activa</span> pueden
               suscribirse a los servicios. Únete a la comunidad para disfrutar de estos beneficios.
             </p>
@@ -46,14 +46,14 @@ const ExclusiveSubscriptionCard = () => {
             <div className="p-2 rounded-lg bg-white shadow">{f.icon}</div>
             <span className="font-semibold text-gray-800">{f.label}</span>
               </div>
-              <p className="text-sm text-gray-600">{f.desc}</p>
+              <p className="text-[0.8em] text-gray-600">{f.desc}</p>
             </div>
           ))}
         </div>
 
         {/* CTA */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-[1em] text-gray-600">
           </div>
 
           <button
