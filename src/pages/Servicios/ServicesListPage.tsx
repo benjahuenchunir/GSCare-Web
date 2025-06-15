@@ -141,9 +141,7 @@ const ServicesListPage: React.FC = () => {
                         {s.nombre}
                       </h3>
 
-                      <p className="text-gray-700 text-[1em] mb-2">
-                        {s.descripcion}
-                      </p>
+
 
                       {comunas && comunas.length > 0 && (
                         <div className="text-[0.95em] text-gray-800 font-medium mb-4">

@@ -35,7 +35,7 @@ export default function PricingPage() {
 
   const plans: Plan[] = [
     {
-      name: "Gratis",
+      name: "Plan Básico",
       price: "0",
       currency: "CLP/mes",
       features: [
@@ -47,7 +47,7 @@ export default function PricingPage() {
       featured: false
     },
     {
-      name: "Socio",
+      name: "Plan Socio",
       price: "14.990",
       currency: "CLP/mes",
       features: [
@@ -75,14 +75,14 @@ export default function PricingPage() {
           <div
             key={plan.name}
             className={`flex-1 bg-white rounded-xl shadow-md border-4 ${
-              plan.featured ? "border-yellow-400" : "border-gray-300"
+              plan.featured ? "border-[#009982]" : "border-gray-300"
             }`}
           >
             {/* Encabezado */}
             <div
               className={`p-6 rounded-t-lg text-center ${
                 plan.featured
-                  ? "bg-yellow-400 text-black"
+                  ? "bg-[#009982] text-white"
                   : "bg-gray-200 text-gray-800"
               }`}
             >
@@ -96,7 +96,7 @@ export default function PricingPage() {
             <ul className="p-6 space-y-4">
               {plan.features.map((f, i) => (
                 <li key={i} className="flex items-start space-x-3">
-                  <FaLock className={`mt-1 ${plan.featured ? "text-yellow-500" : "text-gray-500"}`} />
+                  <FaLock className={`mt-1 ${plan.featured ? "text-[#009982]" : "text-gray-500"}`} />
                   <span className="text-[1.05em] text-gray-700">{f}</span>
                 </li>
               ))}
@@ -107,7 +107,7 @@ export default function PricingPage() {
               {plan.featured ? (
                 <button
                   onClick={handleSocioClick}
-                  className="inline-block w-full text-[1.1em] font-semibold py-3 rounded transition bg-yellow-500 text-black hover:bg-yellow-600"
+                  className="inline-block w-full text-[1.1em] font-semibold py-3 rounded transition bg-[#009982] text-white hover:bg-[#007e6e]"
                 >
                   Hacerse Socio
                 </button>
