@@ -17,6 +17,7 @@ import {
 import ActividadInfoCard from "./ActividadInfoCard";
 import ModalInscripcion from "./ModalInscripcion";
 import ActivityForum from "../../components/ActivityForum/ActivityForum";
+import ExclusiveSubscriptionCard from "../../components/ExclusiveSubscriptionCard";
 
 const formatearFecha = (fecha: string) => {
   const [a, m, d] = fecha.split("-");
@@ -117,7 +118,6 @@ const ActivityPage: React.FC = () => {
       }
 
       setYaInscrito(true);
-      setModalVisible(true);
     } catch (err: any) {
       console.error("Error al inscribirse:", err);
       alert(err.message || "Hubo un problema al inscribirse.");
@@ -264,6 +264,8 @@ const ActivityPage: React.FC = () => {
             Conocer beneficios de Socio
           </button>
         </div>
+        
+        <ExclusiveSubscriptionCard />
       )}
 
       {/* Modales */}

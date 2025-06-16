@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Search, Filter, Check } from "lucide-react";
 
 interface Producto {
   id: number;
@@ -49,55 +50,65 @@ const ProductosListPage: React.FC = () => {
 
   return (
     <main className="flex-1">
-      <div className="px-10 py-16 bg-gray-50 min-h-screen">
+      <div className="px-6 md:px-10 py-12 bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-[2em] font-bold text-secondary1 text-center mb-6">Productos</h1>
 
-          {/* Buscador */}
-          <div className="flex justify-center mb-6">
-            <input
-              type="text"
-              placeholder="Buscar productos…"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className="w-full md:w-2/5 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#62CBC9]"
-            />
+          {/* Buscador + Filtros */}
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 mb-10 w-full">
+              {/* Buscador */}
+              <div className="relative mb-5">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-6 h-6" />
+                <input
+                  type="text"
+                  placeholder="Buscar productos..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  className="w-full pl-14 pr-4 py-3 text-[1.05em] font-semibold border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#62CBC9] text-gray-800"
+                />
+              </div>
+
+              {/* Filtros */}
+              {categoriasUnicas.length > 0 && (
+                <>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Filter className="w-5 h-5 text-gray-500" />
+                    <span className="text-[1em] font-bold text-gray-800">Filtrar por categoría</span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
+                    {categoriasUnicas.map(cat => {
+                      const selected = selectedCategories.includes(cat);
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => toggleCategoria(cat)}
+                          className={`
+                            flex items-center gap-2 px-4 py-2 text-[1em] font-semibold rounded-full border transition
+                            ${selected
+                              ? "bg-[#009982]/20 text-[#009982] border-[#009982]"
+                              : "bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100"}
+                          `}
+                        >
+                          {selected && <Check className="w-4 h-4" />}
+                          {cat}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {selectedCategories.length > 0 && (
+                    <div className="mt-5 text-center">
+                      <button
+                        onClick={clearFilters}
+                        className="text-gray-600 hover:text-gray-800 text-[1em] font-bold underline underline-offset-4"
+                      >
+                        Limpiar filtros
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
           </div>
-
-          {/* Filtros */}
-          {categoriasUnicas.length > 0 && (
-            <>
-              <div className="flex flex-wrap justify-between items-center mb-4 gap-2 px-2">
-                <h2 className="text-lg font-semibold text-[#006881]">Filtrar por categoría:</h2>
-                {selectedCategories.length > 0 && (
-                  <button
-                    onClick={clearFilters}
-                    className="text-[1em] font-medium text-white bg-[#009982] hover:bg-[#006E5E] px-4 py-2 rounded-full transition"
-                  >
-                    Limpiar filtros ✕
-                  </button>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-10 px-2">
-                {categoriasUnicas.map(cat => {
-                  const selected = selectedCategories.includes(cat);
-                  return (
-                    <button
-                      key={cat}
-                      onClick={() => toggleCategoria(cat)}
-                      className={`text-[1em] font-medium rounded-full border px-4 py-[6px] text-center transition
-                        ${selected
-                          ? "bg-[#62CBC9] text-white border-transparent"
-                          : "bg-[#F5FCFB] text-[#006881] border-[#62CBC9]"}`}
-                    >
-                      {cat}
-                    </button>
-                  );
-                })}
-              </div>
-            </>
-          )}
 
           {/* Lista de productos */}
           {loading ? (
@@ -120,13 +131,12 @@ const ProductosListPage: React.FC = () => {
                     <h3 className="text-[1.5em] font-semibold text-[#009982] mb-2">
                       {p.nombre}
                     </h3>
-                    <p className="text-gray-800 text-[1em] mb-4">{p.descripcion}</p>
 
-                    <div className="space-y-2 text-[1em] mb-4">
-                      <div className="bg-gray-50 rounded-md px-3 py-2 text-gray-800">
+                    <div className="space-y-2 text-[1.05rem] mb-4">
+                      <div className="bg-gray-50 rounded-md px-3 py-2 text-gray-800 font-medium">
                         <span className="font-semibold">Marca:</span> {p.marca}
                       </div>
-                      <div className="bg-gray-50 rounded-md px-3 py-2 text-gray-800">
+                      <div className="bg-gray-50 rounded-md px-3 py-2 text-gray-800 font-medium">
                         <span className="font-semibold">Vendedor:</span> {p.nombre_del_vendedor}
                       </div>
                     </div>
@@ -135,7 +145,7 @@ const ProductosListPage: React.FC = () => {
                   <div className="flex justify-center mt-auto pt-4">
                     <button
                       onClick={() => navigate(`/productos/${p.id}`)}
-                      className="bg-[#009982] hover:bg-[#006E5E] text-white font-medium px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009982] transition"
+                      className="bg-[#009982] hover:bg-[#006E5E] text-white font-semibold text-[1rem] px-5 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009982] transition"
                     >
                       Más información
                     </button>
