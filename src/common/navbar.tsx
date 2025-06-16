@@ -1,6 +1,5 @@
-// src/components/Navbar.jsx
-import { useState, useContext } from "react";
-import { Link } from "react-router-dom";
+import { useState, useContext, useEffect } from "react";
+import { Link, NavLink } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import LoginButton from "../components/LoginButton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -12,44 +11,56 @@ export default function Navbar() {
   const { isAuthenticated, logout, isLoading } = useAuth0();
   const { profile } = useContext(UserContext);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   const handleLogout = () =>
     logout({ logoutParams: { returnTo: window.location.origin } });
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <nav className="w-full fixed top-0 left-0 z-50 bg-white shadow-md">
-      <div className="mx-auto flex items-center justify-between px-4 md:px-8 py-3">
-        {/* Sección Izquierda: Logo y condicionalmente Página Principal */}
+    <nav
+      className={`w-full fixed top-0 left-0 z-50 bg-white transition-all duration-300  ${
+        scrolled ? "shadow-lg" : "shadow-md"
+      }`}
+    >
+      <div className=" flex flex-wrap items-center justify-between px-4 md:px-8 py-3 max-w-7xl gap-y-2">
+        {/* Logo */}
         <div className="flex items-center space-x-4 md:space-x-6">
-          <Link
-            to={isAuthenticated ? "/user" : "/"}
-            className="flex items-center space-x-2"
-          >
-            <img
-              src="/assets/LogoSinTexto.png"
-              alt="Logo GSCare"
-              className="w-12 h-auto"
-            />
+          <Link to={isAuthenticated ? "/user" : "/"} className="flex items-center space-x-2">
+            <img src="/assets/LogoSinTexto.png" alt="Logo GSCare" className="w-12 h-auto" />
             <span className="text-[1.5em] font-semibold text-[#368990]">GSCare</span>
           </Link>
 
           {!isAuthenticated && (
             <div className="hidden md:block">
-              <Link to="/" className="text-[1.1em] text-gray-700 hover:text-gray-900">
+              <NavLink
+                to="/"
+                className={({ isActive }) =>
+                  `text-[1.05em] font-medium tracking-wide transition-colors px-4 py-2 rounded-full ${
+                    isActive
+                      ? "bg-[#E0F8F4] text-[#009982]"
+                      : "text-gray-700 hover:text-[#006881] hover:bg-gray-100"
+                  }`
+                }
+              >
                 Página Principal
-              </Link>
+              </NavLink>
             </div>
           )}
 
-          {/* Badge condicional por rol */}
           {!isLoading && isAuthenticated && profile?.rol && (
-            <div className="flex items-center gap-2 bg-gray-100 px-2 py-1 rounded-md ml-2 text-[#006881] text-[0.9em] font-semibold">
+            <div className="hidden md:flex items-center gap-2 bg-gray-100 px-2 py-1 rounded-md ml-2 text-[#006881] text-[0.9em] font-semibold">
               {profile.rol === "socio" ? (
                 <>
                   <FaCrown className="text-yellow-500 text-[1.4em]" />
-                  <div className="flex flex-col leading-tight text-left">
-                    <span className="text-yellow-700">Usuario</span>
-                    <span className="text-yellow-700">Socio</span>
+                  <div className="flex flex-col leading-tight text-left text-yellow-700">
+                    <span>Usuario</span>
+                    <span>Socio</span>
                   </div>
                 </>
               ) : (
@@ -62,24 +73,30 @@ export default function Navbar() {
         </div>
 
         {/* Desktop links */}
-        <div className="hidden md:flex text-[1.1em] items-center space-x-6">
+        <div className=" ">
           {!isLoading && isAuthenticated && (
             <>
-              <Link to="/user" className="text-gray-700 hover:text-gray-900">
-                Ver mi perfil
-              </Link>
-              <Link to="/games" className="text-gray-700 hover:text-gray-900">
-                Ver Juegos
-              </Link>
-              <Link to="/productos" className="text-gray-700 hover:text-gray-900">
-                Productos
-              </Link>
-              <Link to="/servicios" className="text-gray-700 hover:text-gray-900">
-                Servicios
-              </Link>
-              <Link to="/actividades" className="text-gray-700 hover:text-gray-900">
-                Actividades
-              </Link>
+              {[
+                { to: "/user", label: "Ver mi perfil" },
+                { to: "/games", label: "Ver Juegos" },
+                { to: "/productos", label: "Productos" },
+                { to: "/servicios", label: "Servicios" },
+                { to: "/actividades", label: "Actividades" },
+              ].map(({ to, label }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) =>
+                    `transition-all px-4 py-2 rounded-full font-medium tracking-wide ${
+                      isActive
+                        ? "bg-[#E0F8F4] text-[#009982]"
+                        : "text-gray-700 hover:text-[#006881] hover:bg-gray-100"
+                    }`
+                  }
+                >
+                  {label}
+                </NavLink>
+              ))}
             </>
           )}
 
@@ -87,7 +104,7 @@ export default function Navbar() {
             (isAuthenticated ? (
               <button
                 onClick={handleLogout}
-                className="bg-red-500 text-white font-bold px-4 py-2 rounded-md hover:bg-red-600 transition"
+                className="bg-[#EF4444] text-white font-semibold px-4 py-2 rounded-full hover:bg-[#DC2626] transition-colors whitespace-nowrap"
               >
                 Cerrar sesión
               </button>
@@ -108,55 +125,48 @@ export default function Navbar() {
 
       {/* Mobile dropdown */}
       {menuOpen && (
-        <div className="md:hidden text-[1.1em] bg-white shadow-md">
+        <div className="md:hidden text-[1.05em] bg-white shadow-md">
           <div className="flex flex-col space-y-2 px-4 py-4">
-            {/* Añadir Página Principal al menú móvil si no está autenticado */}
             {!isAuthenticated && (
-              <Link
+              <NavLink
                 to="/"
-                className="block text-gray-700 hover:text-gray-900"
+                className={({ isActive }) =>
+                  `block font-medium px-3 py-2 rounded-full transition-all ${
+                    isActive
+                      ? "bg-[#E0F8F4] text-[#009982]"
+                      : "text-gray-700 hover:text-[#006881] hover:bg-gray-100"
+                  }`
+                }
                 onClick={() => setMenuOpen(false)}
               >
                 Página Principal
-              </Link>
+              </NavLink>
             )}
+
             {!isLoading && isAuthenticated && (
               <>
-                <Link
-                  to="/user"
-                  className="block text-gray-700 hover:text-gray-900 "
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Ver mi perfil
-                </Link>
-                <Link
-                  to="/games"
-                  className="block text-gray-700 hover:text-gray-900 "
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Ver Juegos
-                </Link>
-                <Link
-                  to="/productos"
-                  className="block text-gray-700 hover:text-gray-900 "
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Productos
-                </Link>
-                <Link
-                  to="/servicios"
-                  className="block text-gray-700 hover:text-gray-900 "
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Servicios
-                </Link>
-                <Link
-                  to="/actividades"
-                  className="block text-gray-700 hover:text-gray-900"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Actividades
-                </Link>
+                {[
+                  { to: "/user", label: "Ver mi perfil" },
+                  { to: "/games", label: "Ver Juegos" },
+                  { to: "/productos", label: "Productos" },
+                  { to: "/servicios", label: "Servicios" },
+                  { to: "/actividades", label: "Actividades" },
+                ].map(({ to, label }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    className={({ isActive }) =>
+                      `block font-medium px-3 py-2 rounded-full transition-all ${
+                        isActive
+                          ? "bg-[#E0F8F4] text-[#009982]"
+                          : "text-gray-700 hover:text-[#006881] hover:bg-gray-100"
+                      }`
+                    }
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {label}
+                  </NavLink>
+                ))}
               </>
             )}
 
@@ -167,7 +177,7 @@ export default function Navbar() {
                     handleLogout();
                     setMenuOpen(false);
                   }}
-                  className="w-full text-left bg-red-500 text-white font-bold px-4 py-2 rounded-md hover:bg-red-600 transition"
+                  className="w-full text-left bg-[#EF4444] text-white font-semibold px-4 py-2 rounded-full hover:bg-[#DC2626] transition-colors"
                 >
                   Cerrar sesión
                 </button>
