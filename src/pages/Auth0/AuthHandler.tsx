@@ -24,10 +24,14 @@ const AuthHandler: React.FC = () => {
     if (user?.email) {
       // Chequear existencia en tu API
       getUserByEmail(user.email)
-        .then(async () => {
+        .then(async (dbUser) => {
           // Recarga el contexto antes de mostrar /user
           await reloadProfile();
-          navigate("/user", { replace: true });
+          if (dbUser.rol === "administrador") {
+            navigate("/admin", { replace: true })
+          } else {
+            navigate("/user", { replace: true })
+          }
         })
         .catch((err: any) => {
           if (err.status === 404) {
