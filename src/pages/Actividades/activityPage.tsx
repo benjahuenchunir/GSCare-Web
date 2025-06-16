@@ -11,24 +11,36 @@ import {
   fetchActividadById,
   fetchActividades,
   attendActivity,
-  cancelAttendanceGrupo
+  cancelAttendanceGrupo,
 } from "../../services/actividadService";
 
 import ActividadInfoCard from "./ActividadInfoCard";
 import ModalInscripcion from "./ModalInscripcion";
+import ActivityForum from "../../components/ActivityForum/ActivityForum";
 
 const formatearFecha = (fecha: string) => {
   const [a, m, d] = fecha.split("-");
   const meses = [
-    "enero", "febrero", "marzo", "abril", "mayo", "junio",
-    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+    "enero",
+    "febrero",
+    "marzo",
+    "abril",
+    "mayo",
+    "junio",
+    "julio",
+    "agosto",
+    "septiembre",
+    "octubre",
+    "noviembre",
+    "diciembre",
   ];
   return `${parseInt(d)} de ${meses[parseInt(m) - 1]} de ${a}`;
 };
 
 const ActivityPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { user, isAuthenticated, loginWithRedirect, getAccessTokenSilently } = useAuth0();
+  const { user, isAuthenticated, loginWithRedirect, getAccessTokenSilently } =
+    useAuth0();
 
   const [actividad, setActividad] = useState<Actividad | null>(null);
   const [grupoActividades, setGrupoActividades] = useState<Actividad[]>([]);
@@ -51,24 +63,27 @@ const ActivityPage: React.FC = () => {
 
         const todas = await fetchActividades();
         const claveAgrupacion = act.id_actividad_base ?? act.id;
-        const relacionadas = todas.filter(a =>
-          a.id === claveAgrupacion || a.id_actividad_base === claveAgrupacion
+        const relacionadas = todas.filter(
+          (a) =>
+            a.id === claveAgrupacion || a.id_actividad_base === claveAgrupacion
         );
 
-        setGrupoActividades(relacionadas.sort((a, b) => a.fecha.localeCompare(b.fecha)));
+        setGrupoActividades(
+          relacionadas.sort((a, b) => a.fecha.localeCompare(b.fecha))
+        );
       })
-      .catch(err => console.error("Error al cargar actividad:", err));
+      .catch((err) => console.error("Error al cargar actividad:", err));
   }, [id]);
 
   useEffect(() => {
     if (!isAuthenticated || !user?.email || !actividad) return;
     getUserByEmail(user.email)
-      .then(u =>
-        getAssistantsByActivity(actividad.id).then(list =>
-          setYaInscrito(list.some(a => a.id_usuario_asistente === u.id))
+      .then((u) =>
+        getAssistantsByActivity(actividad.id).then((list) =>
+          setYaInscrito(list.some((a) => a.id_usuario_asistente === u.id))
         )
       )
-      .catch(err => console.warn("No se pudo verificar inscripción:", err));
+      .catch((err) => console.warn("No se pudo verificar inscripción:", err));
   }, [id, isAuthenticated, user, actividad]);
 
   const handleInscribirse = async () => {
@@ -77,8 +92,8 @@ const ActivityPage: React.FC = () => {
         authorizationParams: {
           screen_hint: "login",
           ui_locales: "es",
-          redirect_uri: import.meta.env.VITE_AUTH0_CALLBACK_URL
-        }
+          redirect_uri: import.meta.env.VITE_AUTH0_CALLBACK_URL,
+        },
       });
     }
 
@@ -139,7 +154,9 @@ const ActivityPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Modalidad */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">Modalidad</h2>
+          <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">
+            Modalidad
+          </h2>
           {actividad.modalidad === "presencial" ? (
             <div className="grid grid-cols-1 gap-4 text-gray-800">
               <div className="flex items-start gap-3">
@@ -179,28 +196,39 @@ const ActivityPage: React.FC = () => {
 
         {/* Fechas y horarios */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">Fechas y Horarios</h2>
+          <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">
+            Fechas y Horarios
+          </h2>
           <ul className="list-disc list-inside text-gray-800 space-y-1">
             {grupoActividades.map((a, i) => (
               <li key={i}>
-                {formatearFecha(a.fecha)} — {a.hora_inicio?.slice(0, 5)} a {a.hora_final?.slice(0, 5)}
+                {formatearFecha(a.fecha)} — {a.hora_inicio?.slice(0, 5)} a{" "}
+                {a.hora_final?.slice(0, 5)}
               </li>
             ))}
           </ul>
         </div>
       </div>
 
+      {/* Foro de Discusión */}
+      <div className="bg-white rounded-lg shadow">
+        <ActivityForum activityId={actividad.id} />
+      </div>
+
       {profile?.rol === "socio" ? (
         <div className="bg-[#009982] text-white rounded-lg p-6 text-center">
           <h3 className="font-bold mb-2">¿Quieres participar?</h3>
-          <p className="mb-4">Te inscribirás a todos los bloques de esta actividad.</p>
+          <p className="mb-4">
+            Te inscribirás a todos los bloques de esta actividad.
+          </p>
           {yaInscrito ? (
             <div className="flex flex-col items-center gap-3">
               <div className="py-2 px-6 bg-white text-[#009982] rounded-lg font-semibold border border-[#009982]">
                 Ya estás inscrito 😊
               </div>
               <p className="text-white text-center">
-                ¿Quieres cancelar tu inscripción a todos los bloques? Puedes hacerlo abajo.
+                ¿Quieres cancelar tu inscripción a todos los bloques? Puedes
+                hacerlo abajo.
               </p>
               <button
                 onClick={() => setShowConfirmModal(true)}
@@ -224,11 +252,13 @@ const ActivityPage: React.FC = () => {
             Esta funcionalidad es exclusiva para socios
           </h2>
           <p className="text-gray-700 mb-4 text-[1em] leading-relaxed">
-            Solo los usuarios con <strong>membresía activa</strong> pueden participar en actividades dadas por otros usuarios.
-            Forma parte de la comunidad GSCare y aprovecha todos los beneficios pensados para ti.
+            Solo los usuarios con <strong>membresía activa</strong> pueden
+            participar en actividades dadas por otros usuarios. Forma parte de
+            la comunidad GSCare y aprovecha todos los beneficios pensados para
+            ti.
           </p>
           <button
-            onClick={() => window.location.href = "/pricing"}
+            onClick={() => (window.location.href = "/pricing")}
             className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded hover:bg-yellow-500 transition"
           >
             Conocer beneficios de Socio
@@ -240,9 +270,12 @@ const ActivityPage: React.FC = () => {
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-            <h2 className=" font-bold text-red-600 mb-4">¿Cancelar inscripción?</h2>
+            <h2 className=" font-bold text-red-600 mb-4">
+              ¿Cancelar inscripción?
+            </h2>
             <p className="text-gray-700 mb-4">
-              ¿Estás seguro de que deseas cancelar tu inscripción a <strong>todos los bloques</strong> de esta actividad?
+              ¿Estás seguro de que deseas cancelar tu inscripción a{" "}
+              <strong>todos los bloques</strong> de esta actividad?
             </p>
             <div className="flex justify-end gap-4">
               <button
@@ -265,9 +298,12 @@ const ActivityPage: React.FC = () => {
       {showSubscribeConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-            <h2 className="text-[1.5em] font-bold text-[#009982] mb-4">¿Confirmar inscripción?</h2>
+            <h2 className="text-[1.5em] font-bold text-[#009982] mb-4">
+              ¿Confirmar inscripción?
+            </h2>
             <p className="text-gray-700 mb-6">
-              Te inscribirás a <strong>todos los bloques</strong> de esta actividad recurrente. ¿Deseas continuar?
+              Te inscribirás a <strong>todos los bloques</strong> de esta
+              actividad recurrente. ¿Deseas continuar?
             </p>
             <div className="flex justify-end gap-4">
               <button
