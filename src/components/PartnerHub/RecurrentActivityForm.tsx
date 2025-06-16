@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent } from "react";
+import React, { ChangeEvent, FormEvent } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
@@ -9,12 +9,16 @@ export interface RecurrentActivityForm {
   lugar?: string;
   comuna?: string;
   fecha: string;
-  fecha_termino: string; // Nuevo campo
+  fecha_termino: string;
+  // hora_inicio y hora_final no están en initialRecurrentActividad en PartnerHub.tsx,
+  // pero sí en la interfaz aquí. Asumo que deben estar.
+  hora_inicio?: string; 
+  hora_final?: string;
   imagen?: string;
   categoria?: string;
   semanas_recurrencia: number;
-  dias_seleccionados: boolean[];          // Uno por cada día de la semana
-  horarios_por_dia: string[][];           // Cada elemento es un array de [horaInicio, horaFin] para ese día
+  dias_seleccionados: boolean[];
+  horarios_por_dia: string[][];
 }
 
 interface RecurrentActivityFormProps {
@@ -54,12 +58,14 @@ export default function RecurrentActivityForm({
 
   const handleHorarioChange = (
     dia: number,
-    index: number,
+    index: number, // 0 para inicio, 1 para fin
     e: ChangeEvent<HTMLInputElement>
   ) => {
     const { value } = e.target;
-    const nuevosHorarios = [...actividad.horarios_por_dia];
-    nuevosHorarios[dia] = [...nuevosHorarios[dia]];
+    const nuevosHorarios = actividad.horarios_por_dia.map((horariosDia, i) =>
+      i === dia ? [...(horariosDia || ["", ""])] : (horariosDia || ["", ""])
+    );
+    if (!nuevosHorarios[dia]) nuevosHorarios[dia] = ["", ""]; // Asegurar que el array exista
     nuevosHorarios[dia][index] = value;
     onChange({
       target: { name: "horarios_por_dia", value: nuevosHorarios },
@@ -71,11 +77,20 @@ export default function RecurrentActivityForm({
       ? [...actividad.dias_seleccionados]
       : new Array(7).fill(false);
     seleccionados[dia] = checked;
+
+    // Si se deselecciona un día, limpiar sus horarios
+    const nuevosHorarios = [...actividad.horarios_por_dia];
+    if (!checked) {
+      nuevosHorarios[dia] = ["", ""];
+    }
+    
     onChange({ target: { name: "dias_seleccionados", value: seleccionados } } as any);
+    onChange({ target: { name: "horarios_por_dia", value: nuevosHorarios } } as any);
   };
 
+
   return (
-    <div className="max-w-7xl mx-auto p-4">
+    <div className="max-w-screen-2xl mx-auto p-4"> {/* Cambiado de max-w-7xl a max-w-screen-2xl */}
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-center flex-1">

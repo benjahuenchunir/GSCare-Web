@@ -28,7 +28,7 @@ export default function Navbar() {
         scrolled ? "shadow-lg" : "shadow-md"
       }`}
     >
-      <div className=" flex flex-wrap items-center justify-between px-4 md:px-8 py-3 max-w-7xl gap-y-2">
+      <div className=" flex flex-wrap items-center justify-between px-4 md:px-8 py-3 gap-y-2">
         {/* Logo */}
         <div className="flex items-center space-x-4 md:space-x-6">
           <Link to={isAuthenticated ? "/user" : "/"} className="flex items-center space-x-2">
@@ -78,6 +78,7 @@ export default function Navbar() {
             <>
               {[
                 { to: "/user", label: "Ver mi perfil" },
+                { to: "/mi-agenda", label: "Mi Agenda" },
                 { to: "/games", label: "Ver Juegos" },
                 { to: "/productos", label: "Productos" },
                 { to: "/servicios", label: "Servicios" },
@@ -147,6 +148,7 @@ export default function Navbar() {
               <>
                 {[
                   { to: "/user", label: "Ver mi perfil" },
+                  { to: "/user/mi-agenda", label: "Mi Agenda" },
                   { to: "/games", label: "Ver Juegos" },
                   { to: "/productos", label: "Productos" },
                   { to: "/servicios", label: "Servicios" },

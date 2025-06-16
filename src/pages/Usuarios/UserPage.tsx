@@ -69,7 +69,6 @@ export default function UserPage() {
         {rol === "gratis" && (
           <>
 
-            {/* Botones rápidos */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <QuickAccessButton icon={<CalendarIcon className="w-8 h-8 text-primary" />} label="Calendario" onClick={() => navigate("/mi-agenda")} />
               <QuickAccessButton icon={<HeadsetIcon className="w-8 h-8 text-accent3" />} label="Soporte" />
