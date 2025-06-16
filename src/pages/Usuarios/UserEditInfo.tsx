@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
 import { getUserByEmail, updateUserProfile, deleteCurrentUser, User } from "../../services/userService";
+import { getAllUsers } from "../../services/adminService";
 import regionesData from "../../assets/data/comunas-regiones.json";
 
 export default function EditProfilePage() {
@@ -76,7 +77,7 @@ export default function EditProfilePage() {
       const token = await getAccessTokenSilently();
       const {rol, ...safeData} = form; // Excluimos el rol del objeto
       await updateUserProfile(safeData as User, token);
-      navigate("/user");
+      navigate(rol === "administrador" ? "/admin" : "/user");
     } catch (err) {
       console.error("Error al obtener token:", err);
       setErrors({ general: "No se pudo obtener el token. Intenta iniciar sesión nuevamente." });
@@ -90,8 +91,20 @@ export default function EditProfilePage() {
     )
   ) {
     try {
-      const token = await getAccessTokenSilently(); // ✅ dentro de función async
-      await deleteCurrentUser(token, form.id); // ✅ token es un string
+      const token = await getAccessTokenSilently();
+
+      // Verificamos si es admin y si hay más
+      if (form.rol === "administrador") {
+        const allUsers = await getAllUsers(token);
+        const adminCount = allUsers.filter(u => u.rol === "administrador").length;
+
+        if (adminCount <= 1) {
+          alert("No puedes eliminar tu cuenta porque eres el único administrador.");
+          return;
+        }
+      }
+
+      await deleteCurrentUser(token, form.id);
 
       logout({
         logoutParams: {

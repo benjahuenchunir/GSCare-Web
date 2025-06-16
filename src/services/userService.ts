@@ -77,3 +77,16 @@ export async function deleteCurrentUser(token: string, dbUserId: number): Promis
     throw new Error("Error deleting user from database");
   }
 }
+
+export async function deleteUserById(id: number, token: string): Promise<void> {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/usuarios/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Error al eliminar el usuario");
+  }
+}
