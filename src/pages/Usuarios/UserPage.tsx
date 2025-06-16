@@ -13,6 +13,7 @@ import { UpcomingEventsSection } from "../../components/UserPageComponents/Upcom
 import QuickNavSection from "../../components/UserPageComponents/QuickNavSection";
 import RoleSwitcherButton from "../../components/RoleSwitcherButton";
 import BenefitsCard from "../../components/UserPageComponents/BenefictsCard";
+import PartnerHub from "../../components/PartnerHub/PartnerHub";
 
 // Iconos SVG
 import CalendarIcon from '../../assets/Calendar2.svg?react';
