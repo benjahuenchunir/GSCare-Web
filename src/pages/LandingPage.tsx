@@ -7,8 +7,8 @@ function LandingPage() {
 	return (
     <div className="landing-page w-full mx-auto">
 			<Hero />
-			<Services />
 			<BenefitsSection />
+			<Services />
 			<Footer />
 		</div>
 	);

@@ -128,8 +128,9 @@ const ProductosListPage: React.FC = () => {
                       alt={p.nombre}
                       className="w-full h-40 object-cover rounded-md mb-4"
                     />
-                    <h3 className="text-[1.5em] font-bold text-[#009982] mb-2">{p.nombre}</h3>
-                    <p className="text-gray-800 text-[1.05rem] font-medium mb-4">{p.descripcion}</p>
+                    <h3 className="text-[1.5em] font-semibold text-[#009982] mb-2">
+                      {p.nombre}
+                    </h3>
 
                     <div className="space-y-2 text-[1.05rem] mb-4">
                       <div className="bg-gray-50 rounded-md px-3 py-2 text-gray-800 font-medium">

@@ -112,6 +112,9 @@ const Agenda = () => {
     return () => clearInterval(interval);
   }, [isAuthenticated, user]);
 
+  // Filtrar eventos: solo mostrar si el usuario es socio
+  const eventosFiltrados = profile?.rol === "socio" ? eventos : [];
+
   if (loading) return <p className="text-center mt-10">Cargando agenda…</p>;
 
   // ✅ Se llama cuando se hace clic en "Cancelar" en el modal del evento
@@ -168,7 +171,7 @@ return (
       <div className="bg-white p-4 rounded-xl shadow">
         <Calendar
           localizer={localizer}
-          events={eventos}
+          events={eventosFiltrados}
           startAccessor="start"
           endAccessor="end"
           views={['month', 'week', 'day']}

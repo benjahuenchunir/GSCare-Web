@@ -16,6 +16,7 @@ import {
 
 import ActividadInfoCard from "./ActividadInfoCard";
 import ModalInscripcion from "./ModalInscripcion";
+import ExclusiveSubscriptionCard from "../../components/ExclusiveSubscriptionCard";
 
 const formatearFecha = (fecha: string) => {
   const [a, m, d] = fecha.split("-");
@@ -102,7 +103,6 @@ const ActivityPage: React.FC = () => {
       }
 
       setYaInscrito(true);
-      setModalVisible(true);
     } catch (err: any) {
       console.error("Error al inscribirse:", err);
       alert(err.message || "Hubo un problema al inscribirse.");
@@ -219,21 +219,7 @@ const ActivityPage: React.FC = () => {
           )}
         </div>
       ) : (
-        <div className="bg-[#fef9e5] text-yellow-900 rounded-xl shadow p-6 border-4 border-yellow-400 flex flex-col items-center text-center">
-          <h2 className="text-[1.2em] font-bold text-yellow-700 mb-2">
-            Esta funcionalidad es exclusiva para socios
-          </h2>
-          <p className="text-gray-700 mb-4 text-[1em] leading-relaxed">
-            Solo los usuarios con <strong>membresía activa</strong> pueden participar en actividades dadas por otros usuarios.
-            Forma parte de la comunidad GSCare y aprovecha todos los beneficios pensados para ti.
-          </p>
-          <button
-            onClick={() => window.location.href = "/pricing"}
-            className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded hover:bg-yellow-500 transition"
-          >
-            Conocer beneficios de Socio
-          </button>
-        </div>
+        <ExclusiveSubscriptionCard />
       )}
 
       {/* Modales */}

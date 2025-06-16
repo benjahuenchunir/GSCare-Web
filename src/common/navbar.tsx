@@ -4,7 +4,6 @@ import { useAuth0 } from "@auth0/auth0-react";
 import LoginButton from "../components/LoginButton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { FaUserAlt } from "react-icons/fa";
 import { FaCrown } from "react-icons/fa6";
 import { UserContext } from "../context/UserContext";
 
@@ -66,11 +65,7 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  <FaUserAlt className="text-[#009982] text-[1.4em]" />
-                  <div className="flex flex-col leading-tight text-left">
-                    <span>Usuario</span>
-                    <span>Gratuito</span>
-                  </div>
+
                 </>
               )}
             </div>

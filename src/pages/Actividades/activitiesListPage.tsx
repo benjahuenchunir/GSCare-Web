@@ -3,14 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { fetchActividades, Actividad } from "../../services/actividadService";
 import { Search, Filter, Check } from "lucide-react";
 
-const formatearFecha = (fecha: string) => {
-  const [a, m, d] = fecha.split("-");
-  const meses = [
-    "enero", "febrero", "marzo", "abril", "mayo", "junio",
-    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
-  ];
-  return `${parseInt(d)} de ${meses[parseInt(m) - 1]} de ${a}`;
-};
+
 
 const ActividadesListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -138,10 +131,7 @@ const ActividadesListPage: React.FC = () => {
                       <p className="text-gray-800 text-[1em] mb-4">{a.descripcion}</p>
 
                       <div className="space-y-2 mb-4">
-                        <div className="bg-gray-50 rounded-md px-3 py-2 text-[1em] text-gray-800">
-                          <span className="font-semibold">Fechas: </span>
-                          {grupo.map(g => formatearFecha(g.fecha)).join(", ")}
-                        </div>
+
 
                         <div className="bg-gray-50 rounded-md px-3 py-2 text-[1em] text-gray-800">
                           <span className="font-semibold">Modalidad: </span>{a.modalidad === "presencial" ? "Presencial" : "Online"}

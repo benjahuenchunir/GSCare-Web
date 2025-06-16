@@ -12,7 +12,7 @@ import { SubscribedServicesSection } from "../../components/UserPageComponents/S
 import { UpcomingEventsSection } from "../../components/UserPageComponents/UpcomingEventsSection";
 import QuickNavSection from "../../components/UserPageComponents/QuickNavSection";
 import RoleSwitcherButton from "../../components/RoleSwitcherButton";
-import PartnerHub from "../../components/PartnerHub/PartnerHub";
+import BenefitsCard from "../../components/UserPageComponents/BenefictsCard";
 
 // Iconos SVG
 import CalendarIcon from '../../assets/Calendar2.svg?react';
@@ -68,12 +68,19 @@ export default function UserPage() {
         {/* === GRATIS === */}
         {rol === "gratis" && (
           <>
+
+            {/* Botones rápidos */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <QuickAccessButton icon={<CalendarIcon className="w-8 h-8 text-primary" />} label="Calendario" onClick={() => navigate("/mi-agenda")} />
               <QuickAccessButton icon={<HeadsetIcon className="w-8 h-8 text-accent3" />} label="Soporte" />
               <QuickAccessButton icon={<UserIcon className="w-8 h-8 text-accent2" />} label="Mi perfil" onClick={() => navigate("/edit-profile")} />
             </div>
 
+            {/* Mensaje de promocion socio */}
+            <BenefitsCard onClickCTA={() => navigate("/pricing")} />
+
+
+            {/* QuickNav + Consejos en columnas */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-1">
                 <QuickNavSection />
@@ -88,17 +95,6 @@ export default function UserPage() {
                   ))}
                 </div>
               </div>
-            </div>
-
-            <div className="bg-[#fef9e5] rounded-lg shadow p-6 border-4 border-yellow-400 mx-auto max-w-xl text-center">
-              <h2 className="text-[1.2em] font-bold text-yellow-700 mb-2">¿Quieres acceder a más beneficios?</h2>
-              <p className="text-gray-700 mb-4">Forma parte de una comunidad activa de personas mayores que comparten intereses y aprovechan todas las funcionalidades de GSCare.</p>
-              <button
-                onClick={() => navigate("/pricing")}
-                className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded hover:bg-yellow-500 transition"
-              >
-                Conocer beneficios de Socio
-              </button>
             </div>
           </>
         )}
