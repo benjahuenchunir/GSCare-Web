@@ -8,6 +8,7 @@ import {
   Beneficio
 } from "../../services/serviceService";
 import EmptyState from "../../common/EmptyState";
+import { Search, Filter, Check, MapPin  } from "lucide-react";
 
 const ServicesListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -55,66 +56,72 @@ const ServicesListPage: React.FC = () => {
     );
 
   const agrupados = displayed.reduce((map, servicio) => {
-    const clave = servicio.id_servicio_base ?? servicio.id; // Usa id si no hay base
+    const clave = servicio.id_servicio_base ?? servicio.id;
     if (!map[clave]) map[clave] = [];
     map[clave].push(servicio);
     return map;
   }, {} as Record<string, (Servicio & { beneficios: Beneficio[] })[]>);
 
-
   return (
     <main className="flex-1">
-      <div className="px-10 py-16 bg-gray-50 min-h-screen">
+      <div className="px-6 md:px-10 py-12 bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-center mb-6">
-            <h1 className="text-[2em] font-bold text-secondary1 mb-4">Servicios</h1>
-          </div>
+          {/* Buscador + Filtros */}
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 mb-10 w-full">
+            {/* Buscador */}
+            <div className="relative mb-5">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-6 h-6" />
+              <input
+                type="text"
+                placeholder="Buscar servicios..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="w-full pl-14 pr-4 py-3 text-[1.05em] font-semibold border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#62CBC9]"
+              />
+            </div>
 
-          {/* Buscador */}
-          <div className="flex justify-center mb-6">
-            <input
-              type="text"
-              placeholder="Buscar servicios…"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className="w-full md:w-2/5 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#62CBC9]"
-            />
-          </div>
+            {/* Filtros */}
+            {beneficiosCat.length > 0 && (
+              <>
+                <div className="flex items-center gap-2 mb-3">
+                  <Filter className="w-4 h-4 text-gray-500" />
+                  <span className="text-[1em] font-bold text-gray-700">Filtros</span>
+                </div>
 
-          {/* Filtros */}
-          {beneficiosCat.length > 0 && (
-            <>
-              <div className="flex flex-wrap justify-between items-center mb-4 gap-2 px-2">
-                <h2 className="text-lg font-semibold text-[#006881]">Filtrar por beneficios:</h2>
+                <div className="flex flex-wrap gap-2">
+                  {beneficiosCat.map(b => {
+                    const selected = selectedBenefits.includes(b.id);
+                    return (
+                      <button
+                        key={b.id}
+                        onClick={() => toggleBenefit(b.id)}
+                        className={`
+                          flex items-center gap-1 px-3 py-1.5 text-[1em] rounded-full border transition font-semibold
+                          ${selected
+                            ? "bg-[#009982]/10 text-[#009982] border-[#009982]"
+                            : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"}
+                        `}
+                      >
+                        <Check className="w-4 h-4" />
+                        {b.nombre}
+                      </button>
+                    );
+                  })}
+                </div>
+
                 {selectedBenefits.length > 0 && (
-                  <button
-                    onClick={clearFilters}
-                    className="text-[1em] font-medium text-white bg-[#009982] hover:bg-[#006E5E] px-4 py-2 rounded-full transition"
-                  >
-                    Limpiar filtros ✕
-                  </button>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-10 px-2">
-                {beneficiosCat.map(b => {
-                  const selected = selectedBenefits.includes(b.id);
-                  return (
+                  <div className="mt-4 text-center">
                     <button
-                      key={b.id}
-                      onClick={() => toggleBenefit(b.id)}
-                      className={`text-[1em] font-medium rounded-full border px-4 py-[6px] text-center transition
-                        ${selected
-                          ? "bg-[#62CBC9] text-white border-transparent"
-                          : "bg-[#F5FCFB] text-[#006881] border-[#62CBC9]"}`}
+                      onClick={clearFilters}
+                      className="text-gray-500 hover:text-gray-700 text-[1em] underline underline-offset-4"
                     >
-                      {b.nombre}
+                      Limpiar filtros
                     </button>
-                  );
-                })}
-              </div>
-            </>
-          )}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
 
           {/* Lista de servicios */}
           {loading ? (
@@ -124,7 +131,6 @@ const ServicesListPage: React.FC = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {Object.values(agrupados).map((grupo) => {
-                // Usamos el primero del grupo para mostrar info general
                 const s = grupo[0];
                 const comunas = s.comunas_a_las_que_hace_domicilio
                   ?.split(",")
@@ -136,47 +142,43 @@ const ServicesListPage: React.FC = () => {
                     key={s.id}
                     className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition flex flex-col justify-between h-full"
                   >
-                    <div>
-                      <h3 className="text-[1.5em] font-semibold text-[#009982] mb-2">
+                    <div className="mb-4">
+                      <h3 className="text-[1.3em] font-bold text-[#009982] mb-2">
                         {s.nombre}
                       </h3>
 
-                      <p className="text-gray-700 text-[1em] mb-2">
-                        {s.descripcion}
-                      </p>
+
 
                       {comunas && comunas.length > 0 && (
-                        <div className="text-[0.95em] text-gray-800 font-medium mb-4">
-                          <span className="inline-flex items-center gap-1">
-                            <span className="text-[#CD3272]">📍</span>
-                            <span>Comunas donde se ofrece:</span>
-                          </span>
-                          <p className="mt-1 ml-5 text-[0.95em] font-normal text-gray-800">
+                        <div className="text-[1em] text-gray-800 font-medium mb-4">
+                            <div className="flex items-center gap-2 text-[#CD3272] mb-1">
+                              <MapPin className="w-5 h-5" />
+                              <span className="text-gray-800 font-semibold">Comunas donde se ofrece:</span>
+                            </div>
+
+                          <p className="ml-6 text-[0.95em] font-normal text-gray-800">
                             {comunas.join(", ")}
                           </p>
                         </div>
                       )}
 
                       {s.beneficios.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mb-3">
+                        <ul className="flex flex-col gap-1 text-[1em] text-[#009982] font-medium mb-3 ml-1">
                           {s.beneficios.map(b => (
-                            <span
-                              key={b.id}
-                              className="bg-[#F5FCFB] text-[#006881] text-[1em] px-3 py-1 rounded-md"
-                            >
-                              {b.nombre}
-                            </span>
+                            <li key={b.id} className="flex items-center gap-2">
+                              <Check className="w-4 h-4 text-[#009982]" /> {b.nombre}
+                            </li>
                           ))}
-                        </div>
+                        </ul>
                       )}
                     </div>
 
-                    <div className="flex justify-center mt-auto pt-4">
+                    <div className="mt-auto">
                       <button
                         onClick={() => navigate(`/servicios/${s.id}`)}
-                        className="bg-[#009982] hover:bg-[#006E5E] text-white font-medium px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009982] transition"
+                        className="w-full  bg-[#009982] text-white font-semibold px-6 py-3 rounded-xl hover:opacity-90 transition flex items-center justify-center gap-2"
                       >
-                        Más información
+                        Más información <span className="">→</span>
                       </button>
                     </div>
                   </div>

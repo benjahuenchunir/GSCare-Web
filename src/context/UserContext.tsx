@@ -4,7 +4,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { getUserByEmail, User } from "../services/userService";
 
 interface UserContextValue {
-  profile: User | null;
+  profile: User | null | undefined; 
   loading: boolean;
   reloadProfile: () => Promise<void>;
 }
@@ -17,18 +17,21 @@ export const UserContext = createContext<UserContextValue>({
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user, isAuthenticated, isLoading } = useAuth0();
-  const [profile, setProfile] = useState<User | null>(null);
+  const [profile, setProfile] = useState<User | null | undefined>(undefined);
   const [loading, setLoading] = useState(true);
 
   const reloadProfile = useCallback(async () => {
-    if (!user?.email) return;
+    if (!user?.email) {
+      setProfile(null);
+      return;
+    }
     setLoading(true);
     try {
       const data = await getUserByEmail(user.email);
       setProfile(data);
     } catch (err) {
       console.error("Error al recargar perfil:", err);
-      setProfile(null);
+      setProfile(null); // explícito: usuario no encontrado
     } finally {
       setLoading(false);
     }
