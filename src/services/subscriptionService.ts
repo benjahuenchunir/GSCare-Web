@@ -12,11 +12,15 @@ export const isUserSubscribed = async (servicioId: number, userId: number): Prom
   }
 };
 
-export const createCita = async (userId: number, bloqueHorarioId: number): Promise<void> => {
+export const createCita = async (userId: number, bloqueHorarioId: number, token: string): Promise<void> => {
   try {
     const res = await axios.post(`${API_URL}/citas`, {
       id_usuario: userId,
       id_bloque: bloqueHorarioId
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     });
     console.log("Cita creada exitosamente", res.data);
   } catch (error: any) {

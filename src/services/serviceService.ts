@@ -33,7 +33,7 @@ export async function fetchServicios(): Promise<Servicio[]> {
   return await res.json();
 }
 
-// Nuevo: trae sólo los beneficios de un servicio
+// Trae sólo los beneficios de un servicio
 export async function fetchBeneficiosPorServicio(id: number): Promise<Beneficio[]> {
   const res = await fetch(`${API_URL}/beneficios/servicio/${id}`);
   if (!res.ok) {
@@ -49,4 +49,35 @@ export async function fetchBeneficios(): Promise<Beneficio[]> {
   const res = await fetch(`${API_URL}/beneficios`);
   if (!res.ok) throw new Error("Error fetching catálogo de beneficios");
   return await res.json();
+}
+
+// Obtiene el promedio de calificación de un servicio
+export async function fetchPromedioPorServicio(id: number): Promise<{ promedio: number | undefined, total: number }> {
+  try {
+    const res = await fetch(`${API_URL}/servicios_ratings/servicio/${id}/promedio`);
+    if (!res.ok) {
+      // Si no hay endpoint de promedio, intentamos contar las reseñas
+      const res2 = await fetch(`${API_URL}/servicios_ratings/servicio/${id}`);
+      if (!res2.ok) return { promedio: undefined, total: 0 };
+      const data2 = await res2.json();
+      return { promedio: undefined, total: Array.isArray(data2) ? data2.length : 0 };
+    }
+    const data = await res.json();
+    // Si el backend no da total, lo calculamos
+    let total = data.total;
+    if (total === undefined) {
+      const res2 = await fetch(`${API_URL}/servicios_ratings/servicio/${id}`);
+      if (!res2.ok) total = 0;
+      else {
+        const data2 = await res2.json();
+        total = Array.isArray(data2) ? data2.length : 0;
+      }
+    }
+    return {
+      promedio: data.promedio !== undefined ? parseFloat(data.promedio) : undefined,
+      total
+    };
+  } catch {
+    return { promedio: undefined, total: 0 };
+  }
 }
