@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import axios from "axios";
@@ -9,15 +9,18 @@ import ReviewCard from "./ReviewCard";
 import BeneficiosBox from "./BeneficiosBox";
 import DisponibilidadBox from "./DisponibilidadBox";
 import AgendarBox from "./AgendarBox";
-import ModalSelectorDeBloque from "../../components/Servicios/ModalSelectorDeBloque";
-import ModalConfirmarCita from "../../components/Servicios/ModalConfirmarCita";
-import ModalCancelarCita from "../../components/Servicios/ModalCancelarCita";
+import ModalSelectorDeBloque from "../../components/Servicios/Citas/ModalSelectorDeBloque";
+import ModalConfirmarCita from "../../components/Servicios/Citas/ModalConfirmarCita";
+import ModalCancelarCita from "../../components/Servicios/Citas/ModalCancelarCita";
 import ExclusiveSubscriptionCard from "../../components/ExclusiveSubscriptionCard";
+import ReviewForm from "../../components/Servicios/Resenas/ReviewForm";
+import ModalEliminarReseña from "../../components/Servicios/Resenas/ModalEliminarReseña";
 
 import { createCita, getUserSubscriptions, deleteCita } from "../../services/subscriptionService";
-import { BloqueHorario } from "../../components/Servicios/SelectorDeBloque";
+import { BloqueHorario } from "../../components/Servicios/Citas/SelectorDeBloque";
 import { Review } from "./types";
 import { UserContext } from "../../context/UserContext";
+
 
 interface Servicio {
   id: number;
@@ -35,24 +38,28 @@ interface Servicio {
 
 const ServicePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { isAuthenticated, loginWithRedirect } = useAuth0();
+  const { isAuthenticated, loginWithRedirect, getAccessTokenSilently } = useAuth0();
   const { profile, reloadProfile, loading: loadingProfile } = useContext(UserContext);
 
   const [servicio, setServicio] = useState<Servicio | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [beneficios, setBeneficios] = useState<any[]>([]);
-  const [bloques, setBloques] = useState<BloqueHorario[]>([]);
+  const [, setBloques] = useState<BloqueHorario[]>([]);
   const [bloqueSeleccionado, setBloqueSeleccionado] = useState<BloqueHorario | null>(null);
   const [citasDelServicio, setCitasDelServicio] = useState<{ id: number; bloque: BloqueHorario }[]>([]);
   const [loadingSub, setLoadingSub] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSelectBloqueModal, setShowSelectBloqueModal] = useState(false);
   const [showSubscribeConfirm, setShowSubscribeConfirm] = useState(false);
-  const [showRepeatModal, setShowRepeatModal] = useState(false);
-
+  const [, setShowRepeatModal] = useState(false);
+  const [ratingStats, setRatingStats] = useState<{ promedio: string; total: number } | null>(null);
+  const [editingReview, setEditingReview] = useState<Review | null>(null);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [reviewToDelete, setReviewToDelete] = useState<Review | null>(null);
   const isSubscribed = citasDelServicio.length > 0;
+  const reseñasRef = useRef<HTMLDivElement>(null);
 
-  console.log(bloques, showRepeatModal)
   useEffect(() => {
     if (isAuthenticated) reloadProfile();
   }, [isAuthenticated, reloadProfile]);
@@ -62,13 +69,15 @@ const ServicePage: React.FC = () => {
       .then(res => setServicio(res.data))
       .catch(console.error);
 
-    axios.get(`${import.meta.env.VITE_API_URL}/servicios_ratings/servicio/${id}`)
-      .then(res => setReviews(res.data))
-      .catch(() => {});
+    refreshReviews();
 
     axios.get(`${import.meta.env.VITE_API_URL}/beneficios/servicio/${id}`)
       .then(res => setBeneficios(res.data))
       .catch(() => {});
+
+    axios.get(`${import.meta.env.VITE_API_URL}/servicios_ratings/servicio/${id}/promedio`)
+      .then(res => setRatingStats(res.data))
+      .catch(() => setRatingStats(null));
 
     axios.get(`${import.meta.env.VITE_API_URL}/servicios/${id}/bloques`)
       .then(res => {
@@ -114,6 +123,23 @@ const ServicePage: React.FC = () => {
       .finally(() => setLoadingSub(false));
   }, [id, profile, loadingProfile]);
 
+  const refreshReviews = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/servicios_ratings/servicio/${id}`);
+      setReviews(res.data);
+      const promedioRes = await axios.get(`${import.meta.env.VITE_API_URL}/servicios_ratings/servicio/${id}/promedio`);
+      setRatingStats(promedioRes.data);
+    } catch (error: any) {
+      // Si es 404, simplemente no hay reseñas, no es un error fatal
+      if (error.response && error.response.status === 404) {
+        setReviews([]);
+        setRatingStats(null);
+      } else {
+        console.error("Error al actualizar reseñas", error);
+      }
+    }
+  };
+
   const handleSubscribe = async () => {
     if (!isAuthenticated) {
       await loginWithRedirect({ appState: { returnTo: `/servicios/${id}` } });
@@ -130,9 +156,10 @@ const ServicePage: React.FC = () => {
     const newCita = { id: tempId, bloque: bloqueSeleccionado };
     setCitasDelServicio(prev => [...prev, newCita]);
     setShowSubscribeConfirm(false);
+    const token = await getAccessTokenSilently();
 
     try {
-      await createCita(profile.id, bloqueSeleccionado.id);
+      await createCita(profile.id, bloqueSeleccionado.id, token);
       const citas = await getUserSubscriptions(profile.id);
       const citasServicio = citas.filter((c: any) => c.id_servicio === Number(id));
       const parsed = citasServicio.map((c: any) => {
@@ -151,7 +178,7 @@ const ServicePage: React.FC = () => {
         };
       });
       setCitasDelServicio(parsed);
-      setShowRepeatModal(true); // <-- Mostrar modal de repetir
+      setShowRepeatModal(true);
     } catch (e: any) {
       setCitasDelServicio(prev => prev.filter(c => c.id !== tempId));
       alert(e.message);
@@ -178,6 +205,7 @@ const ServicePage: React.FC = () => {
     }
   };
 
+  const userReview = reviews.find(r => r.Usuario.id === profile?.id);
   const chunkedReviews = (arr: Review[], size: number) => {
     const chunks: Review[][] = [];
     for (let i = 0; i < arr.length; i += size) chunks.push(arr.slice(i, i + size));
@@ -195,23 +223,108 @@ const ServicePage: React.FC = () => {
       <BeneficiosBox beneficios={beneficios} />
       <DisponibilidadBox dias_disponibles={servicio.dias_disponibles} hora_inicio={servicio.hora_inicio} hora_termino={servicio.hora_termino} />
 
-      {reviews.length > 0 && (
-        <div className="bg-white shadow-lg rounded-lg p-6">
-          <h2 className="text-[1.2em] font-bold mb-4 text-[#00495C]">¿Qué dicen nuestros clientes?</h2>
-          <Slider {...carouselSettings}>
-            {reviewChunks.map((chunk, idx) => (
-              <div key={idx} className="p-4">
-                <div className="grid grid-cols-2 gap-6">
-                  {chunk.map(r => (
-                    <ReviewCard key={r.id} nombre={r.Usuario.nombre} review={r.review} rating={r.rating} createdAt={r.createdAt} />
-                  ))}
-                </div>
+      {/* Reseñas */}
+      <div ref={reseñasRef} className="bg-white shadow-lg rounded-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-[1.2em] font-bold text-[#00495C]">Qué dicen nuestros clientes?</h2>
+          {ratingStats && ratingStats.total > 0 ? (
+            <div className="text-yellow-600 font-medium text-[1.5em]">
+              ⭐ {ratingStats.promedio} · {ratingStats.total} opini{ratingStats.total !== 1 ? "ones" : "ón"}
+            </div>
+          ) : (
+            <div className="text-gray-500 italic">
+              Aún no hay reseñas para este servicio.
+            </div>
+          )}
+
+        </div>
+        <Slider {...carouselSettings}>
+          {reviewChunks.map((chunk, idx) => (
+            <div key={idx} className="p-4">
+              <div className="grid grid-cols-2 gap-6">
+                {chunk.map(r => (
+                  <ReviewCard
+                    key={r.id}
+                    nombre={r.Usuario.nombre}
+                    review={r.review}
+                    rating={r.rating}
+                    createdAt={r.createdAt}
+                    isOwner={profile?.id === r.Usuario.id}
+                    onEdit={() => {
+                      setEditingReview({...r});
+                      setShowEditForm(true);
+                    }}
+                    onDelete={() => {
+                      setReviewToDelete(r);
+                      setShowDeleteModal(true);
+                    }}
+
+                  />
+                ))}
               </div>
-            ))}
-          </Slider>
+            </div>
+          ))}
+        </Slider>
+      </div>
+
+      {/* Formulario de reseña */}
+      {isAuthenticated && profile?.rol === "socio" && !userReview && !showEditForm && (
+        <div className="bg-white shadow-md rounded-lg p-6 mt-6">
+          <h3 className="text-[1.2em] font-bold text-[#00495C] mb-4">Deja tu reseña</h3>
+          <ReviewForm
+            servicioId={Number(id)}
+            existingReview={editingReview ?? undefined}
+            onReviewUpdated={() => {
+              refreshReviews();
+              setEditingReview(null);
+              setShowEditForm(false);
+              reseñasRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+          />
         </div>
       )}
-      
+
+      {showEditForm && editingReview && (
+        <div className="bg-white shadow-md rounded-lg p-6 mt-6">
+          <h3 className="text-[1.2em] font-bold text-[#00495C] mb-4">Editar tu reseña</h3>
+          <ReviewForm
+            servicioId={Number(id)}
+            existingReview={editingReview}
+            onReviewUpdated={() => {
+              refreshReviews();
+              setEditingReview(null);
+              setShowEditForm(false);
+              reseñasRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+          />
+        </div>
+      )}
+      {showDeleteModal && reviewToDelete && (
+        <ModalEliminarReseña
+          open={showDeleteModal}
+          onClose={() => {
+            setReviewToDelete(null);
+            setShowDeleteModal(false);
+          }}
+          onConfirm={async () => {
+            try {
+              const token = await getAccessTokenSilently();
+              await axios.delete(`${import.meta.env.VITE_API_URL}/servicios_ratings/${reviewToDelete.id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              await refreshReviews();
+            } catch {
+              alert("Error al eliminar la reseña.");
+            } finally {
+              setReviewToDelete(null);
+              setShowDeleteModal(false);
+            }
+          }}
+        />
+      )}
+
+
+      {/* AgendarBox */}
       {isAuthenticated ? (
         profile?.rol === "socio" ? (
           <AgendarBox
@@ -225,12 +338,8 @@ const ServicePage: React.FC = () => {
           />
         ) : (
           <ExclusiveSubscriptionCard />
-
         )
-      ) : (
-        <div>
-        </div>
-      )}
+      ) : null}
 
       {showSelectBloqueModal && (
         <ModalSelectorDeBloque
@@ -242,15 +351,12 @@ const ServicePage: React.FC = () => {
               inicio: bloque.inicio.slice(11, 16),
               fin: bloque.fin.slice(11, 16),
               disponible: true,
-            })
-            setShowSelectBloqueModal(false)
-            setShowSubscribeConfirm(true)
+            });
+            setShowSelectBloqueModal(false);
+            setShowSubscribeConfirm(true);
           }}
         />
       )}
-
-
-
 
       {showSubscribeConfirm && bloqueSeleccionado && (
         <ModalConfirmarCita
