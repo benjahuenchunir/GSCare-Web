@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchActividades, Actividad } from "../../services/actividadService";
+import { fetchActividades, Actividad as ActividadBase } from "../../services/actividadService";
 import { Search, Filter, Check } from "lucide-react";
+
+interface Actividad extends ActividadBase {
+  status: string;
+}
 
 const formatearFecha = (fecha: string) => {
   const [a, m, d] = fecha.split("-");
@@ -21,7 +25,10 @@ const ActividadesListPage: React.FC = () => {
 
   useEffect(() => {
     fetchActividades()
-      .then(setActividades)
+      .then(data => {
+        const aprobadas = (data as Actividad[]).filter(a => a.status === 'aprobada');
+        setActividades(aprobadas);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);

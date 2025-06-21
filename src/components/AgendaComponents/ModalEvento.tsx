@@ -43,11 +43,13 @@ const ModalEvento = ({ evento, onClose, onCancelEvento }: Props) => {
   const horaInicio = evento.start.toLocaleTimeString('es-ES', {
     hour: '2-digit',
     minute: '2-digit',
+    hour12: false,
   });
 
   const horaFin = evento.end.toLocaleTimeString('es-ES', {
     hour: '2-digit',
     minute: '2-digit',
+    hour12: false,
   });
 
   const colorTipo = evento.tipo === 'servicio' ? '#62CBC9' : '#d4bbef';
