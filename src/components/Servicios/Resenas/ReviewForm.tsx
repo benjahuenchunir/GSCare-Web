@@ -4,6 +4,11 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { UserContext } from "../../../context/UserContext";
 import { FaStar } from "react-icons/fa";
 import ModalConfirmarPublicacion from "./ModalConfirmarPublicacion";
+import leoProfanity from "leo-profanity";
+import spanishBadWords from "../../../utils/spanishBadWords";
+
+// Inicializar el filtro solo una vez
+
 
 interface ReviewFormProps {
   servicioId: number;
@@ -20,6 +25,10 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   existingReview,
   onReviewUpdated,
 }) => {
+// Inicializar el filtro de lenguaje inapropiado solo una vez
+  leoProfanity.loadDictionary("es");
+  leoProfanity.add(spanishBadWords);
+  
   const { getAccessTokenSilently } = useAuth0();
   const { profile } = useContext(UserContext);
 
@@ -30,6 +39,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   const [hoverRating, setHoverRating] = useState<number | null>(null);
   const [justRated, setJustRated] = useState<number | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [badWordsError, setBadWordsError] = useState("");
 
   const handleStarClick = (star: number) => {
     const newRating = rating === star ? 0 : star;
@@ -42,18 +52,25 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 
   useEffect(() => {
     if (existingReview && formRef.current) {
-      const yOffset = -250; 
-      const y = formRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      const yOffset = -250;
+      const y =
+        formRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: y, behavior: "smooth" });
     }
   }, [existingReview]);
 
-    const handleSubmit = (e: React.FormEvent) => {
-      e.preventDefault();
-      setShowConfirmModal(true); // siempre se confirma antes de publicar
-    };
-
-
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBadWordsError("");
+    leoProfanity.add("weon")
+    console.log(leoProfanity.check(review));
+    console.log(leoProfanity.badWordsUsed(review));
+    if (leoProfanity.check(review)) {
+      setBadWordsError("Tu comentario contiene lenguaje inapropiado. Por favor, edítalo.");
+      return;
+    }
+    setShowConfirmModal(true); // siempre se confirma antes de publicar
+  };
 
   const submitReview = async () => {
     setShowConfirmModal(false);
@@ -137,6 +154,9 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
       </div>
 
       {error && <p className="text-red-500 text-sm">{error}</p>}
+      {badWordsError && (
+        <div className="text-red-500  mb-2">{badWordsError}</div>
+      )}
 
       <div className="flex justify-center">
         <button
@@ -148,13 +168,11 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
         </button>
       </div>
 
-    <ModalConfirmarPublicacion
-      open={showConfirmModal}
-      onCancel={() => setShowConfirmModal(false)}
-      onConfirm={submitReview}
-    />
-
-
+      <ModalConfirmarPublicacion
+        open={showConfirmModal}
+        onCancel={() => setShowConfirmModal(false)}
+        onConfirm={submitReview}
+      />
     </form>
   );
 };
