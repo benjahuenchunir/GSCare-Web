@@ -1,0 +1,406 @@
+// src/pages/admin/AdminActividadesPage.tsx
+import { useEffect, useState } from "react";
+import { useAuth0 } from "@auth0/auth0-react";
+import { getAdminActividades, deleteActividadSerieByBaseId } from "../../services/adminService";
+import { Trash, Pencil } from "lucide-react";
+import ActivityDatesModal from "../../components/AdminComponents/ActivityDatesModal";
+import ActivityAttendeesModal from "../../components/AdminComponents/ActivityAttendeesModal";
+import ActivityEditModal from "../../components/AdminComponents/ActivityEditModal";
+import { aprobarActividad, rechazarActividad, actividadTieneAsistenteConEmail } from "../../services/adminService";
+
+export interface Actividad {
+  id: number;
+  nombre: string;
+  modalidad: string;
+  categoria: string;
+  comuna: string;
+  link: string;
+  capacidad_total: number | null;
+  asistentes: number;
+  status: string;
+  fecha: string;
+  hora_inicio: string;
+  hora_final: string;
+  lugar: string;
+  descripcion: string;
+  imagen: string;
+  id_actividad_base: number;
+}
+
+export default function AdminActividadesPage() {
+  const [actividades, setActividades] = useState<Actividad[]>([]);
+  const [, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [total, setTotal] = useState(0);
+  const { getAccessTokenSilently } = useAuth0();
+
+  const [datesModal, setDatesModal] = useState<number | null>(null);
+  const [attendeesModal, setAttendeesModal] = useState<number | null>(null);
+  const [editingActividad, setEditingActividad] = useState<Actividad | null>(null);
+
+  const [search, setSearch] = useState("");
+  const [modalidadFilter, setModalidadFilter] = useState("");
+  const [categoriaFilter, setCategoriaFilter] = useState("");
+  const [comunaFilter, setComunaFilter] = useState("");
+  const [estadoFilter, setEstadoFilter] = useState("");
+  const [sortBy, setSortBy] = useState(""); // "fecha" | "ocupacion_asc" | "ocupacion_desc"
+  const [emailFilter, setEmailFilter] = useState("");
+
+
+  const fetchActividades = async () => {
+    try {
+      setLoading(true);
+      const token = await getAccessTokenSilently();
+      const res = await getAdminActividades({ page: 1, limit: 1000, token }); // obtenemos todas
+
+      const today = new Date().toISOString().split("T")[0];
+      const grouped: Record<number, any[]> = {};
+
+      // Agrupar por id_actividad_base
+      for (const act of res.actividades) {
+        const base = act.id_actividad_base || act.id;
+        if (!grouped[base]) grouped[base] = [];
+        grouped[base].push(act);
+      }
+
+      // Filtrar solo próximas fechas por grupo
+      let filtradas = Object.values(grouped)
+        .map(group =>
+          group
+            .filter(a => a.fecha >= today)
+            .sort((a, b) => a.fecha.localeCompare(b.fecha))[0] || group[0]
+        )
+        .filter(Boolean)
+        .filter(a => a.nombre.toLowerCase().includes(search.toLowerCase()))
+        .filter(a => !modalidadFilter || a.modalidad === modalidadFilter)
+        .filter(a => !categoriaFilter || a.categoria === categoriaFilter)
+        .filter(a => !comunaFilter || a.comuna === comunaFilter)
+        .filter(a => !estadoFilter || a.status === estadoFilter);
+
+      // Ordenamiento
+      if (sortBy === "fecha") {
+        filtradas.sort((a, b) => a.fecha.localeCompare(b.fecha));
+      } else if (sortBy === "ocupacion_asc") {
+        filtradas.sort((a, b) => {
+          const occA = a.capacidad_total ? a.asistentes / a.capacidad_total : 0;
+          const occB = b.capacidad_total ? b.asistentes / b.capacidad_total : 0;
+          return occA - occB;
+        });
+      } else if (sortBy === "ocupacion_desc") {
+        filtradas.sort((a, b) => {
+          const occA = a.capacidad_total ? a.asistentes / a.capacidad_total : 0;
+          const occB = b.capacidad_total ? b.asistentes / b.capacidad_total : 0;
+          return occB - occA;
+        });
+      }
+
+      if (emailFilter.trim()) {
+        const email = emailFilter.trim().toLowerCase();
+        const token = await getAccessTokenSilently();
+
+        const actividadesConAsistentes = await Promise.all(
+          filtradas.map(async (act) => {
+            const tieneAsistente = await actividadTieneAsistenteConEmail(act.id, email, token);
+            return tieneAsistente ? act : null;
+          })
+        );
+
+        const filtradasPorEmail = actividadesConAsistentes.filter(Boolean) as Actividad[];
+        setTotal(filtradasPorEmail.length);
+        setActividades(filtradasPorEmail.slice((page - 1) * limit, page * limit));
+      } else {
+        setTotal(filtradas.length);
+        setActividades(filtradas.slice((page - 1) * limit, page * limit));
+      }
+    } catch (err) {
+      console.error("Error al cargar actividades", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  useEffect(() => {
+    fetchActividades();
+  }, [
+    page,
+    limit,
+    search,
+    modalidadFilter,
+    categoriaFilter,
+    comunaFilter,
+    estadoFilter,
+    sortBy,
+    emailFilter
+  ]);
+
+  const handleChangeStatus = async (
+    baseId: number,
+    status: "aprobada" | "rechazada"
+  ) => {
+    if (
+      !confirm(
+        `¿Estás seguro de ${status === "aprobada" ? "aprobar" : "rechazar"} esta actividad y todas sus fechas?`
+      )
+    )
+      return;
+
+    try {
+      const token = await getAccessTokenSilently();
+
+      // Obtener todas las actividades
+      const res = await getAdminActividades({ page: 1, limit: 1000, token });
+      const relacionadas = res.actividades.filter(
+        (a: any) => a.id === baseId || a.id_actividad_base === baseId
+      );
+
+      await Promise.all(
+        relacionadas.map((a: any) =>
+          status === "aprobada"
+            ? aprobarActividad(a.id, token)
+            : rechazarActividad(a.id, token)
+        )
+      );
+
+      await fetchActividades();
+    } catch (err) {
+      console.error(err);
+      alert("Error al cambiar el estado de las actividades");
+    }
+  };
+
+  return (
+    <div className="p-6 font-sans">
+      <h1 className="text-2xl font-bold text-gray-900 mb-4">Gestión de Actividades</h1>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="border px-3 py-2 rounded"
+          placeholder="Buscar por nombre"
+        />
+        <select
+          value={modalidadFilter}
+          onChange={e => setModalidadFilter(e.target.value)}
+          className="border px-3 py-2 rounded bg-white"
+        >
+          <option value="">Todas las modalidades</option>
+          <option value="presencial">Presencial</option>
+          <option value="online">Online</option>
+        </select>
+        <select
+          value={categoriaFilter}
+          onChange={e => setCategoriaFilter(e.target.value)}
+          className="border px-3 py-2 rounded bg-white"
+        >
+          <option value="">Todas las categorías</option>
+          {Array.from(new Set(actividades.map(a => a.categoria))).filter(Boolean).map(c => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+        <select
+          value={comunaFilter}
+          onChange={e => setComunaFilter(e.target.value)}
+          className="border px-3 py-2 rounded bg-white"
+        >
+          <option value="">Todas las comunas</option>
+          {Array.from(new Set(actividades.map(a => a.comuna))).filter(Boolean).map(c => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+        <select
+          value={estadoFilter}
+          onChange={e => setEstadoFilter(e.target.value)}
+          className="border px-3 py-2 rounded bg-white"
+        >
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="aprobada">Aprobada</option>
+          <option value="rechazada">Rechazada</option>
+        </select>
+        <select
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value)}
+          className="border px-3 py-2 rounded bg-white"
+        >
+          <option value="">Ordenar por</option>
+          <option value="fecha">Fecha más próxima</option>
+          <option value="ocupacion_asc">Menor ocupación</option>
+          <option value="ocupacion_desc">Mayor ocupación</option>
+        </select>
+
+        <input
+          type="email"
+          placeholder="Filtrar por email de usuario"
+          value={emailFilter}
+          onChange={e => setEmailFilter(e.target.value)}
+          className="border rounded px-3 py-1"
+        />
+
+      </div>
+
+      <div className="mb-4 flex items-center gap-4">
+        <label className="text-sm">Actividades por página:</label>
+        <select
+          value={limit}
+          onChange={e => {
+            setPage(1);
+            setLimit(Number(e.target.value));
+          }}
+          className="border rounded px-3 py-1 bg-white"
+        >
+          {[10, 25, 50, 100].map(n => (
+            <option key={n} value={n}>{n}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-[1000px] w-full bg-white shadow rounded-lg text-sm">
+          <thead className="bg-gray-100 text-gray-600">
+            <tr>
+              <th className="px-4 py-2 text-left">Nombre</th>
+              <th className="text-left">Modalidad</th>
+              <th className="text-left">Categoría</th>
+              <th className="text-left">Ocupación</th>
+              <th className="text-left">Capacidad</th>
+              <th className="text-left">Asistentes</th>
+              <th className="text-left">Estado</th>
+              <th className="text-left">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {actividades.map(a => (
+              <tr key={a.id} className="border-t hover:bg-gray-50">
+                <td className="px-4 py-2">{a.nombre}</td>
+                <td>{a.modalidad}</td>
+                <td>{a.categoria}</td>
+                <td>
+                  {a.capacidad_total
+                    ? `${Math.round((a.asistentes / a.capacidad_total) * 100)}%`
+                    : "-"}
+                </td>
+                <td>{a.capacidad_total ?? "-"}</td>
+                <td>
+                  {a.asistentes ?? 0}
+                  <button
+                    className="ml-2 text-blue-600 hover:text-blue-800 text-xs"
+                    onClick={() => setAttendeesModal(a.id)}
+                  >
+                    Ver usuarios
+                  </button>
+                </td>
+                <td>
+                  <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
+                    a.status === "aprobada"
+                      ? "bg-green-100 text-green-700"
+                      : a.status === "pendiente"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : "bg-red-100 text-red-700"
+                  }`}>
+                    {a.status}
+                  </span>
+                </td>
+                <td className="space-x-2">
+                  <button
+                    className="text-blue-600 hover:text-blue-800 text-xs"
+                    onClick={() => setDatesModal(a.id_actividad_base ?? a.id)}
+                  >
+                    Ver fechas
+                  </button>
+                  <button
+                    onClick={() => setEditingActividad(a)}
+                    className="text-blue-600 hover:text-blue-800"
+                    title="Editar"
+                  >
+                    <Pencil className="inline w-4 h-4" />
+                  </button>
+                  <button
+                    className="text-red-600 hover:text-red-800 text-xs"
+                    onClick={async () => {
+                      if (!window.confirm("¿Eliminar toda la actividad y sus fechas?")) return;
+                      try {
+                        const token = await getAccessTokenSilently();
+                        await deleteActividadSerieByBaseId(a.id_actividad_base ?? a.id, token);
+                        await fetchActividades(); // recarga después de eliminar
+                      } catch (err) {
+                        console.error(err);
+                        alert("Error al eliminar la actividad");
+                      }
+                    }}
+                  >
+                    <Trash className="inline w-4 h-4" />
+                  </button>
+                  {a.status !== "aprobada" && (
+                      <button
+                        className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs"
+                        onClick={() => handleChangeStatus(a.id_actividad_base ?? a.id, "aprobada")}
+                      >
+                        Aprobar
+                      </button>
+                  )}
+                  {a.status !== "rechazada" && (
+                      <button
+                        className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"
+                        onClick={() => handleChangeStatus(a.id_actividad_base ?? a.id, "rechazada")}
+                      >
+                        Rechazar
+                      </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {actividades.length === 0 && (
+          <p className="text-center text-sm text-gray-500 mt-4">No hay actividades para mostrar.</p>
+        )}
+      </div>
+
+      {/* Paginación */}
+      <div className="mt-6 flex justify-between items-center text-sm">
+        <span>
+          Mostrando {(page - 1) * limit + 1}–{Math.min(page * limit, total)} de {total} actividades
+        </span>
+        <div className="space-x-2">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(p => p - 1)}
+            className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+          >
+            Anterior
+          </button>
+          <button
+            disabled={page * limit >= total}
+            onClick={() => setPage(p => p + 1)}
+            className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+          >
+            Siguiente
+          </button>
+        </div>
+      </div>
+
+      {/* Modals */}
+      {datesModal !== null && (
+        <ActivityDatesModal baseId={datesModal} onClose={() => {
+          setDatesModal(null);
+          fetchActividades(); // recarga actividades si eliminó todas
+        }} />
+      )}
+      {attendeesModal !== null && (
+        <ActivityAttendeesModal actividadId={attendeesModal} onClose={() => setAttendeesModal(null)} />
+      )}
+      {editingActividad && (
+        <ActivityEditModal
+          actividad={editingActividad}
+          onClose={() => setEditingActividad(null)}
+          onUpdate={fetchActividades}
+        />
+      )}
+    </div>
+  );
+}

@@ -179,11 +179,11 @@ export default function AdminUsersPage() {
           <thead className="bg-gray-100 text-gray-600">
             <tr>
               <th className="px-4 py-2 text-left">Nombre</th>
-              <th>Email</th>
-              <th>Región / Comuna</th>
-              <th>Fecha de Nacimiento</th>
-              <th>Rol</th>
-              <th>Acciones</th>
+              <th className="text-left">Email</th>
+              <th className="text-left">Región / Comuna</th>
+              <th className="text-left">Fecha de Nacimiento</th>
+              <th className="text-left">Rol</th>
+              <th className="text-left">Acciones</th>
             </tr>
           </thead>
           <tbody>

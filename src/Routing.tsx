@@ -33,6 +33,8 @@ export default function Routing() {
                 <Route path="usuarios" element={<AdminUsersPage />} />
                 <Route path="productos" element={<AdminProductsPage />} />
                 <Route path="reportes" element={<AdminReportReviewPage />} />
+                <Route path="actividades" element={<AdminActividadesPage />} />
+                <Route path="servicios" element={<AdminServicesPage />} />
             </Route>
 
             <Route path="/" element={<Layout />}>

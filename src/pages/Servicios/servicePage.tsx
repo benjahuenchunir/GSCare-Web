@@ -58,6 +58,7 @@ const ServicePage: React.FC = () => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [reviewToDelete, setReviewToDelete] = useState<Review | null>(null);
+
   const isSubscribed = citasDelServicio.length > 0;
   const reseñasRef = useRef<HTMLDivElement>(null);
   const [reviewToReport, setReviewToReport] = useState<Review | null>(null);
