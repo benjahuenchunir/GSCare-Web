@@ -9,10 +9,16 @@ interface ModalReportarReseñaProps {
 }
 
 const motivosPredefinidos = [
-  "Contenido ofensivo o inapropiado",
-  "Falsa reseña o engañosa",
-  "Spam o publicidad",
-  "Otro"
+    "Todos los motivos",
+    "Contenido ofensivo o inapropiado",
+    "Spam",
+    "Falsa reseña o engañosa",
+    "No relevante o fuera de tema",
+    "Violación de derechos de autor",
+    "Violación de privacidad",
+    "Discriminación o acoso",
+    "Contenido ilegal o peligroso",
+    "Otro"
 ];
 
 const ModalReportarReseña: React.FC<ModalReportarReseñaProps> = ({ open, onClose, onSubmit }) => {
