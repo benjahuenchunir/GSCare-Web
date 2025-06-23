@@ -47,7 +47,7 @@ export default function AdminDashboard() {
           getAdminCount("servicios", token),
           getAdminCount("actividades", token),
           getAdminCount("productos", token),
-          getRecentUsers(token, 10)
+          getRecentUsers(token, 5)
         ]);
 
         const actsRaw = await getRecentActivities(token, 20); // trae más para asegurar unicidad

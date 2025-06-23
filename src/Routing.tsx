@@ -20,8 +20,10 @@ import Agenda from "./pages/Agenda/Agenda.tsx";
 import Page from "./pages/Test/page.tsx";
 import PricingPage from "./pages/Usuarios/PricingPage.tsx";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
-import AdminUsersPage from "./pages/Admin/AdminUsersPage.tsx";
-import AdminProductsPage from "./pages/Admin/AdminProductsPage.tsx";
+import AdminUsersPage from "./pages/Admin/AdminUsersPage";
+import AdminProductsPage from "./pages/Admin/AdminProductsPage";
+import AdminActividadesPage from "./pages/Admin/AdminActividadesPage";
+import AdminServicesPage from "./pages/Admin/AdminServicesPage";
 
 export default function Routing() {
     return (
@@ -31,6 +33,8 @@ export default function Routing() {
                 <Route index element={<AdminDashboard />} />
                 <Route path="usuarios" element={<AdminUsersPage />} />
                 <Route path="productos" element={<AdminProductsPage />} />
+                <Route path="actividades" element={<AdminActividadesPage />} />
+                <Route path="servicios" element={<AdminServicesPage />} />
             </Route>
 
             <Route path="/" element={<Layout />}>
