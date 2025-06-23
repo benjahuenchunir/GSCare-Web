@@ -17,6 +17,7 @@ import {
 import ActividadInfoCard from "./ActividadInfoCard";
 import ModalInscripcion from "./ModalInscripcion";
 import ActivityForum from "../../components/ActivityForum/ActivityForum";
+import ForumFloatingButton from "../../components/ActivityForum/ForumFloatingButton";
 import ExclusiveSubscriptionCard from "../../components/ExclusiveSubscriptionCard";
 
 const formatearFecha = (fecha: string) => {
@@ -81,7 +82,12 @@ const ActivityPage: React.FC = () => {
     getUserByEmail(user.email)
       .then((u) =>
         getAssistantsByActivity(actividad.id).then((list) =>
-          setYaInscrito(list.some((a: { id_usuario_asistente: number; }) => a.id_usuario_asistente === u.id))
+          setYaInscrito(
+            list.some(
+              (a: { id_usuario_asistente: number }) =>
+                a.id_usuario_asistente === u.id
+            )
+          )
         )
       )
       .catch((err) => console.warn("No se pudo verificar inscripción:", err));
@@ -118,9 +124,11 @@ const ActivityPage: React.FC = () => {
       }
 
       setYaInscrito(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error al inscribirse:", err);
-      alert(err.message || "Hubo un problema al inscribirse.");
+      const errorMessage =
+        err instanceof Error ? err.message : "Hubo un problema al inscribirse.";
+      alert(errorMessage);
     }
   };
 
@@ -313,6 +321,9 @@ const ActivityPage: React.FC = () => {
         actividades={grupoActividades}
         yaInscrito={yaInscrito}
       />
+
+      {/* Botón flotante del foro */}
+      {actividad && <ForumFloatingButton activityId={actividad.id} />}
     </div>
   );
 };
