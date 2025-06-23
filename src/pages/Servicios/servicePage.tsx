@@ -291,7 +291,7 @@ const ServicePage: React.FC = () => {
                       setReviewToReport(r);
                       setShowReportModal(true);
                     }}
-                    />
+                  />
                 ))}
               </div>
             </div>
