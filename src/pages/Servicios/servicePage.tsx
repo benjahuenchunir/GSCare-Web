@@ -35,24 +35,23 @@ interface Servicio {
 
 const ServicePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { isAuthenticated, loginWithRedirect } = useAuth0();
+  const { isAuthenticated, loginWithRedirect, getAccessTokenSilently } = useAuth0();
   const { profile, reloadProfile, loading: loadingProfile } = useContext(UserContext);
 
   const [servicio, setServicio] = useState<Servicio | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [beneficios, setBeneficios] = useState<any[]>([]);
-  const [bloques, setBloques] = useState<BloqueHorario[]>([]);
+  const [, setBloques] = useState<BloqueHorario[]>([]);
   const [bloqueSeleccionado, setBloqueSeleccionado] = useState<BloqueHorario | null>(null);
   const [citasDelServicio, setCitasDelServicio] = useState<{ id: number; bloque: BloqueHorario }[]>([]);
   const [loadingSub, setLoadingSub] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSelectBloqueModal, setShowSelectBloqueModal] = useState(false);
   const [showSubscribeConfirm, setShowSubscribeConfirm] = useState(false);
-  const [showRepeatModal, setShowRepeatModal] = useState(false);
+  const [, setShowRepeatModal] = useState(false);
 
   const isSubscribed = citasDelServicio.length > 0;
 
-  console.log(bloques, showRepeatModal)
   useEffect(() => {
     if (isAuthenticated) reloadProfile();
   }, [isAuthenticated, reloadProfile]);
@@ -132,7 +131,8 @@ const ServicePage: React.FC = () => {
     setShowSubscribeConfirm(false);
 
     try {
-      await createCita(profile.id, bloqueSeleccionado.id);
+      const token = await getAccessTokenSilently();
+      await createCita(profile.id, bloqueSeleccionado.id, token);
       const citas = await getUserSubscriptions(profile.id);
       const citasServicio = citas.filter((c: any) => c.id_servicio === Number(id));
       const parsed = citasServicio.map((c: any) => {

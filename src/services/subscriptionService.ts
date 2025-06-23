@@ -12,12 +12,17 @@ export const isUserSubscribed = async (servicioId: number, userId: number): Prom
   }
 };
 
-export const createCita = async (userId: number, bloqueHorarioId: number): Promise<void> => {
+export const createCita = async (userId: number, bloqueHorarioId: number, token: string): Promise<void> => {
   try {
-    const res = await axios.post(`${API_URL}/citas`, {
+    const res = await axios.post(`${API_URL}/citas`, { 
       id_usuario: userId,
-      id_bloque: bloqueHorarioId
-    });
+      id_bloque: bloqueHorarioId 
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"}
+      }
+    );
     console.log("Cita creada exitosamente", res.data);
   } catch (error: any) {
     console.error("Error al agendar cita:", error.response?.data || error.message);

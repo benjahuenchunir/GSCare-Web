@@ -306,3 +306,170 @@ export async function actividadTieneAsistenteConEmail(
     return false;
   }
 }
+
+// Actualizar un servicio
+export const updateServicio = async (id: number, data: any, token: string) => {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/servicios/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Error al actualizar servicio");
+  return res.json();
+};
+
+// --- Beneficios ---
+export const getBeneficios = async (token: string) => {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/beneficios`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Error al obtener beneficios");
+  return res.json();
+};
+
+export const createBeneficio = async (data: { nombre: string; descripcion: string }, token: string) => {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/beneficios`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Error al crear beneficio");
+  return res.json();
+};
+
+export const deleteBeneficio = async (id: number, token: string) => {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/beneficios/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Error al eliminar beneficio");
+};
+
+export const getBeneficiosForServicio = async (servicioId: number, token: string) => {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/beneficios/servicio/${servicioId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Error al obtener beneficios del servicio");
+  return res.json();
+};
+
+export const addBeneficioToServicio = async (id_servicio: number, id_beneficio: number, token: string) => {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/beneficios/asociar`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ id_servicio, id_beneficio }),
+  });
+  if (!res.ok) throw new Error("Error al asociar beneficio");
+  return res.json();
+};
+
+export const removeBeneficioFromServicio = async (id_servicio: number, id_beneficio: number, token: string) => {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/beneficios/desasociar`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ id_servicio, id_beneficio }),
+  });
+  if (!res.ok) throw new Error("Error al desasociar beneficio");
+};
+
+// --- Bloques y Reseñas ---
+export const getBloquesForServicio = async (servicioId: number, token: string) => {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/servicios/${servicioId}/bloques`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) throw new Error("Error al obtener bloques");
+
+  const data = await res.json();
+
+  // Adaptar a lo que espera el frontend
+  return data.map((b: any) => {
+    const [fecha, hora_inicio] = b.start.split("T");
+    const [, hora_termino] = b.end.split("T");
+
+    return {
+      id: b.id,
+      fecha,
+      hora_inicio,
+      hora_termino,
+      disponibilidad: b.extendedProps?.disponible ?? true,
+      citas: [] // las agregas luego por separado si es necesario
+    };
+  });
+};
+
+
+
+export const getResenasForServicio = async (servicioId: number, token: string) => {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/servicios/${servicioId}/resenas`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Error al obtener reseñas");
+  return res.json();
+};
+
+// --- Gestión de Usuarios (por ID) ---
+export async function getUserById(userId: number, token: string): Promise<{ id_usuario: number; email: string; [key: string]: any }> {
+  const res = await fetch(`${API_URL}/usuarios/id/${userId}`, {
+    headers: { 
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`Error al obtener usuario con id ${userId}`);
+  return res.json();
+}
+
+// --- Gestión de Bloques Horarios ---
+export const createBloque = async (servicioId: number, data: { fecha: string; hora_inicio: string; hora_termino: string }, token: string) => {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/servicios/${servicioId}/bloques`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({} as any));
+    const message = errorData.error || errorData.message || "Error al crear el bloque horario";
+    throw new Error(message); }
+  return res.json();
+};
+
+export const updateBloque = async (servicioId: number, bloqueId: number, data: { fecha?: string; hora_inicio?: string; hora_termino?: string }, token: string) => {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/servicios/${servicioId}/bloques/${bloqueId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Error al actualizar el bloque horario");
+  return res.json();
+};
+
+export const deleteBloque = async (servicioId: number, bloqueId: number, token: string) => {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/servicios/${servicioId}/bloques/${bloqueId}`, {
+    method: "DELETE",
+    headers: { 
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Error al eliminar el bloque horario");
+};
+
+export const getCitaByBloque = async (bloqueId: number, token: string) => {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/citas/bloque/${bloqueId}`, {
+    headers: { 
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Error al obtener cita por bloque");
+  return (res.json());
+};
+
+// --- Gestión de Citas (desde Admin) ---
+export const deleteCitaById = async (citaId: number, token: string) => {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/citas/${citaId}`, {
+    method: "DELETE",
+    headers: { 
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Error al eliminar la cita");
+};
