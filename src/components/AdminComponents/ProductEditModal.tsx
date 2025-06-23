@@ -43,12 +43,15 @@ export default function ProductEditModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-lg relative">
-        <h2 className="text-xl font-bold mb-4">Editar producto</h2>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+      <div className="bg-white rounded-xl w-full max-w-lg shadow-lg relative max-h-[90vh] overflow-y-auto p-6">
+        <h2 className="text-xl font-bold mb-4">
+          Editar producto: <span className="text-primary1">{form.nombre}</span>
+        </h2>
+
         <form onSubmit={handleSubmit} className="space-y-4">
 
-          {/* Vista previa de la imagen */}
+          {/* Vista previa de imagen */}
           {form.imagen && /^https?:\/\/.+\..+/.test(form.imagen) && (
             <div className="text-center">
               <img
@@ -60,56 +63,78 @@ export default function ProductEditModal({
             </div>
           )}
 
-          <input
-            name="imagen"
-            value={form.imagen}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-            placeholder="URL de la imagen"
-          />
+          <label className="block">
+            URL de la imagen
+            <input
+              name="imagen"
+              value={form.imagen}
+              onChange={handleChange}
+              className="w-full border px-3 py-2 mt-1 rounded"
+              placeholder="https://ejemplo.com/img.png"
+            />
+          </label>
 
-          <input
-            name="nombre"
-            value={form.nombre}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-            placeholder="Nombre"
-          />
-          <textarea
-            name="descripcion"
-            value={form.descripcion}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-            placeholder="Descripción"
-          />
-          <input
-            name="categoria"
-            value={form.categoria}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-            placeholder="Categoría"
-          />
-          <input
-            name="marca"
-            value={form.marca}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-            placeholder="Marca"
-          />
-          <input
-            name="nombre_del_vendedor"
-            value={form.nombre_del_vendedor}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-            placeholder="Vendedor"
-          />
-          <input
-            name="link_al_producto"
-            value={form.link_al_producto}
-            onChange={handleChange}
-            className="w-full border px-3 py-2 rounded"
-            placeholder="Link al producto"
-          />
+          <label className="block">
+            Nombre
+            <input
+              name="nombre"
+              value={form.nombre}
+              onChange={handleChange}
+              className="w-full border px-3 py-2 mt-1 rounded"
+            />
+          </label>
+
+          <label className="block">
+            Descripción
+            <textarea
+              name="descripcion"
+              value={form.descripcion}
+              onChange={handleChange}
+              className="w-full border px-3 py-2 mt-1 rounded"
+              rows={3}
+            />
+          </label>
+
+          <label className="block">
+            Categoría
+            <input
+              name="categoria"
+              value={form.categoria}
+              onChange={handleChange}
+              className="w-full border px-3 py-2 mt-1 rounded"
+            />
+          </label>
+
+          <label className="block">
+            Marca
+            <input
+              name="marca"
+              value={form.marca}
+              onChange={handleChange}
+              className="w-full border px-3 py-2 mt-1 rounded"
+            />
+          </label>
+
+          <label className="block">
+            Nombre del vendedor
+            <input
+              name="nombre_del_vendedor"
+              value={form.nombre_del_vendedor}
+              onChange={handleChange}
+              className="w-full border px-3 py-2 mt-1 rounded"
+            />
+          </label>
+
+          <label className="block">
+            Link al producto
+            <input
+              name="link_al_producto"
+              value={form.link_al_producto}
+              onChange={handleChange}
+              className="w-full border px-3 py-2 mt-1 rounded"
+              placeholder="https://..."
+            />
+          </label>
 
           <div className="flex justify-end gap-2 pt-4">
             <button

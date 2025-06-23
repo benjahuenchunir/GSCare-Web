@@ -11,6 +11,7 @@ interface Producto {
   categoria: string;
   marca: string;
   nombre_del_vendedor: string;
+  status: string;
 }
 
 const ProductosListPage: React.FC = () => {
@@ -23,7 +24,10 @@ const ProductosListPage: React.FC = () => {
   useEffect(() => {
     axios
       .get(`${import.meta.env.VITE_API_URL}/productos`)
-      .then(res => setProductos(res.data))
+      .then(res => {
+        const aprobados = res.data.filter((p: Producto) => p.status === 'aprobada');
+        setProductos(aprobados);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);

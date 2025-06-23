@@ -9,6 +9,8 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
+import leoProfanity from "leo-profanity";
+import spanishBadWords from "../../utils/spanishBadWords";
 
 interface Comment {
   id: string;
@@ -21,10 +23,17 @@ interface ThreadCommentsProps {
   threadId: string;
 }
 
+// Inicializar el filtro solo una vez
+if (!leoProfanity.getDictionary().length) {
+  leoProfanity.loadDictionary("es");
+  leoProfanity.add(spanishBadWords);
+}
+
 export const ThreadComments: React.FC<ThreadCommentsProps> = ({ threadId }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [badWordsError, setBadWordsError] = useState("");
   const { user } = useAuth0();
 
   useEffect(() => {
@@ -54,8 +63,13 @@ export const ThreadComments: React.FC<ThreadCommentsProps> = ({ threadId }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setBadWordsError("");
+    if (leoProfanity.check(newComment)) {
+      setBadWordsError("Tu comentario contiene lenguaje inapropiado. Por favor, edítalo.");
+      return;
+    }
     if (!user?.email || !newComment.trim() || isSubmitting) return;
-
+    
     setIsSubmitting(true);
     try {
       await addDoc(collection(db, "threadComments"), {

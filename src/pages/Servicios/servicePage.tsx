@@ -15,6 +15,7 @@ import ModalCancelarCita from "../../components/Servicios/Citas/ModalCancelarCit
 import ExclusiveSubscriptionCard from "../../components/ExclusiveSubscriptionCard";
 import ReviewForm from "../../components/Servicios/Resenas/ReviewForm";
 import ModalEliminarReseña from "../../components/Servicios/Resenas/ModalEliminarReseña";
+import ModalReportarReseña from "../../components/Servicios/Resenas/ModalReportarReseña";
 
 import { createCita, getUserSubscriptions, deleteCita } from "../../services/subscriptionService";
 import { BloqueHorario } from "../../components/Servicios/Citas/SelectorDeBloque";
@@ -57,8 +58,11 @@ const ServicePage: React.FC = () => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [reviewToDelete, setReviewToDelete] = useState<Review | null>(null);
+
   const isSubscribed = citasDelServicio.length > 0;
   const reseñasRef = useRef<HTMLDivElement>(null);
+  const [reviewToReport, setReviewToReport] = useState<Review | null>(null);
+  const [showReportModal, setShowReportModal] = useState(false);  
 
   useEffect(() => {
     if (isAuthenticated) reloadProfile();
@@ -147,6 +151,32 @@ const ServicePage: React.FC = () => {
     }
     setShowSelectBloqueModal(true);
   };
+
+  const handleReportReview = async (reviewId: number, motivo: string) => {
+    try {
+      const token = await getAccessTokenSilently();
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/reportes_contenido`,
+        {
+          tipo_contenido: "rating",
+          id_contenido: reviewId,
+          razon: motivo,
+          
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      alert("Gracias por tu reporte. Será revisado pronto.");
+    } catch (error) {
+      console.error("Error al reportar la reseña:", error);
+      alert("No se pudo enviar el reporte. Intenta más tarde.");
+    } finally {
+      setReviewToReport(null);
+      setShowReportModal(false);
+    }
+  };
+
 
   const handleConfirmSubscribe = async () => {
     if (!profile?.id || !bloqueSeleccionado) return;
@@ -258,7 +288,10 @@ const ServicePage: React.FC = () => {
                       setReviewToDelete(r);
                       setShowDeleteModal(true);
                     }}
-
+                    onReport={() => {
+                      setReviewToReport(r);
+                      setShowReportModal(true);
+                    }}
                   />
                 ))}
               </div>
@@ -322,6 +355,18 @@ const ServicePage: React.FC = () => {
           }}
         />
       )}
+
+      {showReportModal && reviewToReport && (
+        <ModalReportarReseña
+          open={showReportModal}
+          onClose={() => {
+            setShowReportModal(false);
+            setReviewToReport(null);
+          }}
+          onSubmit={(motivo) => handleReportReview(reviewToReport.id, motivo)}
+        />
+      )}
+
 
 
       {/* AgendarBox */}

@@ -2,13 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth0, User } from "@auth0/auth0-react";
 import { Calendar, Package, ShoppingBag, Users, Eye, ChevronRight } from "lucide-react";
 import { getAdminCount, getRecentUsers, getRecentActivities } from "../../services/adminService";
-
-const notifications = [
-  { type: "Foro", by: "Juan Pérez", date: "2024-06-15", text: "Contenido inapropiado en discusión sobre servicios" },
-  { type: "Reseña", by: "María Silva", date: "2024-06-15", text: "Reseña falsa sobre servicio de limpieza" },
-  { type: "Foro", by: "Pedro García", date: "2024-06-14", text: "Spam en foro de actividades" },
-  { type: "Reseña", by: "Laura Torres", date: "2024-06-14", text: "Lenguaje ofensivo en reseña de producto" },
-];
+import ReporteModal from "../../components/AdminComponents/ReportReviewModal"; // Ajusta si la ruta cambia
 
 export default function AdminDashboard() {
   const { getAccessTokenSilently } = useAuth0();
@@ -20,13 +14,17 @@ export default function AdminDashboard() {
   });
   const [recentUsers, setRecentUsers] = useState<User[]>([]);
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [reportesPendientes, setReportesPendientes] = useState<any[]>([]);
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [reporteSeleccionado, setReporteSeleccionado] = useState<any>(null);
+  const [errorReportes, setErrorReportes] = useState<string | null>(null);
 
   const uniqueByActividadBase = (activities: any[]): any[] => {
     const seen = new Set();
     const unique: any[] = [];
 
     for (const act of activities) {
-      const baseId = act.id_actividad_base ?? act.id; // fallback si no existe
+      const baseId = act.id_actividad_base ?? act.id;
       if (!seen.has(baseId)) {
         seen.add(baseId);
         unique.push(act);
@@ -47,10 +45,10 @@ export default function AdminDashboard() {
           getAdminCount("servicios", token),
           getAdminCount("actividades", token),
           getAdminCount("productos", token),
-          getRecentUsers(token, 10)
+          getRecentUsers(token, 5)
         ]);
 
-        const actsRaw = await getRecentActivities(token, 20); // trae más para asegurar unicidad
+        const actsRaw = await getRecentActivities(token, 20);
         const actsFiltered = uniqueByActividadBase(actsRaw);
 
         setCounts({ usuarios, servicios, actividades, productos });
@@ -64,6 +62,67 @@ export default function AdminDashboard() {
     fetchData();
   }, [getAccessTokenSilently]);
 
+  useEffect(() => {
+    const fetchReportes = async () => {
+      try {
+        const token = await getAccessTokenSilently();
+        // Usar VITE_API_URL para consistencia
+        const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL;
+        const res = await fetch(`${apiUrl}/reportes_contenido`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        let data;
+        try {
+          data = await res.json();
+        } catch (err) {
+          // Si la respuesta no es JSON, mostrar el texto plano para debug
+          const text = await res.text();
+          setErrorReportes(
+            `No se pudo obtener los reportes: respuesta inválida del servidor.\n\nRespuesta: ${text.slice(0, 200)}...`
+          );
+          setReportesPendientes([]);
+          return;
+        }
+        const pendientes = data.filter((r: any) => r.estado === "pendiente");
+        setReportesPendientes(pendientes);
+        setErrorReportes(null);
+      } catch (error: any) {
+        setErrorReportes("Error al obtener reportes: " + (error?.message || error));
+        setReportesPendientes([]);
+      }
+    };
+
+    fetchReportes();
+  }, [getAccessTokenSilently]);
+
+  const openModal = (reporte: any) => {
+    setReporteSeleccionado(reporte);
+    setModalAbierto(true);
+  };
+
+  const cerrarModal = () => {
+    setModalAbierto(false);
+    setReporteSeleccionado(null);
+  };
+
+  const resolverReporte = async (estado: "descartado" | "revisado", eliminar: boolean) => {
+    try {
+      const token = await getAccessTokenSilently();
+      await fetch(`${import.meta.env.VITE_API_URL}/reportes_contenido/${reporteSeleccionado.id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ estado, eliminar_contenido: eliminar })
+      });
+
+      setReportesPendientes(prev => prev.filter(r => r.id !== reporteSeleccionado.id));
+      cerrarModal();
+    } catch (err) {
+      console.error("Error actualizando reporte:", err);
+    }
+  };
 
   const dashboardStats = [
     {
@@ -150,14 +209,12 @@ export default function AdminDashboard() {
                 <tr key={i} className="border-b hover:bg-gray-50">
                   <td className="py-2">{user.nombre}</td>
                   <td>
-                    <span
-                      className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                        user.rol === "socio"
-                          ? "bg-yellow-600/20 text-yellow-600"
-                          : user.rol === "administrador" ? "bg-[#6B21A8]/20 text-[#6B21A8]"
-                          : "bg-[#009982]/10 text-[#006881]"
-                      }`}
-                    >
+                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                      user.rol === "socio"
+                        ? "bg-yellow-600/20 text-yellow-600"
+                        : user.rol === "administrador" ? "bg-[#6B21A8]/20 text-[#6B21A8]"
+                        : "bg-[#009982]/10 text-[#006881]"
+                    }`}>
                       {user.rol === "socio" ? "Socio" : user.rol === "administrador" ? "Administrador" : "General"}
                     </span>
                   </td>
@@ -166,7 +223,7 @@ export default function AdminDashboard() {
               ))}
             </tbody>
           </table>
-          
+
           <div className="flex justify-between items-center mb-4 mt-10">
             <div>
               <h3 className="text-lg font-semibold text-gray-900">Actividades recientes</h3>
@@ -198,26 +255,29 @@ export default function AdminDashboard() {
           </table>
         </section>
 
-
         <section className="bg-white rounded-xl shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Notificaciones</h3>
           <p className="text-sm text-gray-600 mb-4">Contenido reportado por usuarios</p>
+          {errorReportes && (
+            <div className="text-red-600 text-sm mb-4">{errorReportes}</div>
+          )}
           <div className="space-y-4">
-            {notifications.map((n, i) => (
+            {reportesPendientes.slice(0, 5).map((n, i) => (
               <div key={i} className="border rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span
-                    className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                      n.type === "Foro" ? "bg-[#62CBC9]/10 text-[#009982]" : "bg-[#FF8D6B]/10 text-[#FF4006]"
-                    }`}
-                  >
-                    {n.type}
+                  <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                    n.tipo_contenido === "comentario" ? "bg-[#62CBC9]/10 text-[#009982]" : "bg-[#FF8D6B]/10 text-[#FF4006]"
+                  }`}>
+                    {n.tipo_contenido === "comentario" ? "Foro" : "Reseña"}
                   </span>
-                  <span className="text-xs text-gray-500">{n.date}</span>
+                  <span className="text-xs text-gray-500">{new Date(n.createdAt).toLocaleDateString("es-CL")}</span>
                 </div>
-                <p className="text-sm font-medium text-gray-900">Reportado por: {n.by}</p>
-                <p className="text-sm text-gray-600">{n.text}</p>
-                <button className="mt-3 inline-flex items-center gap-1 bg-[#62CBC9] hover:bg-[#006881] text-white text-sm px-3 py-1.5 rounded-md">
+                <p className="text-sm font-medium text-gray-900">Reportado por: {n.Usuario?.nombre}</p>
+                <p className="text-sm text-gray-600">{n.razon}: {n.descripcion}</p>
+                <button
+                  onClick={() => openModal(n)}
+                  className="mt-3 inline-flex items-center gap-1 bg-[#62CBC9] hover:bg-[#006881] text-white text-sm px-3 py-1.5 rounded-md"
+                >
                   <Eye className="w-4 h-4" /> Revisar
                 </button>
               </div>
@@ -225,6 +285,14 @@ export default function AdminDashboard() {
           </div>
         </section>
       </div>
+
+      {modalAbierto && reporteSeleccionado && (
+        <ReporteModal
+          reporte={reporteSeleccionado}
+          onClose={cerrarModal}
+          onResolve={resolverReporte}
+        />
+      )}
     </div>
   );
 }
