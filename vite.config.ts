@@ -9,6 +9,5 @@ export default defineConfig({
 		svgr()
 	],
 	optimizeDeps: {
-    include: ["@clregions/core"]
-  }
+	}
 });
