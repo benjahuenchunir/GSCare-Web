@@ -11,12 +11,15 @@ import {
 import { db } from "../../firebase/firebaseConfig";
 import leoProfanity from "leo-profanity";
 import spanishBadWords from "../../utils/spanishBadWords";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCommentDots } from "@fortawesome/free-solid-svg-icons";
 
 interface Comment {
   id: string;
   content: string;
   createdAt: Date;
   createdBy: string;
+  createdById: string;
 }
 
 interface ThreadCommentsProps {
@@ -33,7 +36,8 @@ export const ThreadComments: React.FC<ThreadCommentsProps> = ({ threadId }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [badWordsError, setBadWordsError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const commentsPerPage = 15;
   const { user } = useAuth0();
 
   useEffect(() => {
@@ -52,6 +56,7 @@ export const ThreadComments: React.FC<ThreadCommentsProps> = ({ threadId }) => {
         })) as Comment[];
         comments.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
         setComments(comments);
+        setCurrentPage(1); // Resetear a la primera página si cambian los comentarios
       },
       (error) => {
         console.error("Error en suscripción a comentarios:", error);
@@ -61,22 +66,32 @@ export const ThreadComments: React.FC<ThreadCommentsProps> = ({ threadId }) => {
     return () => unsubscribe();
   }, [threadId]);
 
+  // Paginación
+  const totalPages = Math.ceil(comments.length / commentsPerPage);
+  const indexOfLastComment = currentPage * commentsPerPage;
+  const indexOfFirstComment = indexOfLastComment - commentsPerPage;
+  const currentComments = comments.slice(
+    indexOfFirstComment,
+    indexOfLastComment
+  );
+
+  const handlePrevPage = () => setCurrentPage((p) => Math.max(1, p - 1));
+  const handleNextPage = () =>
+    setCurrentPage((p) => Math.min(totalPages, p + 1));
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setBadWordsError("");
-    if (leoProfanity.check(newComment)) {
-      setBadWordsError("Tu comentario contiene lenguaje inapropiado. Por favor, edítalo.");
-      return;
-    }
+
     if (!user?.email || !newComment.trim() || isSubmitting) return;
-    
+
     setIsSubmitting(true);
     try {
       await addDoc(collection(db, "threadComments"), {
         threadId,
         content: newComment.trim(),
         createdAt: serverTimestamp(),
-        createdBy: user.email,
+        createdBy: user.name || user.nickname || user.email,
+        createdById: user.sub || user.email,
       });
       setNewComment("");
     } catch (error) {
@@ -106,32 +121,26 @@ export const ThreadComments: React.FC<ThreadCommentsProps> = ({ threadId }) => {
         </div>
       </div>
 
-      {/* Lista de comentarios */}
-      <div className="space-y-4 max-h-96 overflow-y-auto">
-        {comments.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <svg
-              className="w-12 h-12 mx-auto mb-3 text-gray-300"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1}
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-              />
-            </svg>
-            <p className="font-medium">No hay comentarios aún</p>
-            <p className="text-sm">¡Sé el primero en comentar!</p>
+      {/* Lista de comentarios paginada */}
+      <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+        {comments.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-12 text-center text-gray-500">
+            <FontAwesomeIcon
+              icon={faCommentDots}
+              className="w-16 h-16 mb-4 text-blue-300"
+            />
+            <p className="text-lg font-semibold mb-2">
+              Aún no hay comentarios en este hilo.
+            </p>
+            <p className="text-sm text-gray-400">¡Sé el primero en comentar!</p>
           </div>
-        ) : (
-          comments.map((comment) => (
+        )}
+        {currentComments.length > 0 &&
+          currentComments.map((comment) => (
             <div
               key={comment.id}
               className={`bg-white border border-gray-200 rounded-lg p-4 ${
-                comment.createdBy === user?.email
+                comment.createdById === (user?.sub || user?.email)
                   ? "border-l-4 border-l-blue-500"
                   : ""
               }`}
@@ -149,7 +158,7 @@ export const ThreadComments: React.FC<ThreadCommentsProps> = ({ threadId }) => {
                     <span className="font-medium text-gray-900">
                       {comment.createdBy}
                     </span>
-                    {comment.createdBy === user?.email && (
+                    {comment.createdById === (user?.sub || user?.email) && (
                       <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
                         Tú
                       </span>
@@ -168,9 +177,31 @@ export const ThreadComments: React.FC<ThreadCommentsProps> = ({ threadId }) => {
                 </div>
               </div>
             </div>
-          ))
-        )}
+          ))}
       </div>
+
+      {/* Paginación de comentarios */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 pt-2">
+          <button
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            className="px-4 py-2 rounded bg-gray-200 text-gray-700 font-semibold disabled:opacity-50"
+          >
+            Anterior
+          </button>
+          <span className="text-gray-700 font-medium">
+            Página {currentPage} de {totalPages}
+          </span>
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 rounded bg-gray-200 text-gray-700 font-semibold disabled:opacity-50"
+          >
+            Siguiente
+          </button>
+        </div>
+      )}
 
       {/* Formulario para agregar comentario */}
       {user?.email && (

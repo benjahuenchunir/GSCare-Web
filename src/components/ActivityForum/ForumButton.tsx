@@ -1,17 +1,27 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faComments } from "@fortawesome/free-solid-svg-icons";
 
 interface ForumButtonProps {
   threadCount: number;
-  onClick: () => void;
+  activityId: number;
 }
 
-const ForumButton: React.FC<ForumButtonProps> = ({ threadCount, onClick }) => {
+const ForumButton: React.FC<ForumButtonProps> = ({
+  threadCount,
+  activityId,
+}) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/actividades/${activityId}/foro`);
+  };
+
   return (
     <div className="mt-6">
       <button
-        onClick={onClick}
+        onClick={handleClick}
         className="w-full bg-gradient-to-r from-[#009982] to-[#007a6b] text-white py-4 px-6 rounded-lg hover:from-[#007a6b] hover:to-[#005a4f] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
       >
         <div className="flex items-center justify-center space-x-3">

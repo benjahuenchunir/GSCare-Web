@@ -28,6 +28,7 @@ export interface Asistente {
 // 1. Lista todas las actividades
 export async function fetchActividades(): Promise<Actividad[]> {
   const res = await fetch(`${API_URL}/actividades`);
+  console.log(res);
   if (!res.ok) throw new Error("Error al obtener las actividades");
   return await res.json();
 }

@@ -9,7 +9,11 @@ import ThreadCard from "./ThreadCard";
 import EmptyState from "./EmptyState";
 import Pagination from "./Pagination";
 
-const ForumContent: React.FC = () => {
+interface ForumContentProps {
+  activityId: number;
+}
+
+const ForumContent: React.FC<ForumContentProps> = ({ activityId }) => {
   const {
     threads,
     searchTerm,
@@ -23,11 +27,10 @@ const ForumContent: React.FC = () => {
     handleCreateThread,
     handleJoinThread,
     isMemberOfThread,
-    openThread,
     isAuthenticated,
   } = useForumContext();
 
-  const threadsPerPage = 3;
+  const threadsPerPage = 5;
 
   // Filtrar hilos según búsqueda y filtros
   const filteredThreads = threads.filter((thread) => {
@@ -65,7 +68,7 @@ const ForumContent: React.FC = () => {
   ).length;
 
   return (
-    <>
+    <div className="space-y-8">
       {/* Estadísticas */}
       <ForumStats
         totalThreads={threads.length}
@@ -74,22 +77,29 @@ const ForumContent: React.FC = () => {
         hasSearchTerm={searchTerm !== ""}
       />
 
-      {/* Búsqueda */}
-      <div className="mb-6">
-        <ForumSearch onSearch={setSearchTerm} />
+      {/* Búsqueda y Filtros */}
+      <div className="space-y-6">
+        <div>
+          <ForumSearch onSearch={setSearchTerm} />
+        </div>
+        <div>
+          <ForumFilters
+            filterType={filterType}
+            onFilterChange={setFilterType}
+          />
+        </div>
       </div>
-
-      {/* Filtros */}
-      <ForumFilters filterType={filterType} onFilterChange={setFilterType} />
 
       {/* Botón para crear nuevo hilo */}
       {isAuthenticated && (
-        <CreateThreadButton onCreateClick={() => setShowCreateForm(true)} />
+        <div>
+          <CreateThreadButton onCreateClick={() => setShowCreateForm(true)} />
+        </div>
       )}
 
       {/* Formulario para crear hilo */}
       {showCreateForm && (
-        <div className="mb-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
           <CreateThreadForm
             onSubmit={handleCreateThread}
             onCancel={() => setShowCreateForm(false)}
@@ -98,7 +108,7 @@ const ForumContent: React.FC = () => {
       )}
 
       {/* Lista de hilos */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         {currentThreads.length === 0 ? (
           <EmptyState
             filterType={filterType}
@@ -113,19 +123,23 @@ const ForumContent: React.FC = () => {
               isMember={isMemberOfThread(thread)}
               isAuthenticated={isAuthenticated}
               onJoinThread={handleJoinThread}
-              onOpenThread={openThread}
+              activityId={activityId}
             />
           ))
         )}
       </div>
 
       {/* Paginación */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-      />
-    </>
+      {totalPages > 1 && (
+        <div className="pt-4">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      )}
+    </div>
   );
 };
 

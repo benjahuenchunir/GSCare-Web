@@ -26,7 +26,8 @@ export const createThread = async (
   activityId: number,
   title: string,
   description: string,
-  userEmail: string
+  userName: string,
+  userId: string
 ): Promise<string> => {
   try {
     const docRef = await addDoc(collection(db, "activityThreads"), {
@@ -35,8 +36,10 @@ export const createThread = async (
       description,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-      createdBy: userEmail,
-      members: [userEmail],
+      createdBy: userName,
+      createdById: userId,
+      members: [userName],
+      membersId: [userId],
     });
     return docRef.id;
   } catch (error) {
@@ -67,7 +70,11 @@ export const subscribeToThreads = (
   });
 };
 
-export const joinThread = async (threadId: string, userEmail: string) => {
+export const joinThread = async (
+  threadId: string,
+  userName: string,
+  userId: string
+) => {
   try {
     const threadRef = doc(db, "activityThreads", threadId);
     const threadDoc = await getDoc(threadRef);
@@ -77,9 +84,17 @@ export const joinThread = async (threadId: string, userEmail: string) => {
     }
 
     const currentMembers = threadDoc.data().members || [];
-    if (!currentMembers.includes(userEmail)) {
+    const currentMembersId = threadDoc.data().membersId || [];
+    const needsUpdate =
+      !currentMembers.includes(userName) || !currentMembersId.includes(userId);
+    if (needsUpdate) {
       await updateDoc(threadRef, {
-        members: [...currentMembers, userEmail],
+        members: currentMembers.includes(userName)
+          ? currentMembers
+          : [...currentMembers, userName],
+        membersId: currentMembersId.includes(userId)
+          ? currentMembersId
+          : [...currentMembersId, userId],
         updatedAt: serverTimestamp(),
       });
     }
