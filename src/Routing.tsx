@@ -26,8 +26,6 @@ import AdminProductsPage from "./pages/Admin/AdminProductsPage.tsx";
 import AdminActividadesPage from "./pages/Admin/AdminActividadesPage.tsx";
 import AdminServicesPage from "./pages/Admin/AdminServicesPage.tsx";
 import AdminReportReviewPage from "./pages/Admin/AdminReportReviewPage.tsx";
-import AdminActividadesPage from "./pages/Admin/AdminActividadesPage.tsx";
-import AdminServicesPage from "./pages/Admin/AdminServicesPage.tsx";
 import ThreadCommentsPage from "./pages/Actividades/ThreadCommentsPage.tsx";
 
 export default function Routing() {
