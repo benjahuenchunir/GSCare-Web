@@ -22,6 +22,8 @@ import PricingPage from "./pages/Usuarios/PricingPage.tsx";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminUsersPage from "./pages/Admin/AdminUsersPage.tsx";
 import AdminProductsPage from "./pages/Admin/AdminProductsPage.tsx";
+import AdminActividadesPage from "./pages/Admin/AdminActividadesPage.tsx";
+import AdminServicesPage from "./pages/Admin/AdminServicesPage.tsx";
 import AdminReportReviewPage from "./pages/Admin/AdminReportReviewPage.tsx";
 
 export default function Routing() {
