@@ -11,32 +11,21 @@ interface ActivityForumProps {
 }
 
 // Componente principal del foro
-const ActivityForum: React.FC<ActivityForumProps> = ({ embedded = false }) => {
-  console.log("ActivityForum render");
-  const { threads, showModal, setShowModal, selectedThread, closeThread } =
-    useForumContext();
+const ActivityForum: React.FC<ActivityForumProps> = ({
+  activityId,
+  embedded = false,
+}) => {
+  const { threads, selectedThread, closeThread } = useForumContext();
 
   return (
     <>
       {/* Botón principal para abrir el foro - solo si no está embebido */}
       {!embedded && (
-        <ForumButton
-          threadCount={threads.length}
-          onClick={() => setShowModal(true)}
-        />
-      )}
-
-      {/* Modal del foro - solo si no está embebido */}
-      {!embedded && (
-        <ForumModal isOpen={showModal} onClose={() => setShowModal(false)}>
-          <div className="p-6">
-            <ForumContent />
-          </div>
-        </ForumModal>
+        <ForumButton threadCount={threads.length} activityId={activityId} />
       )}
 
       {/* Contenido del foro - siempre renderizado */}
-      {embedded && <ForumContent />}
+      {embedded && <ForumContent activityId={activityId} />}
 
       {/* Modal para ver comentarios de un hilo específico */}
       <ForumModal

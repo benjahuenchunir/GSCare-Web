@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Thread } from "../../firebase/activityThreads";
 
 interface ThreadCardProps {
@@ -6,7 +7,7 @@ interface ThreadCardProps {
   isMember: boolean;
   isAuthenticated: boolean;
   onJoinThread: (threadId: string) => void;
-  onOpenThread: (thread: Thread) => void;
+  activityId: number;
 }
 
 const ThreadCard: React.FC<ThreadCardProps> = ({
@@ -14,8 +15,14 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
   isMember,
   isAuthenticated,
   onJoinThread,
-  onOpenThread,
+  activityId,
 }) => {
+  const navigate = useNavigate();
+
+  const handleViewComments = () => {
+    navigate(`/actividades/${activityId}/foro/${thread.id}`);
+  };
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
       <div className="flex justify-between items-start">
@@ -53,7 +60,7 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
             </button>
           )}
           <button
-            onClick={() => onOpenThread(thread)}
+            onClick={handleViewComments}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors text-sm font-medium"
           >
             Ver Comentarios

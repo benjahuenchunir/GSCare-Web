@@ -25,8 +25,6 @@ interface ForumContextType {
   isMemberOfThread: (thread: Thread) => boolean;
   openThread: (thread: Thread) => void;
   closeThread: () => void;
-  showModal: boolean;
-  setShowModal: (value: boolean) => void;
   isAuthenticated: boolean;
   user: unknown; // Auth0User type
 }
@@ -55,7 +53,6 @@ export const ForumProvider: React.FC<{
   const [currentPage, setCurrentPage] = useState(1);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
-  const [showModal, setShowModal] = useState(false);
   const { user, isAuthenticated } = useAuth0();
 
   useEffect(() => {
@@ -67,9 +64,15 @@ export const ForumProvider: React.FC<{
   }, [activityId]);
 
   const handleCreateThread = async (title: string, description: string) => {
-    if (!user?.email) return;
+    if (!user) return;
     try {
-      await createThread(activityId, title, description, user.email);
+      await createThread(
+        activityId,
+        title,
+        description,
+        user.name || user.nickname || user.email || "",
+        user.sub || user.email || ""
+      );
       setShowCreateForm(false);
     } catch (error) {
       console.error("Error al crear hilo:", error);
@@ -77,16 +80,25 @@ export const ForumProvider: React.FC<{
   };
 
   const handleJoinThread = async (threadId: string) => {
-    if (!user?.email) return;
+    if (!user) return;
     try {
-      await joinThread(threadId, user.email);
+      await joinThread(
+        threadId,
+        user.name || user.nickname || user.email || "",
+        user.sub || user.email || ""
+      );
     } catch (error) {
       console.error("Error al unirse al hilo:", error);
     }
   };
 
   const isMemberOfThread = (thread: Thread): boolean => {
-    return !!(user?.email && thread.members.includes(user.email));
+    const identifier = user?.sub || user?.email || "";
+    return !!(
+      identifier &&
+      thread.membersId &&
+      thread.membersId.includes(identifier)
+    );
   };
 
   const openThread = (thread: Thread) => {
@@ -114,8 +126,6 @@ export const ForumProvider: React.FC<{
     isMemberOfThread,
     openThread,
     closeThread,
-    showModal,
-    setShowModal,
     isAuthenticated,
     user,
   };
