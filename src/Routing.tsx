@@ -25,9 +25,8 @@ import AdminUsersPage from "./pages/Admin/AdminUsersPage.tsx";
 import AdminProductsPage from "./pages/Admin/AdminProductsPage.tsx";
 import AdminActividadesPage from "./pages/Admin/AdminActividadesPage.tsx";
 import AdminServicesPage from "./pages/Admin/AdminServicesPage.tsx";
+import AdminConfigPage from "./pages/Admin/AdminConfigPage.tsx";
 import AdminReportReviewPage from "./pages/Admin/AdminReportReviewPage.tsx";
-import AdminActividadesPage from "./pages/Admin/AdminActividadesPage.tsx";
-import AdminServicesPage from "./pages/Admin/AdminServicesPage.tsx";
 import ThreadCommentsPage from "./pages/Actividades/ThreadCommentsPage.tsx";
 
 export default function Routing() {
@@ -49,6 +48,7 @@ export default function Routing() {
           <Route path="reportes" element={<AdminReportReviewPage />} />
           <Route path="actividades" element={<AdminActividadesPage />} />
           <Route path="servicios" element={<AdminServicesPage />} />
+          <Route path="configuracion" element={<AdminConfigPage />} />
         </Route>
 
         <Route path="/" element={<Layout />}>

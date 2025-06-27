@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useParams } from "react-router-dom"
+import { useAuth0 } from "@auth0/auth0-react"
 import axios from "axios"
 
 interface Bloque {
@@ -27,6 +28,7 @@ export default function BloqueSelectorAutosuficiente({ onContinue, onClose }: Pr
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedBloque, setSelectedBloque] = useState<Bloque | null>(null)
+  const { isAuthenticated, getAccessTokenSilently } = useAuth0()
 
   const { id } = useParams<{ id: string }>()
   const [bloques, setBloques] = useState<Bloque[]>([])
@@ -36,24 +38,34 @@ export default function BloqueSelectorAutosuficiente({ onContinue, onClose }: Pr
   const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
 
   useEffect(() => {
-    if (!id) return
-    setLoading(true)
-    axios.get(`${import.meta.env.VITE_API_URL}/servicios/${id}/bloques`)
-      .then(res => {
-        const parsed = res.data.map((b: any) => {
-          const disponible = b?.extendedProps?.disponible ?? true
-          return {
-            id: b.id,
-            start: b.start,
-            end: b.end,
-            disponible,
-          }
+    const fetchBloques = async () => {
+      if (!id || !isAuthenticated) {
+        setLoading(false)
+        setBloques([])
+        return
+      }
+      setLoading(true)
+      try {
+        const token = await getAccessTokenSilently()
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/servicios/${id}/bloques`, {
+          headers: { Authorization: `Bearer ${token}` },
         })
+        const parsed = res.data.map((b: any) => ({
+          id: b.id,
+          start: b.start,
+          end: b.end,
+          disponible: b?.extendedProps?.disponible ?? true,
+        }))
         setBloques(parsed)
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [id])
+      } catch (error) {
+        console.error("Error al obtener bloques:", error)
+        setBloques([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchBloques()
+  }, [id, isAuthenticated, getAccessTokenSilently])
 
   const days = useMemo(() => {
     const start = new Date(referenceDate)
