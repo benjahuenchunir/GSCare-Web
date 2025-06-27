@@ -39,35 +39,27 @@ export default function Navbar() {
           {!isAuthenticated && (
             <div className="hidden md:block">
               <NavLink
-                to="/"
-                className={({ isActive }) =>
-                  `text-[1.05em] font-medium tracking-wide transition-colors px-4 py-2 rounded-full ${
-                    isActive
-                      ? "bg-[#E0F8F4] text-[#009982]"
-                      : "text-gray-700 hover:text-[#006881] hover:bg-gray-100"
-                  }`
-                }
+          to="/"
+          className={({ isActive }) =>
+            `text-[1.05em] font-medium tracking-wide transition-colors px-4 py-2 rounded-full ${
+              isActive
+                ? "bg-[#E0F8F4] text-[#009982]"
+                : "text-gray-700 hover:text-[#006881] hover:bg-gray-100"
+            }`
+          }
               >
-                Página Principal
+          Página Principal
               </NavLink>
             </div>
           )}
 
-          {!isLoading && isAuthenticated && profile?.rol && (
+          {!isLoading && isAuthenticated && profile?.rol === "socio" && (
             <div className="hidden md:flex items-center gap-2 bg-gray-100 px-2 py-1 rounded-md ml-2 text-[#006881] text-[0.9em] font-semibold">
-              {profile.rol === "socio" ? (
-                <>
-                  <FaCrown className="text-yellow-500 text-[1.4em]" />
-                  <div className="flex flex-col leading-tight text-left text-yellow-700">
-                    <span>Usuario</span>
-                    <span>Socio</span>
-                  </div>
-                </>
-              ) : (
-                <>
-
-                </>
-              )}
+              <FaCrown className="text-yellow-500 text-[1.4em]" />
+              <div className="flex flex-col leading-tight text-left text-yellow-700">
+          <span>Usuario</span>
+          <span>Socio</span>
+              </div>
             </div>
           )}
         </div>
@@ -77,8 +69,11 @@ export default function Navbar() {
           {!isLoading && isAuthenticated && (
             <>
               {[
-                { to: "/user", label: "Ver mi perfil" },
+                profile?.rol === "administrador"
+                  ? { to: "/admin", label: "Administración" }
+                  : { to: "/user", label: "Ver mi perfil" },
                 { to: "/mi-agenda", label: "Mi Agenda" },
+                { to: "/noticias", label: "Noticias" },
                 { to: "/games", label: "Ver Juegos" },
                 { to: "/productos", label: "Productos" },
                 { to: "/servicios", label: "Servicios" },
@@ -147,7 +142,9 @@ export default function Navbar() {
             {!isLoading && isAuthenticated && (
               <>
                 {[
-                  { to: "/user", label: "Ver mi perfil" },
+                  profile?.rol === "administrador"
+                    ? { to: "/admin", label: "Administración" }
+                    : { to: "/user", label: "Ver mi perfil" },
                   { to: "/user/mi-agenda", label: "Mi Agenda" },
                   { to: "/games", label: "Ver Juegos" },
                   { to: "/productos", label: "Productos" },

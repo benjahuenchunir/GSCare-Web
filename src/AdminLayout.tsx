@@ -13,6 +13,7 @@ import {
   X,
   LogOut,
   Pencil,
+  ArrowUpRight,
 } from "lucide-react"
 import { NavLink, Outlet, useNavigate } from "react-router-dom"
 import { useState } from "react"
@@ -93,6 +94,13 @@ export default function AdminLayout() {
 
         {/* Bottom buttons */}
         <div className="border-t border-gray-200 p-4 space-y-1">
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center gap-3 px-4 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 w-full text-left"
+          >
+            <ArrowUpRight className="w-5 h-5" />
+            Ir a GSCare
+          </button>
           <button
             onClick={() => navigate("/edit-profile?from=admin")}
             className="flex items-center gap-3 px-4 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 w-full text-left"

@@ -30,6 +30,8 @@ import AdminReportReviewPage from "./pages/Admin/AdminReportReviewPage.tsx";
 import AdminGamesPage from "./pages/Admin/AdminGamesPage.tsx";
 import ThreadCommentsPage from "./pages/Actividades/ThreadCommentsPage.tsx";
 import SupportPage from "./pages/Soporte/SupportPage.tsx";
+import AdminNewsPage from "./pages/Admin/AdminNewsPage.tsx";
+import NewsListPage from "./pages/Noticias/NewsListPage.tsx";
 
 export default function Routing() {
   return (
@@ -52,6 +54,7 @@ export default function Routing() {
           <Route path="servicios" element={<AdminServicesPage />} />
           <Route path="configuracion" element={<AdminConfigPage />} />
           <Route path="juegos" element={<AdminGamesPage />} />
+          <Route path="noticias" element={<AdminNewsPage />} />
         </Route>
 
         <Route path="/" element={<Layout />}>
@@ -72,6 +75,7 @@ export default function Routing() {
           <Route path="/mi-agenda" element={<Agenda />} /> {/* Ruta de login */}
           <Route path="/test" element={<Page />} />
           <Route path="/soporte" element={< SupportPage />} />
+          <Route path="/noticias" element={<NewsListPage />} />
           {/* Ruta protegida */}
           <Route
             path="/user"
