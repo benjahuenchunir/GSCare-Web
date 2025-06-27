@@ -12,15 +12,3 @@ html {
 :root {
 	background-color: #f3f4f6;
 }
-
-@layer components {
-  .modal-backdrop {
-    @apply fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50;
-  }
-  .modal-content {
-    @apply bg-white p-6 rounded-lg shadow-xl w-full max-w-lg;
-  }
-  .modal-input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#009982] focus:border-[#009982];
-  }
-}
