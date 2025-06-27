@@ -11,6 +11,7 @@ export default function AdminConfigPage() {
     landingSubtitle: "",
     landingImage: "",
     socialLinks: { facebook: "", instagram: "", x: "", linkedin: "" },
+    supportHours: "",
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -58,6 +59,9 @@ export default function AdminConfigPage() {
           <Input label="Teléfono" value={config.contactPhone} onChange={(v) => handleChange("contactPhone", v)} />
           <Input label="Correo electrónico" value={config.contactEmail} onChange={(v) => handleChange("contactEmail", v)} />
           <Input label="Dirección" value={config.address} onChange={(v) => handleChange("address", v)} />
+        </div>
+        <div>
+          <Input label="Horario de atención" value={config.supportHours ?? ""} onChange={(v) => handleChange("supportHours", v)} />
         </div>
       </div>
 

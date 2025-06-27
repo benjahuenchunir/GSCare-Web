@@ -28,6 +28,7 @@ import AdminServicesPage from "./pages/Admin/AdminServicesPage.tsx";
 import AdminConfigPage from "./pages/Admin/AdminConfigPage.tsx";
 import AdminReportReviewPage from "./pages/Admin/AdminReportReviewPage.tsx";
 import ThreadCommentsPage from "./pages/Actividades/ThreadCommentsPage.tsx";
+import SupportPage from "./pages/Soporte/SupportPage.tsx";
 
 export default function Routing() {
   return (
@@ -68,6 +69,7 @@ export default function Routing() {
           <Route path="/productos/:id" element={<ProductPage />} />
           <Route path="/mi-agenda" element={<Agenda />} /> {/* Ruta de login */}
           <Route path="/test" element={<Page />} />
+          <Route path="/soporte" element={< SupportPage />} />
           {/* Ruta protegida */}
           <Route
             path="/user"

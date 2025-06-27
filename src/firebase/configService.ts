@@ -15,6 +15,7 @@ export interface Config {
     x?: string
     linkedin?: string
   }
+  supportHours?: string
 }
 
 const configRef = doc(db, 'config', 'global')
