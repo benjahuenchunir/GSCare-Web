@@ -270,32 +270,7 @@ export default function AdminServicesPage() {
       {viewingBlocks && <ServiceBlocksModal servicio={viewingBlocks} onClose={() => setViewingBlocks(null)} />}
       {viewingReviews && <ServiceReviewsModal servicio={viewingReviews} onClose={() => setViewingReviews(null)} />}
 
-      <div className="mt-12">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Gestión de Beneficios</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Crear nuevo beneficio</h3>
-            <form onSubmit={handleCreateBeneficio} className="bg-white p-4 rounded-lg shadow-sm space-y-3">
-              <input type="text" placeholder="Nombre del beneficio" value={newBeneficioName} onChange={e => setNewBeneficioName(e.target.value)} className="w-full border rounded px-3 py-2" required />
-              <textarea placeholder="Descripción (opcional)" value={newBeneficioDesc} onChange={e => setNewBeneficioDesc(e.target.value)} className="w-full border rounded px-3 py-2" rows={2} />
-              <button type="submit" className="w-full bg-primary1 text-white py-2 rounded hover:bg-primary2">Crear Beneficio</button>
-            </form>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Beneficios existentes</h3>
-            <ul className="bg-white p-4 rounded-lg shadow-sm space-y-2 max-h-96 overflow-y-auto">
-              {beneficios.map(b => (
-                <li key={b.id} className="flex justify-between items-center text-sm p-1 hover:bg-gray-50 rounded">
-                  <span className="font-medium">{b.nombre}</span>
-                  <button onClick={() => handleDeleteBeneficio(b.id)} className="text-red-500 hover:text-red-700 font-semibold">Eliminar</button>
-                </li>
-              ))}
-              {beneficios.length === 0 && <p className="text-gray-500 text-sm">No hay beneficios creados.</p>}
-            </ul>
-          </div>
-        </div>
-        <CreateServiceForm onSuccess={fetchServicios} />
-      </div>
+      <CreateServiceForm onSuccess={fetchServicios} />
     </div>
   );
 }
