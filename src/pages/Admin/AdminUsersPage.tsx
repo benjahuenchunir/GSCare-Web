@@ -128,6 +128,7 @@ export default function AdminUsersPage() {
           <option value="todos">Todos los roles</option>
           <option value="gratis">General</option>
           <option value="socio">Socio</option>
+          <option value="proveedor">Proveedor</option>
           <option value="administrador">Administrador</option>
         </select>
         <select
@@ -199,9 +200,11 @@ export default function AdminUsersPage() {
                       ? "bg-yellow-600/20 text-yellow-700"
                       : u.rol === "administrador"
                       ? "bg-purple-200 text-purple-700"
+                      : u.rol === "proveedor"
+                      ? "bg-green-200 text-green-800"
                       : "bg-[#009982]/10 text-[#006881]"
                   }`}>
-                    {u.rol === "socio" ? "Socio" : u.rol === "administrador" ? "Administrador" : "General"}
+                    {u.rol === "socio" ? "Socio" : u.rol === "administrador" ? "Administrador" : u.rol === "proveedor" ? "Proveedor" : "General"}
                   </span>
                 </td>
                 <td className="space-x-2">

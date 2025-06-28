@@ -255,7 +255,7 @@ const ActivityPage: React.FC = () => {
           )}
         </div>
       ) : (
-        <ExclusiveSubscriptionCard />
+        profile?.rol !== "administrador" && profile?.rol !== "proveedor" && <ExclusiveSubscriptionCard />
       )}
 
       {/* Modales */}

@@ -25,6 +25,8 @@ export default function Navbar() {
   const homePath =
     profile?.rol === "administrador"
       ? "/admin"
+      : profile?.rol === "proveedor"
+      ? "/proveedor"
       : isAuthenticated
       ? "/user"
       : "/";
@@ -60,12 +62,18 @@ export default function Navbar() {
             </div>
           )}
 
-          {!isLoading && isAuthenticated && profile?.rol === "socio" && (
-            <div className="hidden lg:flex items-center gap-2 bg-gray-100 px-2 py-1 rounded-md ml-2 text-[#006881] text-[0.9em] font-semibold">
-              <FaCrown className="text-yellow-500 text-[1.4em]" />
-              <div className="flex flex-col leading-tight text-left text-yellow-700">
-          <span>Usuario</span>
-          <span>Socio</span>
+          {!isLoading && isAuthenticated && (profile?.rol === "socio" || profile?.rol === "proveedor") && (
+            <div className="hidden lg:flex items-center gap-2 bg-gray-100 px-2 py-1 rounded-md ml-2 text-[0.9em] font-semibold">
+              {profile.rol === "socio" ? (
+                <FaCrown className="text-yellow-500 text-[1.4em]" />
+              ) : (
+                <span className="text-green-500 text-[1.4em]">✓</span>
+              )}
+              <div className={`flex flex-col leading-tight text-left ${
+                profile.rol === "socio" ? "text-yellow-700" : "text-green-800"
+              }`}>
+                <span>Usuario</span>
+                <span>{profile.rol === "socio" ? "Socio" : "Proveedor"}</span>
               </div>
             </div>
           )}
@@ -75,17 +83,33 @@ export default function Navbar() {
         <div className="hidden lg:flex items-center space-x-2">
           {!isLoading && isAuthenticated && (
             <>
-              {[
-                profile?.rol === "administrador"
-                  ? { to: "/admin", label: "Administración" }
-                  : { to: "/user", label: "Ver mi perfil" },
-                { to: "/mi-agenda", label: "Mi Agenda" },
-                { to: "/noticias", label: "Noticias" },
-                { to: "/games", label: "Ver Juegos" },
-                { to: "/productos", label: "Productos" },
-                { to: "/servicios", label: "Servicios" },
-                { to: "/actividades", label: "Actividades" },
-              ].map(({ to, label }) => (
+              {(profile?.rol === "administrador"
+                ? [
+                    { to: "/admin", label: "Administración" },
+                    { to: "/mi-agenda", label: "Mi Agenda" },
+                    { to: "/noticias", label: "Noticias" },
+                    { to: "/games", label: "Ver Juegos" },
+                    { to: "/productos", label: "Productos" },
+                    { to: "/servicios", label: "Servicios" },
+                    { to: "/actividades", label: "Actividades" },
+                  ]
+                : profile?.rol === "proveedor"
+                ? [
+                    { to: "/proveedor", label: "Mi Perfil" },
+                    { to: "/mi-agenda", label: "Mi Agenda" },
+                    { to: "/servicios", label: "Servicios" },
+                    { to: "/actividades", label: "Actividades" },
+                  ]
+                : [
+                    { to: "/user", label: "Ver mi perfil" },
+                    { to: "/mi-agenda", label: "Mi Agenda" },
+                    { to: "/noticias", label: "Noticias" },
+                    { to: "/games", label: "Ver Juegos" },
+                    { to: "/productos", label: "Productos" },
+                    { to: "/servicios", label: "Servicios" },
+                    { to: "/actividades", label: "Actividades" },
+                  ]
+              ).map(({ to, label }) => (
                 <NavLink
                   key={to}
                   to={to}

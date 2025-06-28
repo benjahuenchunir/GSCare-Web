@@ -216,9 +216,10 @@ export default function AdminDashboard() {
                       user.rol === "socio"
                         ? "bg-yellow-600/20 text-yellow-600"
                         : user.rol === "administrador" ? "bg-[#6B21A8]/20 text-[#6B21A8]"
+                        : user.rol === "proveedor" ? "bg-green-200 text-green-800"
                         : "bg-[#009982]/10 text-[#006881]"
                     }`}>
-                      {user.rol === "socio" ? "Socio" : user.rol === "administrador" ? "Administrador" : "General"}
+                      {user.rol === "socio" ? "Socio" : user.rol === "administrador" ? "Administrador" : user.rol === "proveedor" ? "Proveedor" : "General"}
                     </span>
                   </td>
                   <td>{new Date(user.createdAt).toLocaleDateString("es-CL")}</td>
