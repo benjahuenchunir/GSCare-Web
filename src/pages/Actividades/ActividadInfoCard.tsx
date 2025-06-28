@@ -2,9 +2,10 @@ interface ActividadInfoCardProps {
   nombre: string;
   descripcion: string;
   imagen?: string | null;
+  capacidad_total?: number;
 }
 
-export default function ActividadInfoCard({ nombre, descripcion, imagen }: ActividadInfoCardProps) {
+export default function ActividadInfoCard({ nombre, descripcion, imagen, capacidad_total }: ActividadInfoCardProps) {
   return (
     <div className="flex flex-col-reverse md:flex-row items-stretch gap-8 p-6 bg-white rounded-2xl shadow-md mb-8">
       <div className="flex-1 flex flex-col justify-start text-center md:text-left pt-6">
@@ -20,6 +21,11 @@ export default function ActividadInfoCard({ nombre, descripcion, imagen }: Activ
         >
           {descripcion}
         </p>
+        {typeof capacidad_total !== "undefined" && (
+          <div className="mt-4 text-gray-700 font-semibold">
+            Capacidad: {capacidad_total === 999999 ? "Sin límite" : capacidad_total}
+          </div>
+        )}
       </div>
       {imagen && (
         <div className="flex-1 flex justify-center h-full">

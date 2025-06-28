@@ -16,6 +16,7 @@ const initialActividad: ActividadForm = {
   fecha: "",
   hora_inicio: "",
   hora_final: "",
+  capacidad_total: null, 
 };
 
 const initialRecurrentActividad: RecurrentActivityFormType = {
@@ -98,9 +99,19 @@ export default function PartnerHub({ view, setView }: Props) {
     try {
       const token = await getAccessTokenSilently();
       const userPartner = await axios.get(`${import.meta.env.VITE_API_URL}/usuarios/email/${user?.email}`);
+      // --- Ajuste aquí: si capacidad_total es "" o undefined, enviar 999999 ---
+      const actividadData = {
+        ...actividad,
+        capacidad_total:
+          actividad.capacidad_total === null ||
+          actividad.capacidad_total === undefined
+            ? 999999
+            : actividad.capacidad_total,
+        id_creador_del_evento: userPartner.data.id,
+      };
       await axios.post(
         `${import.meta.env.VITE_API_URL}/actividades`,
-        { ...actividad, id_creador_del_evento: userPartner.data.id },
+        actividadData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setSuccess("¡Actividad creada!");
