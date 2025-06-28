@@ -158,8 +158,8 @@ export default function RecurrentActivityForm({
     .filter(Boolean);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center px-2 md:px-4">
-      <div className="bg-white w-full max-w-4xl md:max-w-5xl rounded-2xl shadow-md p-4 md:p-6 space-y-4 md:space-y-6 max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center px-4">
+      <div className="bg-white w-full max-w-6xl rounded-2xl shadow-md p-6 space-y-6 max-h-[90vh] overflow-y-auto relative">
         <div className="flex justify-between items-center mb-4 md:mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-[#009982]">Crear Actividad Recurrente</h2>
           <button
@@ -335,35 +335,35 @@ export default function RecurrentActivityForm({
             {/* REPETICIÓN */}
             <section className="bg-white p-4 md:p-6 rounded-xl shadow border border-gray-200">
               <h3 className="text-xl md:text-2xl font-semibold text-[#009982] mb-2 md:mb-4">Frecuencia de repetición</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-              <div>
-                <label className="block text-lg font-medium mb-1">
-                ¿Cada cuántas semanas se repite?
-                </label>
-                <input
-                type="number"
-                name="semanas_recurrencia"
-                min={1}
-                value={actividad.semanas_recurrencia}
-                onChange={onChange}
-                className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
-                placeholder="Ej: 2 para cada 2 semanas"
-                />
-                <span className="text-[1.2em] text-black-500">
-                Ejemplo: 1 = todas las semanas, 2 = cada dos semanas, etc.
-                </span>
-              </div>
-              <div>
-                <label className="block text-lg font-medium mb-1">Fecha de inicio</label>
-                <input
-                type="date"
-                name="fecha"
-                value={actividad.fecha}
-                onChange={onChange}
-                className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
-                />
-              </div>
-              <div>
+              <div className="flex flex-col gap-4">
+                <div>
+                  <label className="block text-lg font-medium mb-1">
+                    ¿Cada cuántas semanas se repite?
+                  </label>
+                  <input
+                    type="number"
+                    name="semanas_recurrencia"
+                    min={1}
+                    value={actividad.semanas_recurrencia}
+                    onChange={onChange}
+                    className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
+                    placeholder="Ej: 2 para cada 2 semanas"
+                  />
+                  <span className="text-[1.2em] text-gray-800">
+                    Ejemplo: 1 = todas las semanas, 2 = cada dos semanas, etc.
+                  </span>
+                </div>
+                <div>
+                  <label className="block text-lg font-medium mb-1">Fecha de inicio</label>
+                  <input
+                    type="date"
+                    name="fecha"
+                    value={actividad.fecha}
+                    onChange={onChange}
+                    className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
+                  />
+                </div>
+                <div>
                 <label className="block text-lg font-medium mb-1">Fecha de término</label>
                 <input
                 type="date"
