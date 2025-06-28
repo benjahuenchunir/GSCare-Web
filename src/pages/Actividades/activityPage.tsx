@@ -260,23 +260,24 @@ const ActivityPage: React.FC = () => {
           <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">
             Cupos disponibles
           </h2>
-          <ul className="text-gray-800 space-y-1 text-center">
-            {grupoActividades.length > 0 && grupoActividades[0].capacidad_total === 999999 ? (
-              <li className="font-semibold text-green-700">Actividad sin límite</li>
+          <div className="text-gray-800 space-y-1 text-center text-lg font-semibold">
+            {grupoActividades.length > 0 ? (
+              (() => {
+                const primeraActividad = grupoActividades[0];
+                if (primeraActividad.capacidad_total === null || primeraActividad.capacidad_total === 999999) {
+                  return <p className="text-green-700">Actividad sin límite</p>;
+                }
+                const cupos = cuposDisponibles[primeraActividad.id] ?? (primeraActividad.capacidad_total ?? 0);
+                return (
+                  <p className={cupos > 0 ? "text-gray-800" : "text-red-600"}>
+                    {cupos > 0 ? `${cupos} cupos` : "Sin cupos"}
+                  </p>
+                );
+              })()
             ) : (
-              grupoActividades.map((a) => (
-                <li key={a.id}>
-                  <span>
-                    {typeof a.capacidad_total === "number"
-                      ? (cuposDisponibles[a.id] ?? (a.capacidad_total ?? 999999)) > 0
-                        ? `${cuposDisponibles[a.id] ?? (a.capacidad_total ?? 999999)} cupos`
-                        : "Sin cupos"
-                      : "Sin límite"}
-                  </span>
-                </li>
-              ))
+              <p>Calculando...</p>
             )}
-          </ul>
+          </div>
         </div>
       </div>
 
