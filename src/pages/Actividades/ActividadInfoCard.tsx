@@ -2,7 +2,7 @@ interface ActividadInfoCardProps {
   nombre: string;
   descripcion: string;
   imagen?: string | null;
-  capacidad_total?: number;
+  capacidad_total: number;
 }
 
 export default function ActividadInfoCard({ nombre, descripcion, imagen, capacidad_total }: ActividadInfoCardProps) {

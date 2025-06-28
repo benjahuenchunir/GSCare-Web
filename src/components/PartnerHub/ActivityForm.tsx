@@ -13,7 +13,7 @@ export interface ActividadForm {
   hora_final: string;
   imagen?: string;
   categoria?: string;
-  capacidad_total?: number | null;
+  capacidad_total: number;
 }
 
 interface ActivityFormProps {
@@ -292,11 +292,11 @@ export default function ActivityForm({
 
             {error && <p className="text-red-500 text-sm">{error}</p>}
             {success && <p className="text-green-600 text-sm">{success}</p>}
-            <div className="flex justify-between items-center gap-4">
+            <div className="flex justify-center items-center gap-4 mt-8">
               <button
                 type="button"
                 onClick={onCancel}
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                className="bg-[#FF4D4F] hover:bg-[#d32f2f] text-white px-8 py-3 rounded-lg font-semibold text-lg transition w-48 h-16 flex items-center justify-center"
                 disabled={loading}
               >
                 Cancelar
@@ -304,13 +304,17 @@ export default function ActivityForm({
               <button
                 type="button"
                 onClick={() => setShowPreview((v) => !v)}
-                className={`bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800 ${showPreview ? "bg-gray-900" : ""}`}
+                className={`rounded-lg font-semibold text-lg transition w-48 h-16 flex items-center justify-center
+                  ${showPreview
+                    ? "bg-[#141A2A] text-white"
+                    : "bg-[#141A2A] text-white"}
+                  hover:bg-[#232b3e]`}
               >
                 {showPreview ? "Ocultar vista previa" : "Vista previa"}
               </button>
               <button
                 type="submit"
-                className="bg-[#009982] text-white px-4 py-2 rounded hover:bg-[#007b6d]"
+                className="bg-[#009982] hover:bg-[#007b6d] text-white rounded-lg font-semibold text-lg transition w-48 h-16 flex items-center justify-center"
                 disabled={loading}
               >
                 {loading ? "Creando..." : "Crear Actividad"}

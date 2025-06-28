@@ -156,7 +156,7 @@ const ActivityPage: React.FC = () => {
         nombre={actividad.nombre}
         descripcion={actividad.descripcion}
         imagen={actividad.imagen ?? ""}
-        capacidad_total={actividad.capacidad_total}
+        capacidad_total={actividad.capacidad_total ?? 999999}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
