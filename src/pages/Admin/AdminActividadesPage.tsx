@@ -15,7 +15,7 @@ export interface Actividad {
   categoria: string;
   comuna: string;
   link: string;
-  capacidad_total: number | null;
+  capacidad_total: number;
   asistentes: number;
   status: string;
   fecha: string;
@@ -279,11 +279,11 @@ export default function AdminActividadesPage() {
                 <td>{a.modalidad}</td>
                 <td>{a.categoria}</td>
                 <td>
-                  {a.capacidad_total
+                  {a.capacidad_total && a.capacidad_total !== 999999
                     ? `${Math.round((a.asistentes / a.capacidad_total) * 100)}%`
                     : "-"}
                 </td>
-                <td>{a.capacidad_total ?? "-"}</td>
+                <td>{a.capacidad_total === 999999 ? "Sin límite" : a.capacidad_total ?? "-"}</td>
                 <td>
                   {a.asistentes ?? 0}
                   <button

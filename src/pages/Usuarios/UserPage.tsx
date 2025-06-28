@@ -14,6 +14,7 @@ import QuickNavSection from "../../components/UserPageComponents/QuickNavSection
 import RoleSwitcherButton from "../../components/RoleSwitcherButton";
 import BenefitsCard from "../../components/UserPageComponents/BenefictsCard";
 import PartnerHub from "../../components/PartnerHub/PartnerHub";
+import MyCreatedActivitiesSection from "../../components/UserPageComponents/MyCreatedActivitiesSection";
 
 // Iconos SVG
 import CalendarIcon from '../../assets/Calendar2.svg?react';
@@ -152,6 +153,10 @@ export default function UserPage() {
                 <SubscribedServicesSection />
               </div>
             </div>
+
+            <div className="space-y-4">
+              {profile && <MyCreatedActivitiesSection userId={profile.id} setView={setModalView} />}
+             </div>
 
             <div className="flex justify-center mt-4">
               <RoleSwitcherButton

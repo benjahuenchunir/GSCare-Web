@@ -112,18 +112,15 @@ const Agenda = () => {
     return () => clearInterval(interval);
   }, [isAuthenticated, user]);
 
-  // Filtrar eventos: solo mostrar si el usuario es socio
   const eventosFiltrados = profile?.rol === "socio" ? eventos : [];
 
   if (loading) return <p className="text-center mt-10">Cargando agenda…</p>;
 
-  // ✅ Se llama cuando se hace clic en "Cancelar" en el modal del evento
   const cancelarEventoOptimista = async (evento: Evento) => {
     setEventoPendiente(evento);
     setConfirmacionVisible(true);
   };
 
-  // ✅ Confirmación definitiva de cancelación (se ejecuta si el usuario confirma)
   const confirmarCancelacion = async () => {
     if (!eventoPendiente || !user?.email || !isAuthenticated) return;
 
@@ -135,7 +132,16 @@ const Agenda = () => {
     setEventos(prev =>
       prev.filter(e =>
         eventoPendiente.tipo === 'actividad'
-          ? e.tipo !== 'actividad' || (e.id_foro_actividad !== eventoPendiente.id_foro_actividad && e.id !== eventoPendiente.id)
+          ? (
+              eventoPendiente.id_foro_actividad
+                ? (
+                    e.tipo !== 'actividad' ||
+                    e.id_foro_actividad !== eventoPendiente.id_foro_actividad
+                  )
+                : (
+                    e.tipo !== 'actividad' || e.id !== eventoPendiente.id
+                  )
+            )
           : e.id !== eventoPendiente.id || e.tipo !== eventoPendiente.tipo
       )
     );
