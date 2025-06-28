@@ -19,6 +19,7 @@ export interface Actividad {
   createdAt: string;
   updatedAt: string;
   capacidad_total: number;
+  status: string; 
 }
 
 export interface Asistente {
