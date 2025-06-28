@@ -1,4 +1,4 @@
-import  { ChangeEvent, FormEvent } from "react";
+import { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
@@ -9,13 +9,13 @@ export interface RecurrentActivityForm {
   lugar?: string;
   comuna?: string;
   fecha: string;
-  fecha_termino: string;
-  // hora_inicio y hora_final no están en initialRecurrentActividad en PartnerHub.tsx,
-  // pero sí en la interfaz aquí. Asumo que deben estar.
-  hora_inicio?: string; 
+  hora_inicio?: string;
   hora_final?: string;
   imagen?: string;
   categoria?: string;
+  capacidad_total: number;
+  // --- Recurrente ---
+  fecha_termino: string;
   semanas_recurrencia: number;
   dias_seleccionados: boolean[];
   horarios_por_dia: string[][];
@@ -58,14 +58,13 @@ export default function RecurrentActivityForm({
 
   const handleHorarioChange = (
     dia: number,
-    index: number, // 0 para inicio, 1 para fin
+    index: number,
     e: ChangeEvent<HTMLInputElement>
   ) => {
     const { value } = e.target;
     const nuevosHorarios = actividad.horarios_por_dia.map((horariosDia, i) =>
       i === dia ? [...(horariosDia || ["", ""])] : (horariosDia || ["", ""])
     );
-    if (!nuevosHorarios[dia]) nuevosHorarios[dia] = ["", ""]; // Asegurar que el array exista
     nuevosHorarios[dia][index] = value;
     onChange({
       target: { name: "horarios_por_dia", value: nuevosHorarios },
@@ -73,229 +72,251 @@ export default function RecurrentActivityForm({
   };
 
   const handleDiaSeleccionado = (dia: number, checked: boolean) => {
-    const seleccionados = actividad.dias_seleccionados
-      ? [...actividad.dias_seleccionados]
-      : new Array(7).fill(false);
+    const seleccionados = [...actividad.dias_seleccionados];
     seleccionados[dia] = checked;
-
-    // Si se deselecciona un día, limpiar sus horarios
     const nuevosHorarios = [...actividad.horarios_por_dia];
-    if (!checked) {
-      nuevosHorarios[dia] = ["", ""];
-    }
-    
+    if (!checked) nuevosHorarios[dia] = ["", ""];
     onChange({ target: { name: "dias_seleccionados", value: seleccionados } } as any);
     onChange({ target: { name: "horarios_por_dia", value: nuevosHorarios } } as any);
   };
 
+  // --- NUEVO: Manejo de "sin límite" de capacidad ---
+  const [sinLimiteCapacidad, setSinLimiteCapacidad] = useState(
+    actividad.capacidad_total === 999999 ||
+    actividad.capacidad_total === null ||
+    actividad.capacidad_total === undefined
+  );
+
+  useEffect(() => {
+    setSinLimiteCapacidad(
+      actividad.capacidad_total === 999999 ||
+      actividad.capacidad_total === null ||
+      actividad.capacidad_total === undefined
+    );
+  }, [actividad.capacidad_total]);
 
   return (
-    <div className="max-w-screen-2xl mx-auto p-4"> {/* Cambiado de max-w-7xl a max-w-screen-2xl */}
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-center flex-1">
-          Crear actividad que se repite
-        </h2>
-        <button
-          type="button"
-          onClick={onSwitchToUnique}
-          className="flex items-center gap-1 text-purple-600 hover:text-purple-800 transition"
-        >
-          <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
-          <span className="underline">Volver</span>
-        </button>
-      </div>
+    <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center px-4">
+      <div className="bg-white w-full max-w-5xl rounded-2xl shadow-md p-6 space-y-6 max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-bold text-[#009982]">Crear Actividad Recurrente</h2>
+          <button
+            onClick={onSwitchToUnique}
+            className="flex items-center text-[#006E5E] hover:underline text-lg font-medium"
+          >
+            <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
+            Volver
+          </button>
+        </div>
 
-      <div className="h-[75vh] overflow-y-auto pr-2">
-        <form onSubmit={onSubmit} className="space-y-6">
-          {/* Grid general de dos columnas en pantallas grandes */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* -------------------------- Información básica -------------------------- */}
-            <section className="bg-white lg:col-span-2 rounded shadow p-4">
-              <h3 className="text-xl font-semibold mb-3">Información básica</h3>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={onSubmit} className="space-y-8">
+          {/* INFORMACIÓN BÁSICA */}
+          <section className="bg-white p-6 rounded-xl shadow border border-gray-200">
+            <h3 className="text-2xl font-semibold text-[#009982] mb-4">Información básica</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-lg font-medium mb-1">Nombre</label>
+                <input
+                  name="nombre"
+                  value={actividad.nombre}
+                  onChange={onChange}
+                  placeholder="Ej: Clase de yoga"
+                  className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
+                  maxLength={255}
+                />
+              </div>
+              <div>
+                <label className="block text-lg font-medium mb-1">Categoría</label>
+                <input
+                  name="categoria"
+                  value={actividad.categoria || ""}
+                  onChange={onChange}
+                  placeholder="Ej: Recreación"
+                  className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
+                  maxLength={255}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-lg font-medium mb-1">Descripción</label>
+                <textarea
+                  name="descripcion"
+                  value={actividad.descripcion}
+                  onChange={onChange}
+                  placeholder="Describe brevemente la actividad"
+                  className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
+                  rows={4}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-lg font-medium mb-1">Imagen (opcional)</label>
+                <input
+                  name="imagen"
+                  value={actividad.imagen || ""}
+                  onChange={onChange}
+                  placeholder="URL de imagen"
+                  className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* LOGÍSTICA */}
+          <section className="bg-white p-6 rounded-xl shadow border border-gray-200">
+            <h3 className="text-2xl font-semibold text-[#009982] mb-4">Logística y ubicación</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-lg font-medium mb-1">Modalidad</label>
+                <select
+                  name="modalidad"
+                  value={actividad.modalidad}
+                  onChange={onChange}
+                  className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
+                >
+                  <option value="presencial">Presencial</option>
+                  <option value="online">Online</option>
+                </select>
+              </div>
+              {/* Solo mostrar lugar y comuna si es presencial */}
+              {actividad.modalidad === "presencial" && (
+                <>
                   <div>
-                    <label className="block mb-1 font-medium">Nombre</label>
+                    <label className="block text-lg font-medium mb-1">Lugar</label>
                     <input
-                      type="text"
-                      name="nombre"
-                      value={actividad.nombre}
+                      name="lugar"
+                      value={actividad.lugar || ""}
                       onChange={onChange}
-                      className="w-full p-2 border rounded"
-                      placeholder="Título de la actividad"
-                      maxLength={255}
+                      placeholder="Ej: Centro comunitario"
+                      className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
                     />
                   </div>
-
                   <div>
-                    <label className="block mb-1 font-medium">Categoría</label>
+                    <label className="block text-lg font-medium mb-1">Comuna</label>
                     <input
-                      type="text"
-                      name="categoria"
-                      value={actividad.categoria || ""}
+                      name="comuna"
+                      value={actividad.comuna || ""}
                       onChange={onChange}
-                      className="w-full p-2 border rounded"
-                      placeholder="Ej: Lectura, Deportes..."
-                      maxLength={255}
+                      placeholder="Ej: La Reina"
+                      className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
                     />
                   </div>
-                </div>
-
-                <div>
-                  <label className="block mb-1 font-medium">Descripción</label>
-                  <textarea
-                    name="descripcion"
-                    value={actividad.descripcion}
-                    onChange={onChange}
-                    className="w-full p-2 border rounded"
-                    rows={3}
-                    placeholder="Breve descripción de la actividad"
-                    maxLength={255}
-                  />
-                </div>
-
-                <div>
-                  <label className="block mb-1 font-medium">Imagen (opcional)</label>
-                  <input
-                    type="text"
-                    name="imagen"
-                    value={actividad.imagen || ""}
-                    onChange={onChange}
-                    className="w-full p-2 border rounded"
-                    placeholder="URL de la imagen"
-                    maxLength={255}
-                  />
-                </div>
+                </>
+              )}
+            </div>
+            {/* Capacidad total */}
+            <div className="mt-6">
+              <label className="block text-lg font-medium mb-1">Capacidad total</label>
+              <div className="flex items-center gap-2 mb-2">
+                <input
+                  type="checkbox"
+                  id="sinLimite"
+                  checked={sinLimiteCapacidad}
+                  onChange={() => {
+                    const nuevoSinLimite = !sinLimiteCapacidad;
+                    setSinLimiteCapacidad(nuevoSinLimite);
+                    if (nuevoSinLimite) {
+                      onChange({
+                        target: { name: "capacidad_total", value: 999999 },
+                      } as any);
+                    } else {
+                      onChange({
+                        target: { name: "capacidad_total", value: "" },
+                      } as any);
+                    }
+                  }}
+                />
+                <label htmlFor="sinLimite" className="text-sm">Sin límite de capacidad</label>
               </div>
-            </section>
+              <input
+                type="number"
+                name="capacidad_total"
+                value={sinLimiteCapacidad ? "" : (actividad.capacidad_total === 999999 ? "" : actividad.capacidad_total ?? "")}
+                onChange={e => {
+                  onChange({
+                    target: {
+                      name: "capacidad_total",
+                      value: e.target.value === "" ? 999999 : Number(e.target.value)
+                    }
+                  } as any);
+                }}
+                className={`w-full border rounded-xl py-3 px-4 text-lg ${sinLimiteCapacidad ? "bg-gray-100 text-gray-400" : ""}`}
+                placeholder={sinLimiteCapacidad ? "Sin límite" : "Ej: 30"}
+                min={1}
+                disabled={sinLimiteCapacidad}
+              />
+            </div>
+          </section>
 
-            {/* -------------------------- Logística y ubicación -------------------------- */}
-            <section className="bg-white rounded shadow p-4">
-              <h3 className="text-xl font-semibold mb-3">Logística y ubicación</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
-                <div>
-                  <label className="block mb-1 font-medium">Modalidad</label>
-                  <select
-                    name="modalidad"
-                    value={actividad.modalidad}
-                    onChange={onChange}
-                    className="w-full p-2 border rounded"
-                  >
-                    <option value="presencial">Presencial</option>
-                    <option value="online">En línea</option>
-                    <option value="hibrido">Híbrido</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block mb-1 font-medium">Lugar</label>
-                  <input
-                    type="text"
-                    name="lugar"
-                    value={actividad.lugar || ""}
-                    onChange={onChange}
-                    className="w-full p-2 border rounded"
-                    placeholder="Ej: Centro comunitario / PUC..."
-                    maxLength={255}
-                  />
-                </div>
-                <div>
-                  <label className="block mb-1 font-medium">Comuna</label>
-                  <input
-                    type="text"
-                    name="comuna"
-                    value={actividad.comuna || ""}
-                    onChange={onChange}
-                    className="w-full p-2 border rounded"
-                    placeholder="Ej: San Joaquín"
-                    maxLength={255}
-                  />
-                </div>
+          {/* REPETICIÓN */}
+          <section className="bg-white p-6 rounded-xl shadow border border-gray-200">
+            <h3 className="text-2xl font-semibold text-[#009982] mb-4">Frecuencia de repetición</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-lg font-medium mb-1">¿Cada cuántas semanas?</label>
+                <input
+                  type="number"
+                  name="semanas_recurrencia"
+                  min={1}
+                  value={actividad.semanas_recurrencia}
+                  onChange={onChange}
+                  className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
+                />
               </div>
-            </section>
-
-            {/* -------------------------- Frecuencia de repetición -------------------------- */}
-            <section className="bg-white rounded shadow p-4">
-              <h3 className="text-xl font-semibold mb-3">Frecuencia de repetición</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block mb-1 font-medium">
-                    ¿Cada cuántas semanas?
-                  </label>
-                  <input
-                    type="number"
-                    name="semanas_recurrencia"
-                    value={actividad.semanas_recurrencia}
-                    onChange={onChange}
-                    className="w-full p-2 border rounded"
-                    min={1} // Cambiado de 1 a 2
-                    placeholder="Ej: 1, 2, 3..."
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block mb-1 font-medium">Fecha de partida</label>
-                  <input
-                    type="date"
-                    name="fecha"
-                    value={actividad.fecha}
-                    onChange={onChange}
-                    className="w-full p-2 border rounded"
-                  />
-                </div>
-                <div className="sm:col-span-2"> {/* Nuevo campo Fecha de Término */}
-                  <label className="block mb-1 font-medium">Fecha de término</label>
-                  <input
-                    type="date"
-                    name="fecha_termino"
-                    value={actividad.fecha_termino}
-                    onChange={onChange}
-                    className="w-full p-2 border rounded"
-                  />
-                </div>
+              <div>
+                <label className="block text-lg font-medium mb-1">Fecha de inicio</label>
+                <input
+                  type="date"
+                  name="fecha"
+                  value={actividad.fecha}
+                  onChange={onChange}
+                  className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
+                />
               </div>
-            </section>
-          </div>
+              <div>
+                <label className="block text-lg font-medium mb-1">Fecha de término</label>
+                <input
+                  type="date"
+                  name="fecha_termino"
+                  value={actividad.fecha_termino}
+                  onChange={onChange}
+                  className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
+                />
+              </div>
+            </div>
+          </section>
 
-          {/* -------------------------- Selección de días y horarios -------------------------- */}
-          <section className="bg-white rounded shadow p-4">
-            <h3 className="text-xl font-semibold mb-3 text-center">
-              Elige los días de la semana y sus horarios
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* DÍAS Y HORARIOS */}
+          <section className="bg-white p-6 rounded-xl shadow border border-gray-200">
+            <h3 className="text-2xl font-semibold text-[#009982] mb-6 text-center">Selecciona los días y horarios</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {diasSemana.map((dia, index) => (
-                <div key={dia} className="flex flex-col border rounded p-3">
-                  <label className="flex items-center mb-2">
+                <div key={dia} className="border p-4 rounded-xl">
+                  <label className="flex items-center mb-3 gap-3">
                     <input
                       type="checkbox"
                       checked={actividad.dias_seleccionados?.[index] || false}
-                      onChange={(e) =>
-                        handleDiaSeleccionado(index, e.target.checked)
-                      }
-                      className="mr-2"
+                      onChange={(e) => handleDiaSeleccionado(index, e.target.checked)}
+                      className="accent-[#009982] w-5 h-5"
                     />
-                    <span className="font-medium">{dia}</span>
+                    <span className="text-lg font-medium">{dia}</span>
                   </label>
-
                   {actividad.dias_seleccionados?.[index] && (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <div>
-                        <label className="block text-sm font-medium">
-                          Hora inicio
-                        </label>
+                        <label className="block text-sm mb-1">Hora inicio</label>
                         <input
                           type="time"
                           value={actividad.horarios_por_dia[index]?.[0] || ""}
                           onChange={(e) => handleHorarioChange(index, 0, e)}
-                          className="w-full p-1 border rounded text-sm"
+                          className="w-full border rounded-lg py-2 px-3 text-sm"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium">Hora fin</label>
+                        <label className="block text-sm mb-1">Hora fin</label>
                         <input
                           type="time"
                           value={actividad.horarios_por_dia[index]?.[1] || ""}
                           onChange={(e) => handleHorarioChange(index, 1, e)}
-                          className="w-full p-1 border rounded text-sm"
+                          className="w-full border rounded-lg py-2 px-3 text-sm"
                         />
                       </div>
                     </div>
@@ -305,28 +326,25 @@ export default function RecurrentActivityForm({
             </div>
           </section>
 
-          {/* Mensajes de error / éxito */}
-          {error && (
-            <p className="text-red-600 bg-red-100 p-2 rounded">{error}</p>
-          )}
-          {success && (
-            <p className="text-green-600 bg-green-100 p-2 rounded">{success}</p>
-          )}
+          {/* MENSAJES */}
+          {error && <p className="text-red-600 bg-red-100 p-4 rounded-lg">{error}</p>}
+          {success && <p className="text-green-600 bg-green-100 p-4 rounded-lg">{success}</p>}
 
-          {/* Botones finales */}
-          <div className="flex justify-end space-x-3">
+          {/* BOTONES */}
+          <div className="flex justify-end gap-4">
             <button
               type="button"
               onClick={onCancel}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
               disabled={loading}
+              className="bg-[#FF8D6B] hover:bg-[#CD4422] text-white font-semibold py-3 px-6 rounded-xl text-lg transition w-48 h-16 flex items-center justify-center"
             >
               Cancelar
             </button>
+            {/* Si tienes un botón de vista previa aquí, agrégalo igual que en ActivityForm */}
             <button
               type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
               disabled={loading}
+              className="bg-[#009982] hover:bg-[#006E5E] text-white font-semibold py-3 px-6 rounded-xl text-lg transition w-48 h-16 flex items-center justify-center"
             >
               {loading ? "Creando..." : "Crear Actividad"}
             </button>

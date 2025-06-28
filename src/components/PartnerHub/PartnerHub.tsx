@@ -16,7 +16,7 @@ const initialActividad: ActividadForm = {
   fecha: "",
   hora_inicio: "",
   hora_final: "",
-  capacidad_total: null, 
+  capacidad_total: 999999, 
 };
 
 const initialRecurrentActividad: RecurrentActivityFormType = {
@@ -30,6 +30,7 @@ const initialRecurrentActividad: RecurrentActivityFormType = {
   semanas_recurrencia: 2,
   horarios_por_dia: Array(7).fill([]),
   dias_seleccionados: Array(7).fill(false),
+  capacidad_total: 999999, // <--- cambiado de null a 999999
 };
 
 const initialProducto: ProductoForm = {

@@ -22,6 +22,7 @@ const ActividadesListPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fetchActividades()
@@ -62,6 +63,13 @@ const ActividadesListPage: React.FC = () => {
     return map;
   }, {} as Record<string, Actividad[]>);
 
+  const toggleExpand = (id: string) => {
+    setExpandedCards(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
   return (
     <main className="flex-1">
       <div className="px-6 md:px-10 py-12 bg-gray-50 min-h-screen">
@@ -69,47 +77,47 @@ const ActividadesListPage: React.FC = () => {
 
           {/* Buscador + Filtros */}
           <div className="max-w-7xl mx-auto">
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 mb-10 w-full">
-            {/* Buscador */}
-            <div className="relative mb-5">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-6 h-6" />
-              <input
-                type="text"
-                placeholder="Buscar actividades..."
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className="w-full pl-14 pr-4 py-3 text-[1.05em] font-semibold border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#62CBC9] text-gray-800"
-              />
-            </div>
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 mb-10 w-full">
+              {/* Buscador */}
+              <div className="relative mb-5">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-6 h-6" />
+                <input
+                  type="text"
+                  placeholder="Buscar actividades..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  className="w-full pl-14 pr-4 py-3 text-[1.05em] font-semibold border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#62CBC9] text-gray-800"
+                />
+              </div>
 
-            {/* Filtros */}
-            {categoriasUnicas.length > 0 && (
-              <>
-                <div className="flex items-center gap-2 mb-4">
-                  <Filter className="w-5 h-5 text-gray-500" />
-                  <span className="text-[1em] font-bold text-gray-800">Filtrar por categoría</span>
-                </div>
+              {/* Filtros */}
+              {categoriasUnicas.length > 0 && (
+                <>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Filter className="w-5 h-5 text-gray-500" />
+                    <span className="text-[1em] font-bold text-gray-800">Filtrar por categoría</span>
+                  </div>
 
-                <div className="flex flex-wrap gap-3">
-                  {categoriasUnicas.map(cat => {
-                    const selected = selectedCategories.includes(cat);
-                    return (
-                      <button
-                        key={cat}
-                        onClick={() => toggleCategoria(cat)}
-                        className={`
-                          flex items-center gap-2 px-4 py-2 text-[1rem] font-bold rounded-full border transition
-                          ${selected
-                            ? "bg-[#009982]/20 text-[#009982] border-[#009982]"
-                            : "bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100"}
-                        `}
-                      >
-                        {selected && <Check className="w-4 h-4" />}
-                        {cat}
-                      </button>
-                    );
-                  })}
-                </div>
+                  <div className="flex flex-wrap gap-3">
+                    {categoriasUnicas.map(cat => {
+                      const selected = selectedCategories.includes(cat);
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => toggleCategoria(cat)}
+                          className={`
+                            flex items-center gap-2 px-4 py-2 text-[1rem] font-bold rounded-full border transition
+                            ${selected
+                              ? "bg-[#009982]/20 text-[#009982] border-[#009982]"
+                              : "bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100"}
+                          `}
+                        >
+                          {selected && <Check className="w-4 h-4" />}
+                          {cat}
+                        </button>
+                      );
+                    })}
+                  </div>
 
                   {selectedCategories.length > 0 && (
                     <div className="mt-4 text-center">
@@ -135,6 +143,12 @@ const ActividadesListPage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {Object.values(agrupadas).map((grupo, i) => {
                 const a = grupo[0];
+                const id = (a.id_actividad_base ?? a.id).toString();
+                const fechas = grupo.map(g => formatearFecha(g.fecha));
+                const showAll = expandedCards[id] || false;
+                const visibles = showAll ? fechas : fechas.slice(0, 3);
+                const hayMas = fechas.length > 3;
+
                 return (
                   <div
                     key={i}
@@ -142,12 +156,23 @@ const ActividadesListPage: React.FC = () => {
                   >
                     <div>
                       <h3 className="text-[1.5em] font-semibold text-[#009982] mb-2">{a.nombre}</h3>
-                      <p className="text-gray-800 text-[1em] mb-4">{a.descripcion}</p>
 
                       <div className="space-y-2 mb-4">
                         <div className="bg-gray-50 rounded-md px-3 py-2 text-[1em] text-gray-800">
-                          <span className="font-semibold">Fechas: </span>
-                          {grupo.map(g => formatearFecha(g.fecha)).join(", ")}
+                          <p className="font-semibold mb-1">Fechas:</p>
+                          <ul className="list-disc list-inside text-sm space-y-0.5">
+                            {visibles.map((f, idx) => (
+                              <li key={idx}>{f}</li>
+                            ))}
+                          </ul>
+                          {hayMas && (
+                            <button
+                              onClick={() => toggleExpand(id)}
+                              className="text-sm text-[#009982] font-medium hover:underline mt-1"
+                            >
+                              {showAll ? "Ver menos" : `+${fechas.length - 3} más`}
+                            </button>
+                          )}
                         </div>
 
                         <div className="bg-gray-50 rounded-md px-3 py-2 text-[1em] text-gray-800">

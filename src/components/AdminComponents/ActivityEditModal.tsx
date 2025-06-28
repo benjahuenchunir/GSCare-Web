@@ -9,7 +9,7 @@ interface Actividad {
   categoria: string;
   comuna: string;
   link: string;
-  capacidad_total: number | null;
+  capacidad_total: number;
   status: string;
   lugar: string;
   descripcion: string;
