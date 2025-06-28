@@ -126,7 +126,7 @@ export default function AdminNewsPage() {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto font-sans">
+    <div className="p-6">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold text-gray-800">Administración de Noticias</h1>
         <button onClick={() => { setEditingNews(null); setIsModalOpen(true); }} className="bg-[#009982] hover:bg-[#007c6b] text-white px-4 py-2 rounded-md font-semibold shadow-sm flex items-center gap-2">
@@ -138,15 +138,15 @@ export default function AdminNewsPage() {
       {loading ? (
         <p>Cargando...</p>
       ) : (
-        <div className="overflow-x-auto bg-white rounded-xl shadow">
-          <table className="min-w-full text-sm table-auto">
+        <div className="overflow-x-auto bg-white rounded-lg shadow">
+          <table className="w-full text-sm text-left table-auto">
             <thead className="bg-gray-100 text-gray-700">
               <tr>
-                <th className="p-3 text-left">Nombre</th>
-                <th className="p-3 text-left">Resumen</th>
-                <th className="p-3 text-left">Proveedor</th>
-                <th className="p-3 text-left">Link</th>
-                <th className="p-3 text-left">Acciones</th>
+                <th className="p-3">Nombre</th>
+                <th className="p-3">Resumen</th>
+                <th className="p-3">Proveedor</th>
+                <th className="p-3">Link</th>
+                <th className="p-3">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -166,6 +166,11 @@ export default function AdminNewsPage() {
                   </td>
                 </tr>
               ))}
+              {news.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="text-center p-4 text-gray-500">No hay noticias para mostrar.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

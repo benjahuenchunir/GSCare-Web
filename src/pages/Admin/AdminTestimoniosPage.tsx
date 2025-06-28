@@ -1,78 +1,34 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   getTestimoniosPendientes,
   getTestimoniosAprobados,
   aprobarTestimonio,
   eliminarTestimonio,
-  updateTestimonio,
   Testimonio,
 } from "../../firebase/testimoniosService";
 import { getAllPlans, updatePlan, PlanData } from "../../firebase/plansService";
-import { Check, Trash, Pencil, MessageSquareQuote, BadgeCheck, BadgeDollarSign, ArrowUp, ArrowDown } from "lucide-react";
+import { Check, Trash, Pencil, MessageSquareQuote, BadgeCheck, BadgeDollarSign, ArrowUp, ArrowDown, ExternalLink } from "lucide-react";
 
-// Modal de Edición
-const EditTestimonioModal = ({
-  testimonio,
-  onClose,
-  onSave,
-}: {
-  testimonio: Testimonio;
-  onClose: () => void;
-  onSave: () => void;
-}) => {
-  const [nombre, setNombre] = useState(testimonio.nombre);
-  const [contenido, setContenido] = useState(testimonio.contenido);
-  const [saving, setSaving] = useState(false);
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      await updateTestimonio(testimonio.id!, { nombre, contenido });
-      onSave();
-    } catch (error) {
-      console.error("Error al guardar testimonio:", error);
-      alert("No se pudo guardar el testimonio.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
+function Input({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg">
-        <h2 className="text-xl font-bold mb-4">Editar Testimonio</h2>
-        <div className="space-y-4">
-          <input
-            type="text"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            className="w-full border rounded px-3 py-2"
-            placeholder="Nombre del autor"
-          />
-          <textarea
-            value={contenido}
-            onChange={(e) => setContenido(e.target.value)}
-            rows={5}
-            className="w-full border rounded px-3 py-2"
-            placeholder="Contenido del testimonio"
-          />
-        </div>
-        <div className="flex justify-end gap-3 mt-6">
-          <button onClick={onClose} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">Cancelar</button>
-          <button onClick={handleSave} disabled={saving} className="px-4 py-2 rounded bg-[#009982] text-white hover:bg-[#007c6b]">
-            {saving ? "Guardando..." : "Guardar Cambios"}
-          </button>
-        </div>
-      </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <input
+        type="text"
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#009982] focus:outline-none"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
     </div>
   );
-};
+}
 
 export default function AdminPlanesTestimoniosPage() {
+  const navigate = useNavigate();
   const [pendientes, setPendientes] = useState<Testimonio[]>([]);
   const [aprobados, setAprobados] = useState<Testimonio[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingTestimonio, setEditingTestimonio] = useState<Testimonio | null>(null);
   const [plans, setPlans] = useState<PlanData[]>([]);
   const [savingPlans, setSavingPlans] = useState<Record<string, boolean>>({});
 
@@ -109,15 +65,6 @@ export default function AdminPlanesTestimoniosPage() {
       await eliminarTestimonio(id);
       fetchTestimonios();
     }
-  };
-
-  const handleEdit = (testimonio: Testimonio) => {
-    setEditingTestimonio(testimonio);
-  };
-
-  const handleSaveEdit = () => {
-    setEditingTestimonio(null);
-    fetchTestimonios();
   };
 
   const updatePlanField = (index: number, field: keyof Omit<PlanData, "id" | "features">, value: string) => {
@@ -211,9 +158,6 @@ export default function AdminPlanesTestimoniosPage() {
             <Check size={14} /> Aprobar
           </button>
         )}
-        <button onClick={() => handleEdit(t)} className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200">
-          <Pencil size={14} /> Editar
-        </button>
         <button onClick={() => handleEliminar(t.id!)} className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200">
           <Trash size={14} /> Eliminar
         </button>
@@ -222,22 +166,31 @@ export default function AdminPlanesTestimoniosPage() {
   );
 
   return (
-    <div className="p-6 max-w-6xl mx-auto font-sans">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Planes y Testimonios</h1>
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Planes y Testimonios</h1>
+        <button
+          onClick={() => navigate("/pricing")}
+          className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors"
+        >
+          <ExternalLink size={18} />
+          Ver Página de Precios
+        </button>
+      </div>
 
       {loading ? (
         <p>Cargando...</p>
       ) : (
         <div className="space-y-12">
           {/* Sección de Planes */}
-          <section>
-            <h2 className="text-xl font-semibold text-gray-700 mb-4 flex items-center gap-2">
+          <section className="bg-white rounded-xl shadow p-5">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <BadgeDollarSign className="w-6 h-6" />
               Planes y Beneficios
             </h2>
             <div className="space-y-6">
               {plans.map((plan, idx) => (
-                <div key={plan.id} className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 space-y-4">
+                <div key={plan.id} className="bg-gray-50 p-5 rounded-lg border border-gray-200 space-y-4">
                   <h3 className="font-semibold text-md text-gray-700 flex items-center gap-2">
                     <Pencil className="w-4 h-4" /> {plan.title}
                   </h3>
@@ -255,14 +208,14 @@ export default function AdminPlanesTestimoniosPage() {
                           <input
                             value={f}
                             onChange={(e) => updateFeature(idx, i, e.target.value)}
-                            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#009982]"
+                            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#009982] focus:outline-none"
                             placeholder={`Beneficio ${i + 1}`}
                           />
                           <div className="flex items-center gap-1">
-                            <button onClick={() => moveFeature(idx, i, "up")} disabled={i === 0} className="p-1 rounded-md hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-transparent">
+                            <button onClick={() => moveFeature(idx, i, "up")} disabled={i === 0} className="p-1 rounded-md hover:bg-gray-200 disabled:opacity-40 disabled:hover:bg-transparent">
                               <ArrowUp size={16} />
                             </button>
-                            <button onClick={() => moveFeature(idx, i, "down")} disabled={i === plan.features.length - 1} className="p-1 rounded-md hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-transparent">
+                            <button onClick={() => moveFeature(idx, i, "down")} disabled={i === plan.features.length - 1} className="p-1 rounded-md hover:bg-gray-200 disabled:opacity-40 disabled:hover:bg-transparent">
                               <ArrowDown size={16} />
                             </button>
                             <button onClick={() => removeFeature(idx, i)} className="p-1 rounded-md text-red-500 hover:bg-red-100">
@@ -290,8 +243,8 @@ export default function AdminPlanesTestimoniosPage() {
           </section>
 
           {/* Sección de Testimonios */}
-          <section>
-            <h2 className="text-xl font-semibold text-gray-700 mb-4">Gestión de Testimonios</h2>
+          <section className="bg-white rounded-xl shadow p-5">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Gestión de Testimonios</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Testimonios Pendientes */}
               <section>
@@ -327,27 +280,6 @@ export default function AdminPlanesTestimoniosPage() {
         </div>
       )}
 
-      {editingTestimonio && (
-        <EditTestimonioModal
-          testimonio={editingTestimonio}
-          onClose={() => setEditingTestimonio(null)}
-          onSave={handleSaveEdit}
-        />
-      )}
-    </div>
-  );
-}
-
-function Input({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-      <input
-        type="text"
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#009982] focus:outline-none"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
     </div>
   );
 }
