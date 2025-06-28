@@ -17,7 +17,6 @@ import {
 import ActividadInfoCard from "./ActividadInfoCard";
 import ModalInscripcion from "./ModalInscripcion";
 import ActivityForum from "../../components/ActivityForum/ActivityForum";
-import ForumFloatingButton from "../../components/ActivityForum/ForumFloatingButton";
 import ExclusiveSubscriptionCard from "../../components/ExclusiveSubscriptionCard";
 
 const formatearFecha = (fecha: string) => {
@@ -157,6 +156,7 @@ const ActivityPage: React.FC = () => {
         nombre={actividad.nombre}
         descripcion={actividad.descripcion}
         imagen={actividad.imagen ?? ""}
+        capacidad_total={actividad.capacidad_total}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -185,18 +185,24 @@ const ActivityPage: React.FC = () => {
           ) : (
             <div className="text-gray-800">
               <div className="flex items-start gap-3">
-                <FaMapMarkerAlt className="text-[#009982]" />
-                <div>
-                  <h3 className="font-semibold">Link de acceso</h3>
-                  <a
-                    href={actividad.link ?? "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 underline hover:text-blue-800"
-                  >
-                    {actividad.link}
-                  </a>
-                </div>
+              <FaMapMarkerAlt className="text-[#009982]" />
+              <div>
+                <h3 className="font-semibold">Link de acceso</h3>
+                {profile?.rol === "socio" ? (
+                <a
+                  href={actividad.link ?? "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline hover:text-blue-800"
+                >
+                  {actividad.link}
+                </a>
+                ) : (
+                <span className="text-gray-500 italic">
+                  Solo disponible para socios
+                </span>
+                )}
+              </div>
               </div>
             </div>
           )}
@@ -322,8 +328,6 @@ const ActivityPage: React.FC = () => {
         yaInscrito={yaInscrito}
       />
 
-      {/* Botón flotante del foro */}
-      {actividad && <ForumFloatingButton activityId={actividad.id} />}
     </div>
   );
 };

@@ -18,6 +18,7 @@ export interface Actividad {
   id_creador_del_evento: number;
   createdAt: string;
   updatedAt: string;
+  capacidad_total: number;
 }
 
 export interface Asistente {

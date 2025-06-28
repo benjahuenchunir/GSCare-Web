@@ -62,9 +62,10 @@ export default function ActivityEditModal({
         categoria: form.categoria,
         comuna: form.comuna,
         link: form.link,
-        capacidad_total: form.capacidad_total
-          ? Number(form.capacidad_total)
-          : null,
+        capacidad_total:
+          form.capacidad_total === null || form.capacidad_total === undefined || form.capacidad_total === 999999
+            ? 999999
+            : Number(form.capacidad_total),
         lugar: form.lugar,
         descripcion: form.descripcion,
         imagen: form.imagen,
@@ -196,11 +197,14 @@ export default function ActivityEditModal({
             <input
               name="capacidad_total"
               type="number"
-              value={form.capacidad_total ?? ""}
+              value={form.capacidad_total === 999999 ? "" : form.capacidad_total ?? ""}
               onChange={handleChange}
               className="w-full border px-3 py-2 mt-1 rounded"
-              placeholder="Ej: 30"
+              placeholder="Ej: 30 (dejar vacío para sin límite)"
             />
+            {form.capacidad_total === 999999 && (
+              <span className="text-xs text-gray-500">Sin límite</span>
+            )}
           </label>
 
           <div className="col-span-full flex justify-end gap-3 pt-4">

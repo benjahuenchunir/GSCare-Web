@@ -154,16 +154,12 @@ const ActividadesListPage: React.FC = () => {
                           <span className="font-semibold">Modalidad: </span>{a.modalidad === "presencial" ? "Presencial" : "Online"}
                         </div>
 
-                        <div className="bg-gray-50 rounded-md px-3 py-2 text-[1em] text-gray-800">
-                          <span className="font-semibold">
-                            {a.modalidad === "presencial" ? "Comuna: " : "Link: "}
-                          </span>
-                          {a.modalidad === "presencial"
-                            ? a.comuna
-                            : a.link
-                              ? <a href={a.link} className="text-[#009982] underline break-all">{a.link}</a>
-                              : "Sin link"}
-                        </div>
+                        {a.modalidad === "presencial" && (
+                          <div className="bg-gray-50 rounded-md px-3 py-2 text-[1em] text-gray-800">
+                            <span className="font-semibold">Comuna: </span>
+                            {a.comuna}
+                          </div>
+                        )}
                       </div>
                     </div>
 
