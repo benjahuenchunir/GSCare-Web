@@ -5,6 +5,7 @@ import ServiceEditModal from "../../components/AdminComponents/ServiceEditModal"
 import ServiceBenefitsModal from "../../components/AdminComponents/ServiceBenefitsModal";
 import ServiceBlocksModal from "../../components/AdminComponents/ServiceBlocksModal";
 import ServiceReviewsModal from "../../components/AdminComponents/ServiceReviewsModal";
+import CreateServiceForm from "../../components/AdminComponents/CreateServiceForm";
 import { Pencil, Trash } from "lucide-react";
 
 export interface Servicio {
@@ -275,6 +276,7 @@ export default function AdminServicesPage() {
             </ul>
           </div>
         </div>
+        <CreateServiceForm onSuccess={fetchServicios} />
       </div>
     </div>
   );
