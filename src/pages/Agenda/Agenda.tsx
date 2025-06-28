@@ -153,7 +153,16 @@ const Agenda = () => {
     setEventos(prev =>
       prev.filter(e =>
         eventoPendiente.tipo === 'actividad'
-          ? e.tipo !== 'actividad' || (e.id_foro_actividad !== eventoPendiente.id_foro_actividad && e.id !== eventoPendiente.id)
+          ? (
+              eventoPendiente.id_foro_actividad
+                ? (
+                    e.tipo !== 'actividad' ||
+                    e.id_foro_actividad !== eventoPendiente.id_foro_actividad
+                  )
+                : (
+                    e.tipo !== 'actividad' || e.id !== eventoPendiente.id
+                  )
+            )
           : e.id !== eventoPendiente.id || e.tipo !== eventoPendiente.tipo
       )
     );
