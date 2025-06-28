@@ -88,18 +88,37 @@ export default function ActivityForm({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center px-4">
-      <div className="bg-white w-full max-w-5xl rounded-2xl shadow-md p-6 space-y-6 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-[#00495C]">Crear Actividad</h2>
-          <button
-            type="button"
-            onClick={onSwitchToRecurrente}
-            className="text-[#7E22CE] hover:underline text-sm font-medium"
-          >
-            <FontAwesomeIcon icon={faCalendarAlt} className="mr-2" /> Repetir
-          </button>
+      <div className="bg-white w-full max-w-5xl rounded-2xl shadow-md p-6 space-y-6 max-h-[90vh] overflow-y-auto relative">
+        {/* Botón X para cerrar */}
+        <button
+          type="button"
+          onClick={onCancel}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl font-bold focus:outline-none"
+          aria-label="Cerrar"
+        >
+          &times;
+        </button>
+        <div className="flex flex-col gap-4 mb-2">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold text-[#00495C]">Crear Actividad</h2>
+          </div>
+          {/* Mensaje destacado para actividades de más de un día */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 flex items-center gap-3">
+            <span className="text-blue-700 font-semibold">
+              ¿Tu actividad dura más de un día?
+            </span>
+            <span className="text-blue-700">
+              Puedes crear actividades que se repitan en varios días o semanas.
+            </span>
+            <button
+              type="button"
+              onClick={onSwitchToRecurrente}
+              className="ml-auto bg-[#E0F2F1] hover:bg-[#B2DFDB] text-[#009982] font-semibold px-4 py-2 rounded-lg transition text-sm"
+            >
+              Repetir actividad &rarr;
+            </button>
+          </div>
         </div>
-
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Formulario */}
           <form

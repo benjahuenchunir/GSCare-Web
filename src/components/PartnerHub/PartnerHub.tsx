@@ -27,7 +27,7 @@ const initialRecurrentActividad: RecurrentActivityFormType = {
   comuna: "",
   fecha: "",
   fecha_termino: "",
-  semanas_recurrencia: 2,
+  semanas_recurrencia: 2, 
   horarios_por_dia: Array(7).fill([]),
   dias_seleccionados: Array(7).fill(false),
   capacidad_total: 999999, // <--- cambiado de null a 999999
@@ -152,8 +152,37 @@ export default function PartnerHub({ view, setView }: Props) {
       return;
     }
 
-    if (new Date(actividadRecurrente.fecha_termino) <= new Date(actividadRecurrente.fecha)) {
-      setError("La fecha de término debe ser posterior.");
+    // --- Validación de rango de fechas según semanas de recurrencia ---
+    const fechaInicio = new Date(actividadRecurrente.fecha);
+    const fechaTermino = new Date(actividadRecurrente.fecha_termino);
+    const semanas = Number(actividadRecurrente.semanas_recurrencia);
+
+    // La fecha de término debe >= fecha de inicio
+    if (fechaTermino < fechaInicio) {
+      setError("La fecha de término debe ser posterior a la de inicio.");
+      setLoading(false);
+      return;
+    }
+
+    // NUEVO: La fecha de término debe ser el último día de la última semana de recurrencia
+    // Ejemplo: inicio viernes 2024-06-07, semanas=3 => término debe ser domingo 2024-06-23
+    const diaInicio = fechaInicio.getDay(); // 0=domingo, 1=lunes, ..., 6=sábado
+    // El último día de la última semana es: fechaInicio + (semanas-1)*7 + (6-diaInicio) días
+    const diasHastaUltimo = (semanas - 1) * 7 + (6 - diaInicio);
+    const fechaUltimoDia = new Date(fechaInicio);
+    fechaUltimoDia.setDate(fechaInicio.getDate() + diasHastaUltimo);
+
+    // Solo permitir si la fecha de término es exactamente el último día de la última semana
+    if (
+      fechaTermino.getFullYear() !== fechaUltimoDia.getFullYear() ||
+      fechaTermino.getMonth() !== fechaUltimoDia.getMonth() ||
+      fechaTermino.getDate() !== fechaUltimoDia.getDate()
+    ) {
+      setError(
+        `La fecha de término debe ser el último día de la última semana de recurrencia.\n` +
+        `Para una recurrencia de ${semanas} semana(s) comenzando el ${fechaInicio.toLocaleDateString()}, ` +
+        `debes seleccionar como fecha de término el ${fechaUltimoDia.toLocaleDateString()}.`
+      );
       setLoading(false);
       return;
     }

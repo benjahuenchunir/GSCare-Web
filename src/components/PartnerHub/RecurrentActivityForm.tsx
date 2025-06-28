@@ -95,6 +95,29 @@ export default function RecurrentActivityForm({
     );
   }, [actividad.capacidad_total]);
 
+  // --- NUEVO: Validación visual de rango de fechas según semanas de recurrencia ---
+  const [rangoTermino, setRangoTermino] = useState<{min: string, max: string} | null>(null);
+
+  useEffect(() => {
+    // Solo si hay fecha y semanas_recurrencia
+    if (actividad.fecha && actividad.semanas_recurrencia) {
+      const fechaInicio = new Date(actividad.fecha);
+      const semanas = Number(actividad.semanas_recurrencia);
+      const diaInicio = fechaInicio.getDay(); // 0=domingo, 1=lunes, ..., 6=sábado
+      // El último día de la última semana es: fechaInicio + (semanas-1)*7 + (6-diaInicio) días
+      const diasHastaUltimo = (semanas - 1) * 7 + (6 - diaInicio);
+      const fechaUltimoDia = new Date(fechaInicio);
+      fechaUltimoDia.setDate(fechaInicio.getDate() + diasHastaUltimo);
+      const fechaUltimoStr = fechaUltimoDia.toISOString().split("T")[0];
+      setRangoTermino({
+        min: fechaUltimoStr,
+        max: fechaUltimoStr,
+      });
+    } else {
+      setRangoTermino(null);
+    }
+  }, [actividad.fecha, actividad.semanas_recurrencia]);
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center px-4">
       <div className="bg-white w-full max-w-5xl rounded-2xl shadow-md p-6 space-y-6 max-h-[90vh] overflow-y-auto">
@@ -279,7 +302,14 @@ export default function RecurrentActivityForm({
                   value={actividad.fecha_termino}
                   onChange={onChange}
                   className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
+                  min={rangoTermino?.min}
+                  max={rangoTermino?.max}
                 />
+                {rangoTermino && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Debe ser exactamente <b>{rangoTermino.min}</b> (último día de la última semana de recurrencia).
+                  </p>
+                )}
               </div>
             </div>
           </section>
