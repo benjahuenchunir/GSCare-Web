@@ -91,7 +91,6 @@ const ServicePage: React.FC = () => {
       }
       try {
         const token = await getAccessTokenSilently();
-        console.log(token);
         const headers = { Authorization: `Bearer ${token}` };
         
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/servicios/${id}/bloques`, {

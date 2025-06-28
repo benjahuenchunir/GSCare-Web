@@ -137,6 +137,7 @@ export default function UserEditModal({ user, onClose, onUpdate, allUsers }: Pro
             >
               <option value="gratis">General</option>
               <option value="socio">Socio</option>
+              <option value="proveedor">Proveedor</option>
               <option value="administrador">Administrador</option>
             </select>
           </label>

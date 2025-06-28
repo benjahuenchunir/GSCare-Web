@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
@@ -33,6 +33,16 @@ export default function UserPage() {
     "main" | "actividad" | "actividad_recurrente" | "producto" | "servicio" | null
   >(null);
 
+  useEffect(() => {
+    if (loading || !profile) return;
+
+    if (profile.rol === 'administrador') {
+      navigate('/admin', { replace: true });
+    } else if (profile.rol === 'proveedor') {
+      navigate('/proveedor', { replace: true });
+    }
+  }, [profile, loading, navigate]);
+
   function getDailyConsejos(consejos: { text: string }[], count = 4) {
     const today = new Date();
     const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
@@ -47,7 +57,9 @@ export default function UserPage() {
 
   const consejos = getDailyConsejos(allConsejos, 4);
 
-  if (loading) return <p className="text-center mt-10">Cargando perfil…</p>;
+  if (loading || (profile && ['administrador', 'proveedor'].includes(profile.rol))) {
+    return <p className="text-center mt-10">Cargando perfil…</p>;
+  }
 
   if (!isAuthenticated) {
     return (
