@@ -251,6 +251,17 @@ const ModalEvento = ({ evento, onClose, onCancelEvento }: Props) => {
             Cerrar
           </button>
         </div>
+        {/* Nuevo botón para ir a la actividad */}
+        {evento.tipo === 'actividad' && (
+          <div className="mt-4 flex justify-center">
+            <button
+              onClick={() => navigate(`/actividades/${evento.id}`)}
+              className="inline-flex items-center gap-2 bg-[#009982] text-white px-4 py-2 rounded-lg hover:bg-[#007c6c] transition shadow-md"
+            >
+              Ver actividad
+            </button>
+          </div>
+        )}
       </motion.div>
     </motion.div>
   );
