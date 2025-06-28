@@ -32,6 +32,7 @@ import ThreadCommentsPage from "./pages/Actividades/ThreadCommentsPage.tsx";
 import SupportPage from "./pages/Soporte/SupportPage.tsx";
 import AdminNewsPage from "./pages/Admin/AdminNewsPage.tsx";
 import NewsListPage from "./pages/Noticias/NewsListPage.tsx";
+import AdminTestimoniosPage from "./pages/Admin/AdminTestimoniosPage.tsx";
 
 export default function Routing() {
   return (
@@ -55,6 +56,7 @@ export default function Routing() {
           <Route path="configuracion" element={<AdminConfigPage />} />
           <Route path="juegos" element={<AdminGamesPage />} />
           <Route path="noticias" element={<AdminNewsPage />} />
+          <Route path="testimonios" element={<AdminTestimoniosPage />} />
         </Route>
 
         <Route path="/" element={<Layout />}>

@@ -14,6 +14,7 @@ import {
   LogOut,
   Pencil,
   ArrowUpRight,
+  MessageSquareQuote,
 } from "lucide-react"
 import { NavLink, Outlet, useNavigate } from "react-router-dom"
 import { useState } from "react"
@@ -28,6 +29,7 @@ const navItems = [
   { label: "Juegos", icon: Gamepad2, to: "/admin/juegos" },
   { label: "Noticias", icon: Newspaper, to: "/admin/noticias" },
   { label: "Reportes", icon: BarChart3, to: "/admin/reportes" },
+  { label: "Planes y Testimonios", icon: MessageSquareQuote, to: "/admin/testimonios" },
   { label: "Configuración", icon: Settings, to: "/admin/configuracion" },
 ]
 
