@@ -8,6 +8,7 @@ import { addTestimonio } from "../../firebase/testimoniosService";
 import QuickAccessButton from "../../common/QuickAccessButton";
 import SectionTitle from "../../common/SectionTitle";
 
+import RecommendedServices from "../../components/UserPageComponents/RecommendedServices";
 import { SubscribedServicesSection } from "../../components/UserPageComponents/SubscribedServicesSection";
 import { UpcomingEventsSection } from "../../components/UserPageComponents/UpcomingEventsSection";
 import QuickNavSection from "../../components/UserPageComponents/QuickNavSection";
@@ -161,6 +162,8 @@ export default function UserPage() {
                 className="bg-yellow-400 text-black hover:bg-yellow-600"
               />
             </div>
+
+            <RecommendedServices />
 
             <div className="mt-8 bg-green-50 border border-green-300 mx-auto max-w-xl rounded-lg p-6 text-center space-y-4">
               <h2 className="text-[1.8em] font-bold text-green-700">¡Gracias por ser socio!</h2>
