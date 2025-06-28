@@ -12,6 +12,7 @@ import {
   fetchActividades,
   attendActivity,
   cancelAttendanceGrupo,
+  getAssistantsCountByActivity, // <-- nuevo import
 } from "../../services/actividadService";
 
 import ActividadInfoCard from "./ActividadInfoCard";
@@ -50,6 +51,7 @@ const ActivityPage: React.FC = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const { profile, reloadProfile } = useContext(UserContext);
   const [showSubscribeConfirm, setShowSubscribeConfirm] = useState(false);
+  const [cuposDisponibles, setCuposDisponibles] = useState<{ [id: number]: number }>({});
 
   useEffect(() => {
     if (isAuthenticated) reloadProfile();
@@ -92,6 +94,35 @@ const ActivityPage: React.FC = () => {
       .catch((err) => console.warn("No se pudo verificar inscripción:", err));
   }, [id, isAuthenticated, user, actividad]);
 
+  // Obtener cupos disponibles para cada bloque
+  useEffect(() => {
+    if (grupoActividades.length === 0) return;
+    const fetchCupos = async () => {
+      const cupos: { [id: number]: number } = {};
+      await Promise.all(
+        grupoActividades.map(async (a) => {
+          const asistentes = await getAssistantsCountByActivity(a.id);
+          cupos[a.id] = (a.capacidad_total ?? 999999) - asistentes;
+        })
+      );
+      setCuposDisponibles(cupos);
+    };
+    fetchCupos();
+  }, [grupoActividades]);
+
+  // Refrescar cupos después de inscribirse/cancelar
+  const refreshCupos = async () => {
+    if (grupoActividades.length === 0) return;
+    const cupos: { [id: number]: number } = {};
+    await Promise.all(
+      grupoActividades.map(async (a) => {
+        const asistentes = await getAssistantsCountByActivity(a.id);
+        cupos[a.id] = (a.capacidad_total ?? 999999) - asistentes;
+      })
+    );
+    setCuposDisponibles(cupos);
+  };
+
   const handleInscribirse = async () => {
     if (!isAuthenticated) {
       return loginWithRedirect({
@@ -123,6 +154,7 @@ const ActivityPage: React.FC = () => {
       }
 
       setYaInscrito(true);
+      await refreshCupos(); // <-- refrescar cupos
     } catch (err: unknown) {
       console.error("Error al inscribirse:", err);
       const errorMessage =
@@ -137,11 +169,11 @@ const ActivityPage: React.FC = () => {
       const token = await getAccessTokenSilently();
       const u = await getUserByEmail(user.email);
 
-      // Solo enviamos la actividad base (una sola), el backend resuelve el grupo
       await cancelAttendanceGrupo(actividad.id, u.id, token);
 
       setYaInscrito(false);
       setShowConfirmModal(false);
+      await refreshCupos(); // <-- refrescar cupos
     } catch (err) {
       console.error("Error al cancelar inscripción:", err);
       alert("No se pudo cancelar la inscripción.");
@@ -159,9 +191,9 @@ const ActivityPage: React.FC = () => {
         capacidad_total={actividad.capacidad_total ?? 999999}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Modalidad */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-6 md:col-span-1">
           <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">
             Modalidad
           </h2>
@@ -209,7 +241,7 @@ const ActivityPage: React.FC = () => {
         </div>
 
         {/* Fechas y horarios */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-6 md:col-span-1">
           <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">
             Fechas y Horarios
           </h2>
@@ -220,6 +252,30 @@ const ActivityPage: React.FC = () => {
                 {a.hora_final?.slice(0, 5)}
               </li>
             ))}
+          </ul>
+        </div>
+
+        {/* Cupos disponibles */}
+        <div className="bg-white rounded-lg shadow p-6 md:col-span-1 flex flex-col items-center justify-center">
+          <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">
+            Cupos disponibles
+          </h2>
+          <ul className="text-gray-800 space-y-1 text-center">
+            {grupoActividades.length > 0 && grupoActividades[0].capacidad_total === 999999 ? (
+              <li className="font-semibold text-green-700">Actividad sin límite</li>
+            ) : (
+              grupoActividades.map((a) => (
+                <li key={a.id}>
+                  <span>
+                    {typeof a.capacidad_total === "number"
+                      ? (cuposDisponibles[a.id] ?? (a.capacidad_total ?? 999999)) > 0
+                        ? `${cuposDisponibles[a.id] ?? (a.capacidad_total ?? 999999)} cupos`
+                        : "Sin cupos"
+                      : "Sin límite"}
+                  </span>
+                </li>
+              ))
+            )}
           </ul>
         </div>
       </div>
