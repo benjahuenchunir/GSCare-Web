@@ -19,6 +19,7 @@ import PartnerHub from "../../components/PartnerHub/PartnerHub";
 import CalendarIcon from '../../assets/Calendar2.svg?react';
 import HeadsetIcon from '../../assets/Support.svg?react';
 import UserIcon from '../../assets/Person.svg?react';
+import { allConsejos } from "../../constants/consejos";
 
 export default function UserPage() {
   const { isAuthenticated } = useAuth0();
@@ -31,16 +32,19 @@ export default function UserPage() {
     "main" | "actividad" | "actividad_recurrente" | "producto" | "servicio" | null
   >(null);
 
-  const consejos = [
-    { text: 'Bebe agua cada 2 horas para mantenerte hidratado 💧' },
-    { text: 'Camina al menos 20 minutos hoy para mantener tu salud activa 🚶‍♂️' },
-    { text: 'Comparte una llamada con un ser querido para fortalecer tus lazos 📞' },
-    { text: 'Recuerda tomar tus medicamentos a tiempo 💊' },
-    { text: 'Dedica tiempo a tus pasatiempos favoritos para relajarte 🎨' },
-    { text: 'Haz una lista de cosas que te hacen feliz y revísala hoy 😊' },
-    { text: 'Practica la gratitud escribiendo 3 cosas por las que estás agradecido 🙏' },
-    { text: 'Escucha música que te haga sentir bien y disfruta del momento 🎶' }
-  ];
+  function getDailyConsejos(consejos: { text: string }[], count = 4) {
+    const today = new Date();
+    const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+    // Simple shuffle determinístico basado en la fecha
+    let arr = consejos.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = (seed + i * 31) % (i + 1);
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr.slice(0, count);
+  }
+
+  const consejos = getDailyConsejos(allConsejos, 4);
 
   if (loading) return <p className="text-center mt-10">Cargando perfil…</p>;
 
