@@ -152,37 +152,19 @@ export default function PartnerHub({ view, setView }: Props) {
       return;
     }
 
-    // --- Validación de rango de fechas según semanas de recurrencia ---
+    // Validación: fecha de término debe ser igual o posterior a la de inicio
     const fechaInicio = new Date(actividadRecurrente.fecha);
     const fechaTermino = new Date(actividadRecurrente.fecha_termino);
-    const semanas = Number(actividadRecurrente.semanas_recurrencia);
 
-    // La fecha de término debe >= fecha de inicio
     if (fechaTermino < fechaInicio) {
-      setError("La fecha de término debe ser posterior a la de inicio.");
+      setError("La fecha de término debe ser posterior o igual a la de inicio.");
       setLoading(false);
       return;
     }
 
-    // NUEVO: La fecha de término debe ser el último día de la última semana de recurrencia
-    // Ejemplo: inicio viernes 2024-06-07, semanas=3 => término debe ser domingo 2024-06-23
-    const diaInicio = fechaInicio.getDay(); // 0=domingo, 1=lunes, ..., 6=sábado
-    // El último día de la última semana es: fechaInicio + (semanas-1)*7 + (6-diaInicio) días
-    const diasHastaUltimo = (semanas - 1) * 7 + (6 - diaInicio);
-    const fechaUltimoDia = new Date(fechaInicio);
-    fechaUltimoDia.setDate(fechaInicio.getDate() + diasHastaUltimo);
-
-    // Solo permitir si la fecha de término es exactamente el último día de la última semana
-    if (
-      fechaTermino.getFullYear() !== fechaUltimoDia.getFullYear() ||
-      fechaTermino.getMonth() !== fechaUltimoDia.getMonth() ||
-      fechaTermino.getDate() !== fechaUltimoDia.getDate()
-    ) {
-      setError(
-        `La fecha de término debe ser el último día de la última semana de recurrencia.\n` +
-        `Para una recurrencia de ${semanas} semana(s) comenzando el ${fechaInicio.toLocaleDateString()}, ` +
-        `debes seleccionar como fecha de término el ${fechaUltimoDia.toLocaleDateString()}.`
-      );
+    // semanas_recurrencia debe ser >= 1
+    if (!actividadRecurrente.semanas_recurrencia || actividadRecurrente.semanas_recurrencia < 1) {
+      setError("El intervalo de semanas de recurrencia debe ser al menos 1.");
       setLoading(false);
       return;
     }

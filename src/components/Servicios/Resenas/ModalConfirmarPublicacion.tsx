@@ -6,12 +6,18 @@ interface ModalConfirmarPublicacionProps {
   open: boolean;
   onCancel: () => void;
   onConfirm: () => void;
+  children?: React.ReactNode; // NUEVO: permite contenido personalizado
+  mensaje?: string; // NUEVO: mensaje personalizado opcional
+  titulo?: string; // NUEVO: permite personalizar el título
 }
 
 const ModalConfirmarPublicacion: React.FC<ModalConfirmarPublicacionProps> = ({
   open,
   onCancel,
   onConfirm,
+  children,
+  mensaje,
+  titulo, // NUEVO
 }) => {
   return (
     <Dialog open={open} onClose={onCancel} className="fixed z-50 inset-0 overflow-y-auto">
@@ -20,13 +26,15 @@ const ModalConfirmarPublicacion: React.FC<ModalConfirmarPublicacionProps> = ({
         <div className="bg-white rounded-xl max-w-md mx-auto p-6 z-50 shadow-xl relative">
           <div className="flex items-center gap-3 mb-4">
             <CheckCircle className="w-8 h-8 text-[#009982]" />
-            <Dialog.Title className="text-lg font-bold text-gray-800">¿Confirmar publicación?</Dialog.Title>
+            <Dialog.Title className="text-lg font-bold text-gray-800">
+              {titulo || "¿Confirmar publicación?"}
+            </Dialog.Title>
           </div>
-
           <Dialog.Description className="text-gray-600 mb-6">
-            Estás a punto de publicar tu reseña. Esta acción será visible para otros usuarios y no podrá ser editada luego sin volver a confirmarla.
+            {mensaje ||
+              "Estás a punto de publicar tu reseña. Esta acción será visible para otros usuarios y no podrá ser editada luego sin volver a confirmarla."}
+            {children}
           </Dialog.Description>
-
           <div className="flex justify-end gap-3">
             <button
               onClick={onCancel}

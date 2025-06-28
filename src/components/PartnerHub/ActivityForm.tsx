@@ -1,6 +1,5 @@
-import { ChangeEvent, FormEvent, useState, useEffect } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
+import { ChangeEvent, FormEvent, useState, useEffect, useRef } from "react";
+import ModalConfirmarPublicacion from "../Servicios/Resenas/ModalConfirmarPublicacion";
 
 export interface ActividadForm {
   nombre: string;
@@ -39,10 +38,11 @@ export default function ActivityForm({
   success,
   onSwitchToRecurrente,
 }: ActivityFormProps) {
-  const [showPreview, setShowPreview] = useState(false);
   const [sinLimiteCapacidad, setSinLimiteCapacidad] = useState(false);
   const categorias = ["Salud", "Recreación", "Tecnología", "Cultura", "Deportes", "otros"];
   const [categoriaOtra, setCategoriaOtra] = useState("");
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const generarLinkSimulado = (nombre: string) => {
     const random = "XXXXXXX";
@@ -58,7 +58,6 @@ export default function ActivityForm({
     onChange(e);
   };
 
-  // Bloquear scroll del fondo cuando el modal está abierto
   useEffect(() => {
     document.body.classList.add("overflow-hidden");
     return () => {
@@ -66,7 +65,6 @@ export default function ActivityForm({
     };
   }, []);
 
-  // --- Vista previa similar a activityPage ---
   const formatearFecha = (fecha: string) => {
     if (!fecha) return "";
     const [a, m, d] = fecha.split("-");
@@ -78,7 +76,6 @@ export default function ActivityForm({
   };
 
   useEffect(() => {
-    // Si la capacidad es 999999, marcar el checkbox
     setSinLimiteCapacidad(
       actividad.capacidad_total === 999999 ||
       actividad.capacidad_total === null ||
@@ -86,10 +83,14 @@ export default function ActivityForm({
     );
   }, [actividad.capacidad_total]);
 
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowConfirmModal(true);
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center px-4">
-      <div className="bg-white w-full max-w-5xl rounded-2xl shadow-md p-6 space-y-6 max-h-[90vh] overflow-y-auto relative">
-        {/* Botón X para cerrar */}
+      <div className="bg-white w-full max-w-6xl rounded-2xl shadow-md p-6 space-y-6 max-h-[90vh] overflow-y-auto relative">
         <button
           type="button"
           onClick={onCancel}
@@ -98,84 +99,82 @@ export default function ActivityForm({
         >
           &times;
         </button>
-        <div className="flex flex-col gap-4 mb-2">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-[#00495C]">Crear Actividad</h2>
-          </div>
-          {/* Mensaje destacado para actividades de más de un día */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 flex items-center gap-3">
-            <span className="text-blue-700 font-semibold">
-              ¿Tu actividad dura más de un día?
-            </span>
-            <span className="text-blue-700">
-              Puedes crear actividades que se repitan en varios días o semanas.
-            </span>
-            <button
-              type="button"
-              onClick={onSwitchToRecurrente}
-              className="ml-auto bg-[#E0F2F1] hover:bg-[#B2DFDB] text-[#009982] font-semibold px-4 py-2 rounded-lg transition text-sm"
-            >
-              Repetir actividad &rarr;
-            </button>
-          </div>
+
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold text-[#00495C]">Crear Actividad</h2>
         </div>
-        <div className="flex flex-col lg:flex-row gap-8">
+
+        <div className="bg-[#E0F2F1] rounded-xl px-5 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+          <div className="text-[#00495C] text-sm sm:text-base">
+            <strong>¿Tu actividad dura más de un día?</strong><br />
+            Puedes repetirla en varios días o semanas.
+          </div>
+          <button
+            type="button"
+            onClick={onSwitchToRecurrente}
+            className="bg-[#009982] hover:bg-[#007b6d] text-white font-semibold px-6 py-2 rounded-lg text-sm transition"
+          >
+            Repetir actividad →
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Formulario */}
           <form
-            onSubmit={onSubmit}
-            className="flex-1 space-y-5 min-w-0"
-            style={{ minWidth: 0 }}
+            ref={formRef}
+            onSubmit={handleFormSubmit}
+            className="flex flex-col space-y-5 min-w-0"
           >
-            <div className="flex flex-col gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Nombre</label>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Nombre</label>
+              <input
+                type="text"
+                name="nombre"
+                value={actividad.nombre}
+                onChange={onChange}
+                className="w-full border rounded-lg px-3 py-2"
+                placeholder="Título de la actividad"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Categoría</label>
+              <select
+                name="categoria"
+                value={actividad.categoria || ""}
+                onChange={handleCategoriaChange}
+                className="w-full border rounded-lg px-3 py-2"
+              >
+                <option value="">Selecciona una categoría</option>
+                {categorias.map((cat) => (
+                  <option key={cat} value={cat.toLowerCase()}>{cat}</option>
+                ))}
+              </select>
+              {actividad.categoria === "otros" && (
                 <input
                   type="text"
-                  name="nombre"
-                  value={actividad.nombre}
-                  onChange={onChange}
-                  className="w-full border rounded-lg px-3 py-2"
-                  placeholder="Título de la actividad"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Categoría</label>
-                <select
                   name="categoria"
-                  value={actividad.categoria || ""}
-                  onChange={handleCategoriaChange}
-                  className="w-full border rounded-lg px-3 py-2"
-                >
-                  <option value="">Selecciona una categoría</option>
-                  {categorias.map((cat) => (
-                    <option key={cat} value={cat.toLowerCase()}>{cat}</option>
-                  ))}
-                </select>
-                {actividad.categoria === "otros" && (
-                  <input
-                    type="text"
-                    name="categoria"
-                    value={categoriaOtra}
-                    onChange={(e) => {
-                      setCategoriaOtra(e.target.value);
-                      onChange(e);
-                    }}
-                    className="w-full mt-2 border rounded-lg px-3 py-2"
-                    placeholder="Ej: Manualidades"
-                  />
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Descripción</label>
-                <textarea
-                  name="descripcion"
-                  value={actividad.descripcion}
-                  onChange={onChange}
-                  className="w-full border rounded-lg px-3 py-2"
-                  placeholder="Breve descripción de la actividad"
-                  rows={3}
+                  value={categoriaOtra}
+                  onChange={(e) => {
+                    setCategoriaOtra(e.target.value);
+                    onChange(e);
+                  }}
+                  className="w-full mt-2 border rounded-lg px-3 py-2"
+                  placeholder="Ej: Manualidades"
                 />
-              </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Descripción</label>
+              <textarea
+                name="descripcion"
+                value={actividad.descripcion}
+                onChange={onChange}
+                className="w-full border rounded-lg px-3 py-2"
+                placeholder="Breve descripción de la actividad"
+                rows={3}
+              />
             </div>
 
             <div>
@@ -276,15 +275,9 @@ export default function ActivityForm({
                     const nuevoSinLimite = !sinLimiteCapacidad;
                     setSinLimiteCapacidad(nuevoSinLimite);
                     if (nuevoSinLimite) {
-                      // Si está activado, enviar 999999
-                      onChange({
-                        target: { name: "capacidad_total", value: 999999 },
-                      } as any);
+                      onChange({ target: { name: "capacidad_total", value: 999999 } } as any);
                     } else {
-                      // Si se desactiva, poner vacío
-                      onChange({
-                        target: { name: "capacidad_total", value: "" },
-                      } as any);
+                      onChange({ target: { name: "capacidad_total", value: "" } } as any);
                     }
                   }}
                 />
@@ -295,7 +288,6 @@ export default function ActivityForm({
                 name="capacidad_total"
                 value={sinLimiteCapacidad ? "" : (actividad.capacidad_total === 999999 ? "" : actividad.capacidad_total ?? "")}
                 onChange={e => {
-                  // Si el usuario borra el valor, enviar 999999
                   onChange({
                     target: {
                       name: "capacidad_total",
@@ -311,29 +303,18 @@ export default function ActivityForm({
 
             {error && <p className="text-red-500 text-sm">{error}</p>}
             {success && <p className="text-green-600 text-sm">{success}</p>}
-            <div className="flex justify-center items-center gap-4 mt-8">
+            <div className="flex justify-center items-center gap-4 mt-4">
               <button
                 type="button"
                 onClick={onCancel}
-                className="bg-[#FF4D4F] hover:bg-[#d32f2f] text-white px-8 py-3 rounded-lg font-semibold text-lg transition w-48 h-16 flex items-center justify-center"
+                className="bg-[#FF4D4F] hover:bg-[#d32f2f] text-white px-6 py-3 rounded-lg font-semibold text-lg transition"
                 disabled={loading}
               >
                 Cancelar
               </button>
               <button
-                type="button"
-                onClick={() => setShowPreview((v) => !v)}
-                className={`rounded-lg font-semibold text-lg transition w-48 h-16 flex items-center justify-center
-                  ${showPreview
-                    ? "bg-[#141A2A] text-white"
-                    : "bg-[#141A2A] text-white"}
-                  hover:bg-[#232b3e]`}
-              >
-                {showPreview ? "Ocultar vista previa" : "Vista previa"}
-              </button>
-              <button
                 type="submit"
-                className="bg-[#009982] hover:bg-[#007b6d] text-white rounded-lg font-semibold text-lg transition w-48 h-16 flex items-center justify-center"
+                className="bg-[#009982] hover:bg-[#007b6d] text-white rounded-lg font-semibold text-lg transition px-6 py-3"
                 disabled={loading}
               >
                 {loading ? "Creando..." : "Crear Actividad"}
@@ -341,98 +322,76 @@ export default function ActivityForm({
             </div>
           </form>
 
-          {/* Vista previa */}
-          {showPreview && (
-            <div className="flex-1 min-w-0 max-w-lg">
-              {/* Simula la vista de activityPage */}
-              <div className="flex flex-col-reverse md:flex-row items-stretch gap-8 p-6 bg-white rounded-2xl shadow mb-8">
-                <div className="flex-1 flex flex-col justify-start text-center md:text-left pt-6">
-                  <h1
-                    className="font-poppins font-bold text-[2em] text-cyan-900 mb-8 leading-snug"
-                    style={{ color: "#006881" }}
-                  >
-                    {actividad.nombre || <span className="text-gray-400">[Nombre de la actividad]</span>}
-                  </h1>
-                  <p
-                    className="font-poppins font-normal text-[1em] text-gray-700 leading-relaxed"
-                    style={{ color: "#4B5563" }}
-                  >
-                    {actividad.descripcion || <span className="text-gray-400">[Descripción]</span>}
-                  </p>
+          {/* Vista previa siempre visible */}
+          <div className="bg-[#F9FAFB] border border-gray-200 rounded-2xl shadow-inner p-6 space-y-4">
+            <h2 className="text-xl font-bold text-[#00495C] mb-4 text-center">Vista previa de la actividad</h2>
+
+            <div className="flex flex-col-reverse md:flex-row items-stretch gap-6">
+              <div className="flex-1 flex flex-col justify-start text-center md:text-left pt-4">
+                <h1 className="font-poppins font-bold text-[1.8em] text-[#006881] leading-snug mb-4">
+                  {actividad.nombre || <span className="text-gray-400">[Nombre de la actividad]</span>}
+                </h1>
+                <p className="text-gray-700 leading-relaxed">
+                  {actividad.descripcion || <span className="text-gray-400">[Descripción]</span>}
+                </p>
+              </div>
+              {actividad.imagen && (
+                <div className="flex-1 flex justify-center">
+                  <img
+                    src={actividad.imagen}
+                    alt={`Imagen de ${actividad.nombre}`}
+                    className="self-center max-h-[250px] w-auto rounded-xl object-contain"
+                  />
                 </div>
-                {actividad.imagen && (
-                  <div className="flex-1 flex justify-center h-full">
-                    <img
-                      src={actividad.imagen}
-                      alt={`Imagen de ${actividad.nombre}`}
-                      className="self-center max-h-[300px] w-auto rounded-xl object-contain"
-                    />
-                  </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              <div className="bg-white rounded-lg shadow p-4">
+                <h3 className="font-bold text-[#00495C] mb-2">Modalidad</h3>
+                {actividad.modalidad === "presencial" ? (
+                  <>
+                    <p><strong>Lugar:</strong> {actividad.lugar || <span className="text-gray-400">[Lugar]</span>}</p>
+                    <p><strong>Comuna:</strong> {actividad.comuna || <span className="text-gray-400">[Comuna]</span>}</p>
+                  </>
+                ) : (
+                  <p><strong>Link:</strong> <span className="text-blue-700 break-all">{generarLinkSimulado(actividad.nombre || "actividad")}</span></p>
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Modalidad */}
-                <div className="bg-white rounded-lg shadow p-6">
-                  <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">
-                    Modalidad
-                  </h2>
-                  {actividad.modalidad === "presencial" ? (
-                    <div className="grid grid-cols-1 gap-4 text-gray-800">
-                      <div>
-                        <h3 className="font-semibold">Lugar</h3>
-                        <p>{actividad.lugar || <span className="text-gray-400">[Lugar]</span>}</p>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Comuna</h3>
-                        <p>{actividad.comuna || <span className="text-gray-400">[Comuna]</span>}</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-gray-800">
-                      <h3 className="font-semibold">Link de acceso</h3>
-                      <span className="text-blue-700 break-all">
-                        {generarLinkSimulado(actividad.nombre || "actividad")}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                {/* Fechas y horarios */}
-                <div className="bg-white rounded-lg shadow p-6">
-                  <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">
-                    Fechas y Horarios
-                  </h2>
-                  <ul className="list-disc list-inside text-gray-800 space-y-1">
-                    <li>
-                      {actividad.fecha
-                        ? `${formatearFecha(actividad.fecha)} — ${actividad.hora_inicio?.slice(0, 5)} a ${actividad.hora_final?.slice(0, 5)}`
-                        : <span className="text-gray-400">[Fecha y horario]</span>
-                      }
-                    </li>
-                  </ul>
-                </div>
+              <div className="bg-white rounded-lg shadow p-4">
+                <h3 className="font-bold text-[#00495C] mb-2">Fechas y Horarios</h3>
+                {actividad.fecha ? (
+                  <p>{formatearFecha(actividad.fecha)} — {actividad.hora_inicio?.slice(0, 5)} a {actividad.hora_final?.slice(0, 5)}</p>
+                ) : (
+                  <span className="text-gray-400">[Fecha y horario]</span>
+                )}
               </div>
 
-              {/* Categoría y capacidad */}
-              <div className="flex flex-wrap gap-4 mt-6">
-                <div className="bg-gray-100 rounded-lg px-4 py-2 text-gray-800 font-semibold">
-                  Categoría:{" "}
-                  {actividad.categoria === "otros"
-                    ? categoriaOtra || <span className="text-gray-400">[Otra]</span>
-                    : actividad.categoria || <span className="text-gray-400">[Categoría]</span>
-                  }
+              <div className="flex flex-wrap gap-3">
+                <div className="bg-gray-100 rounded-md px-3 py-1 text-sm text-gray-800 font-medium">
+                  Categoría: {actividad.categoria === "otros" ? categoriaOtra || "[Otra]" : actividad.categoria || "[Categoría]"}
                 </div>
-                <div className="bg-gray-100 rounded-lg px-4 py-2 text-gray-800 font-semibold">
-                  Capacidad:{" "}
-                  {sinLimiteCapacidad || actividad.capacidad_total === 999999
+                <div className="bg-gray-100 rounded-md px-3 py-1 text-sm text-gray-800 font-medium">
+                  Capacidad: {sinLimiteCapacidad || actividad.capacidad_total === 999999
                     ? "Sin límite"
-                    : actividad.capacidad_total || <span className="text-gray-400">[Capacidad]</span>
-                  }
+                    : actividad.capacidad_total || "[Capacidad]"}
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
+
+        <ModalConfirmarPublicacion
+          open={showConfirmModal}
+          onCancel={() => setShowConfirmModal(false)}
+          onConfirm={() => {
+            setShowConfirmModal(false);
+            onSubmit(new Event("submit") as any);
+          }}
+          titulo="¿Confirmar publicación de actividad?"
+          mensaje="Estás a punto de publicar tu actividad, que será revisado por nuestros administradores. Esta acción será visible para otros usuarios y no podrá ser editada."
+        />
       </div>
     </div>
   );
