@@ -70,6 +70,14 @@ export async function getAssistantsByActivity(activityId: number) {
   }
 }
 
+// Obtener el número de asistentes de una actividad
+export async function getAssistantsCountByActivity(activityId: number): Promise<number> {
+  const res = await fetch(`${API_URL}/asistentes/actividad/${activityId}/count`);
+  if (!res.ok) return 0;
+  const data = await res.json();
+  return data.count ?? 0;
+}
+
 // 5. Inscribir (asistir) a una actividad
 export async function attendActivity(
   actividadId: number,
