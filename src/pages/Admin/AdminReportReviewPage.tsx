@@ -94,7 +94,7 @@ const reportesPaginados = reportesFiltrados.slice(
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4 text-gray-800">📋 Vista de Reportes</h1>
+      <h1 className="text-2xl font-bold mb-4 text-gray-800">Vista de Reportes</h1>
 
       {/* Filtros */}
       <div className="bg-white rounded-xl shadow p-5 mb-6">
@@ -156,7 +156,7 @@ const reportesPaginados = reportesFiltrados.slice(
             <input
               type="text"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 pl-10 text-sm focus:ring-2 focus:ring-[#009982] focus:outline-none"
-              placeholder="🔍 Buscar por usuario o contenido..."
+              placeholder="Buscar por usuario o contenido..."
               value={busqueda}
               onChange={(e) => {
                 setBusqueda(e.target.value);
@@ -176,7 +176,6 @@ const reportesPaginados = reportesFiltrados.slice(
           <table className="w-full text-sm text-left table-auto">
             <thead className="bg-gray-100 text-gray-700">
               <tr>
-                <th className="p-3">ID</th>
                 <th className="p-3">Tipo</th>
                 <th className="p-3">Usuario</th>
                 <th className="p-3">Contenido</th>
@@ -189,8 +188,7 @@ const reportesPaginados = reportesFiltrados.slice(
             <tbody>
               {reportesPaginados.map((r) => (
                 <tr key={r.id} className="border-t">
-                  <td className="p-3">#{r.id}</td>
-                  <td className="p-3">{r.tipo_contenido === "rating" ? "⭐ Reseña" : "💬 Comentario"}</td>
+                  <td className="p-3">{r.tipo_contenido === "rating" ? "Reseña" : "Comentario"}</td>
                   <td className="p-3">{r.Usuario?.nombre || "Desconocido"}</td>
                   <td className="p-3">
                     {r.tipo_contenido === "rating"

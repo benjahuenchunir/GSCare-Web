@@ -400,7 +400,7 @@ const ServicePage: React.FC = () => {
             onUnsubscribe={() => setShowConfirmModal(true)}
           />
         ) : (
-          <ExclusiveSubscriptionCard />
+        profile?.rol !== "administrador" && profile?.rol !== "proveedor" && <ExclusiveSubscriptionCard />
         )
       ) : null}
 
