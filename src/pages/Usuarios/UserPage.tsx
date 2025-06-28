@@ -2,8 +2,8 @@ import { useContext, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
-import { Link } from "react-router-dom";
 import {  PlusCircle, ShoppingCart } from "lucide-react";
+import { addTestimonio } from "../../firebase/testimoniosService";
 
 import QuickAccessButton from "../../common/QuickAccessButton";
 import SectionTitle from "../../common/SectionTitle";
@@ -24,6 +24,8 @@ export default function UserPage() {
   const { isAuthenticated } = useAuth0();
   const navigate = useNavigate();
   const { profile, loading } = useContext(UserContext);
+  const [testimonioTexto, setTestimonioTexto] = useState("");
+  const [enviado, setEnviado] = useState(false);
 
   const [modalView, setModalView] = useState<
     "main" | "actividad" | "actividad_recurrente" | "producto" | "servicio" | null
@@ -72,7 +74,7 @@ export default function UserPage() {
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <QuickAccessButton icon={<CalendarIcon className="w-8 h-8 text-primary" />} label="Calendario" onClick={() => navigate("/mi-agenda")} />
-              <QuickAccessButton icon={<HeadsetIcon className="w-8 h-8 text-accent3" />} label="Soporte" />
+              <QuickAccessButton icon={<HeadsetIcon className="w-8 h-8 text-accent3" />} label="Soporte" onClick={() => navigate("/soporte")} />
               <QuickAccessButton icon={<UserIcon className="w-8 h-8 text-accent2" />} label="Mi perfil" onClick={() => navigate("/edit-profile")} />
             </div>
 
@@ -104,7 +106,7 @@ export default function UserPage() {
           <>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-1">        
                 <QuickAccessButton icon={<CalendarIcon className="w-8 h-8 text-primary" />} label="Mi agenda" onClick={() => navigate("/mi-agenda")} />
-                <QuickAccessButton icon={<HeadsetIcon className="w-8 h-8 text-accent3" />} label="Soporte" />
+                <QuickAccessButton icon={<HeadsetIcon className="w-8 h-8 text-accent3" />} label="Soporte" onClick={() => navigate("/soporte")} />
                 <QuickAccessButton icon={<UserIcon className="w-8 h-8 text-accent2" />} label="Mi perfil" onClick={() => navigate("/edit-profile")} />
               </div>
 
@@ -151,16 +153,47 @@ export default function UserPage() {
               <RoleSwitcherButton
                 profile={profile!}
                 targetRole="gratis"
-                label="Volver a Gratis"
+                label="Cancelar mi suscripción"
                 className="bg-yellow-400 text-black hover:bg-yellow-600"
               />
             </div>
 
-            <div className="mt-8 bg-green-50 border border-green-300 mx-auto max-w-xl rounded-lg p-6 text-center">
-              <h2 className="text-[1.8em] font-bold text-green-700 mb-4">¡Gracias por ser socio!</h2>
+            <div className="mt-8 bg-green-50 border border-green-300 mx-auto max-w-xl rounded-lg p-6 text-center space-y-4">
+              <h2 className="text-[1.8em] font-bold text-green-700">¡Gracias por ser socio!</h2>
               <p className="text-[1em] text-green-800">
-                Explora tus <Link to="/servicios" className="underline">Servicios</Link>, <Link to="/actividades" className="underline">Actividades</Link> y revisa tu <Link to="/mi-agenda" className="underline">Agenda</Link>.
+                ¿Te ha gustado la experiencia? Comparte tu testimonio para que otros se animen a unirse.
               </p>
+
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!testimonioTexto) return;
+                  await addTestimonio({
+                    nombre: profile?.nombre ?? "Socio",
+                    contenido: testimonioTexto,
+                    userId: profile?.email ?? "",
+                  });
+                  setTestimonioTexto("");
+                  setEnviado(true);
+                }}
+                className="space-y-3"
+              >
+                <textarea
+                  className="w-full rounded-lg border p-3 resize-none focus:ring-2 focus:ring-green-500"
+                  rows={4}
+                  placeholder="Escribe tu testimonio aquí..."
+                  value={testimonioTexto}
+                  onChange={(e) => setTestimonioTexto(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-semibold"
+                >
+                  Enviar Testimonio
+                </button>
+              </form>
+
+              {enviado && <p className="text-green-700 font-medium">¡Gracias por tu testimonio! 🎉</p>}
             </div>
           </>
         )}

@@ -83,8 +83,21 @@ const ServicePage: React.FC = () => {
       .then(res => setRatingStats(res.data))
       .catch(() => setRatingStats(null));
 
-    axios.get(`${import.meta.env.VITE_API_URL}/servicios/${id}/bloques`)
-      .then(res => {
+    // Obtener bloques horarios con autenticación si está disponible
+    const fetchBloques = async () => {
+      if (!isAuthenticated) {
+        setBloques([]);
+        return;
+      }
+      try {
+        const token = await getAccessTokenSilently();
+        console.log(token);
+        const headers = { Authorization: `Bearer ${token}` };
+        
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/servicios/${id}/bloques`, {
+          headers
+        });
+        
         const parsed = res.data.map((b: any) => {
           const start = new Date(b.start);
           const end = new Date(b.end);
@@ -98,8 +111,14 @@ const ServicePage: React.FC = () => {
           };
         });
         setBloques(parsed);
-      });
-  }, [id]);
+      } catch (error) {
+        console.error("Error al obtener bloques:", error);
+        setBloques([]);
+      }
+    };
+
+    fetchBloques();
+  }, [id, isAuthenticated, getAccessTokenSilently]);
 
   useEffect(() => {
     if (!id || !profile?.id || loadingProfile) return;

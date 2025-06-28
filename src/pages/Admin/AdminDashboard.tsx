@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useAuth0, User } from "@auth0/auth0-react";
+import { UserContext } from "../../context/UserContext";
 import { Calendar, Package, ShoppingBag, Users, Eye, ChevronRight } from "lucide-react";
 import { getAdminCount, getRecentUsers, getRecentActivities } from "../../services/adminService";
 import ReporteModal from "../../components/AdminComponents/ReportReviewModal"; // Ajusta si la ruta cambia
@@ -18,6 +19,8 @@ export default function AdminDashboard() {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [reporteSeleccionado, setReporteSeleccionado] = useState<any>(null);
   const [errorReportes, setErrorReportes] = useState<string | null>(null);
+
+  const { profile } = useContext(UserContext);  
 
   const uniqueByActividadBase = (activities: any[]): any[] => {
     const seen = new Set();
@@ -159,7 +162,7 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-50 p-6 font-sans">
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Panel general</h1>
-        <p className="text-sm text-gray-600">Bienvenido, Admin</p>
+        <p className="text-sm text-gray-600">Bienvenido, {profile?.nombre}</p>
       </header>
 
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">

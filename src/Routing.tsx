@@ -25,8 +25,14 @@ import AdminUsersPage from "./pages/Admin/AdminUsersPage.tsx";
 import AdminProductsPage from "./pages/Admin/AdminProductsPage.tsx";
 import AdminActividadesPage from "./pages/Admin/AdminActividadesPage.tsx";
 import AdminServicesPage from "./pages/Admin/AdminServicesPage.tsx";
+import AdminConfigPage from "./pages/Admin/AdminConfigPage.tsx";
 import AdminReportReviewPage from "./pages/Admin/AdminReportReviewPage.tsx";
+import AdminGamesPage from "./pages/Admin/AdminGamesPage.tsx";
 import ThreadCommentsPage from "./pages/Actividades/ThreadCommentsPage.tsx";
+import SupportPage from "./pages/Soporte/SupportPage.tsx";
+import AdminNewsPage from "./pages/Admin/AdminNewsPage.tsx";
+import NewsListPage from "./pages/Noticias/NewsListPage.tsx";
+import AdminTestimoniosPage from "./pages/Admin/AdminTestimoniosPage.tsx";
 
 export default function Routing() {
   return (
@@ -47,6 +53,10 @@ export default function Routing() {
           <Route path="reportes" element={<AdminReportReviewPage />} />
           <Route path="actividades" element={<AdminActividadesPage />} />
           <Route path="servicios" element={<AdminServicesPage />} />
+          <Route path="configuracion" element={<AdminConfigPage />} />
+          <Route path="juegos" element={<AdminGamesPage />} />
+          <Route path="noticias" element={<AdminNewsPage />} />
+          <Route path="testimonios" element={<AdminTestimoniosPage />} />
         </Route>
 
         <Route path="/" element={<Layout />}>
@@ -66,6 +76,8 @@ export default function Routing() {
           <Route path="/productos/:id" element={<ProductPage />} />
           <Route path="/mi-agenda" element={<Agenda />} /> {/* Ruta de login */}
           <Route path="/test" element={<Page />} />
+          <Route path="/soporte" element={< SupportPage />} />
+          <Route path="/noticias" element={<NewsListPage />} />
           {/* Ruta protegida */}
           <Route
             path="/user"

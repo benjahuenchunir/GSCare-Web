@@ -201,20 +201,20 @@ export default function AdminServicesPage() {
           <thead className="bg-gray-100 text-gray-600">
             <tr>
               <th className="px-4 py-2 text-left">Nombre</th>
-              <th className="text-left">Prestador</th>
-              <th className="text-left">Teléfono</th>
-              <th className="text-left">Email</th>
-              <th className="text-left">Acciones</th>
+              <th className="px-4 py-2 text-left">Prestador</th>
+              <th className="px-4 py-2 text-left">Teléfono</th>
+              <th className="px-4 py-2 text-left">Email</th>
+              <th className="px-4 py-2 text-left">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {paginatedServicios.map(s => (
               <tr key={s.id} className="border-t hover:bg-gray-50">
                 <td className="px-4 py-2 font-medium">{s.nombre}</td>
-                <td>{s.prestador_del_servicio}</td>
-                <td>{s.telefono_de_contacto}</td>
-                <td>{s.email_de_contacto}</td>
-                <td className="py-2">
+                <td className="px-4 py-2">{s.prestador_del_servicio}</td>
+                <td className="px-4 py-2">{s.telefono_de_contacto}</td>
+                <td className="px-4 py-2">{s.email_de_contacto}</td>
+                <td className="px-4 py-2">
                   <div className="flex gap-3 items-center">
                     <button onClick={() => setViewingBenefits(s)} className="text-green-600 hover:text-green-800 font-semibold text-xs">Beneficios</button>
                     <button onClick={() => setViewingBlocks(s)} className="text-purple-600 hover:text-purple-800 font-semibold text-xs">Bloques</button>
