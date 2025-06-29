@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
-import { Info, Contact, Clock, Home, Award } from "lucide-react";
+import { Info, Contact, Clock, Award } from "lucide-react";
+import { getUserByEmail, updateUserProfile } from "../../services/userService";
 
 interface Props {
   onSuccess: () => void;
@@ -23,9 +24,11 @@ const initialServiceState = {
   hace_domicilio: false,
   comunas_a_las_que_hace_domicilio: "",
   imagen: "",
-  semanas_recurrencia: 1, // Este campo parece no usarse, pero lo mantengo por si acaso
+  dias_disponibles: [] as number[], // Array de números para los días, inicia vacío
   correo_proveedor: "",
 };
+
+const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
 export default function CreateServiceForm({ onSuccess }: Props) {
   const { getAccessTokenSilently } = useAuth0();
@@ -48,6 +51,17 @@ export default function CreateServiceForm({ onSuccess }: Props) {
     fetchBeneficios();
   }, []);
 
+  const handleDiasChange = (dia: number) => {
+    setNuevoServicio(prev => {
+      const dias = prev.dias_disponibles;
+      if (dias.includes(dia)) {
+        return { ...prev, dias_disponibles: dias.filter(d => d !== dia) };
+      } else {
+        return { ...prev, dias_disponibles: [...dias, dia].sort() };
+      }
+    });
+  };
+
   const toggleBeneficio = (id: number) => {
     setSelectedBeneficios(prev =>
       prev.includes(id) ? prev.filter(b => b !== id) : [...prev, id]
@@ -69,6 +83,7 @@ export default function CreateServiceForm({ onSuccess }: Props) {
     if (!/^[^@]+@[^@]+\.[^@]+$/.test(nuevoServicio.correo_proveedor)) errs.correo_proveedor = "Debe ser un email válido para el proveedor";
     if (!nuevoServicio.hora_inicio) errs.hora_inicio = "La hora de inicio es obligatoria";
     if (!nuevoServicio.hora_termino) errs.hora_termino = "La hora de término es obligatoria";
+    if (nuevoServicio.dias_disponibles.length === 0) errs.dias_disponibles = "Debe seleccionar al menos un día de atención";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -80,9 +95,32 @@ export default function CreateServiceForm({ onSuccess }: Props) {
 
     try {
       const token = await getAccessTokenSilently();
+
+      // 1. Validar que el proveedor exista
+      let proveedor;
+      try {
+        proveedor = await getUserByEmail(nuevoServicio.correo_proveedor);
+      } catch (error: any) {
+        if (error.status === 404) {
+          setErrors(prev => ({ ...prev, correo_proveedor: "El email del proveedor no corresponde a un usuario registrado." }));
+        } else {
+          setErrors(prev => ({ ...prev, correo_proveedor: "Error al verificar el email del proveedor." }));
+        }
+        setSubmitting(false);
+        return;
+      }
+
+      // Validar que el proveedor no sea administrador
+      if (proveedor && proveedor.rol === 'administrador') {
+        setErrors(prev => ({ ...prev, correo_proveedor: "No se puede asignar un servicio a un usuario administrador." }));
+        setSubmitting(false);
+        return;
+      }
+
+      // 2. Crear el servicio
       const servicioPayload = {
         ...nuevoServicio,
-        dias_disponibles: "0,1,2,3,4,5,6", // Asumimos todos los días por defecto
+        dias_disponibles: nuevoServicio.dias_disponibles.join(','),
         hora_inicio: normalizarHora(nuevoServicio.hora_inicio),
         hora_termino: normalizarHora(nuevoServicio.hora_termino),
       };
@@ -99,6 +137,18 @@ export default function CreateServiceForm({ onSuccess }: Props) {
       }
       const servicioCreado = await res.json();
 
+      // 3. Actualizar rol del proveedor si es necesario
+      if (proveedor && proveedor.rol !== 'proveedor') {
+        try {
+          await updateUserProfile({ ...proveedor, rol: 'proveedor' }, token);
+        } catch (updateError) {
+          console.error("Error al actualizar el rol del proveedor:", updateError);
+          // Opcional: notificar al admin que el rol no se pudo cambiar.
+          alert("Servicio creado, pero no se pudo actualizar el rol del proveedor. Por favor, hazlo manualmente.");
+        }
+      }
+
+      // 4. Asociar beneficios
       for (const id_beneficio of selectedBeneficios) {
         await fetch(`${import.meta.env.VITE_API_URL}/beneficios/asociar`, {
           method: "POST",
@@ -179,6 +229,22 @@ export default function CreateServiceForm({ onSuccess }: Props) {
             <div className="grid md:grid-cols-2 gap-4">
               {renderInput("hora_inicio", "Hora de inicio de atención", "", "time")}
               {renderInput("hora_termino", "Hora de término de atención", "", "time")}
+            </div>
+            <div className="mt-4">
+              <span className="block text-sm font-medium text-gray-700 mb-2">Días de atención</span>
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2">
+                {diasSemana.map((nombre, index) => (
+                  <button
+                    type="button"
+                    key={index}
+                    onClick={() => handleDiasChange(index)}
+                    className={`p-2 text-sm rounded-lg border-2 ${nuevoServicio.dias_disponibles.includes(index) ? 'bg-primary1 text-white border-primary1' : 'bg-gray-100 hover:bg-gray-200'}`}
+                  >
+                    {nombre.slice(0, 3)}
+                  </button>
+                ))}
+              </div>
+              {errors.dias_disponibles && <span className="text-red-600 text-xs mt-1">{errors.dias_disponibles}</span>}
             </div>
             <div className="mt-4">
               <label className="flex items-center gap-2">

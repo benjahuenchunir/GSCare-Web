@@ -33,6 +33,7 @@ interface Bloque {
 }
 
 const toInputDate = (fecha: string) => fecha.split("T")[0];
+const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
 export default function ProveedorPage() {
   const { profile, loading: loadingProfile } = useContext(UserContext);
@@ -53,6 +54,7 @@ export default function ProveedorPage() {
   const [creationError, setCreationError] = useState<string | null>(null);
   const [editingBlockId, setEditingBlockId] = useState<number | null>(null);
   const [editBlockForm, setEditBlockForm] = useState({ fecha: "", hora_inicio: "", hora_termino: "" });
+  const [editBlockError, setEditBlockError] = useState<string | null>(null);
 
   // Estado para editar servicio
   const [editServiceForm, setEditServiceForm] = useState<Servicio | null>(null);
@@ -101,7 +103,10 @@ export default function ProveedorPage() {
   useEffect(() => {
     if (servicioSeleccionado) {
       fetchBloquesYUsuarios(servicioSeleccionado.id);
-      setEditServiceForm(servicioSeleccionado);
+      const dias = typeof servicioSeleccionado.dias_disponibles === 'string'
+        ? servicioSeleccionado.dias_disponibles.split(',').map(Number)
+        : servicioSeleccionado.dias_disponibles || [];
+      setEditServiceForm({ ...servicioSeleccionado, dias_disponibles: dias as any });
       setManagementView('blocks');
     } else {
       setBloques([]);
@@ -127,12 +132,15 @@ export default function ProveedorPage() {
 
   const handleUpdateBlock = async (bloqueId: number) => {
     if (!servicioSeleccionado) return;
+    setEditBlockError(null);
     try {
       const token = await getAccessTokenSilently();
       await updateBloque(servicioSeleccionado.id, bloqueId, editBlockForm, token);
       await fetchBloquesYUsuarios(servicioSeleccionado.id);
       setEditingBlockId(null);
-    } catch { alert("Error al actualizar el bloque."); }
+    } catch (err: any) {
+      setEditBlockError(err.message);
+    }
   };
 
   const handleDeleteBlock = async (bloqueId: number) => {
@@ -160,13 +168,31 @@ export default function ProveedorPage() {
     setEditServiceForm(prev => ({ ...prev!, [name]: type === 'checkbox' ? checked : value }));
   };
 
+  const handleDiasChange = (dia: number) => {
+    if (!editServiceForm) return;
+    setEditServiceForm(prev => {
+      const dias = Array.isArray(prev!.dias_disponibles)
+        ? prev!.dias_disponibles
+        : (typeof prev!.dias_disponibles === 'string' ? prev!.dias_disponibles.split(',').map(Number) : []);
+      if (dias.includes(dia)) {
+        return { ...prev!, dias_disponibles: dias.filter(d => d !== dia) as any };
+      } else {
+        return { ...prev!, dias_disponibles: [...dias, dia].sort() as any };
+      }
+    });
+  };
+
   const handleServiceUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editServiceForm) return;
     setIsSavingService(true);
     try {
       const token = await getAccessTokenSilently();
-      const { id, ...dataToUpdate } = editServiceForm;
+      const { id, ...data } = editServiceForm;
+      const dataToUpdate = {
+        ...data,
+        dias_disponibles: Array.isArray(data.dias_disponibles) ? data.dias_disponibles.join(',') : data.dias_disponibles,
+      };
       await updateServicio(id, dataToUpdate, token);
       fetchAndSetServicios();
       alert("Servicio actualizado con éxito");
@@ -246,7 +272,7 @@ export default function ProveedorPage() {
                   </form>
                   <div className="max-h-[50vh] overflow-y-auto">
                     {loadingBloques ? <p>Cargando horarios...</p> : Object.entries(groupedByDate).map(([fecha, lista]) => (
-                      <div key={fecha} className="space-y-2 mb-4"><h3 className="sticky top-0 bg-gray-100 p-2 rounded capitalize font-semibold">{fecha}</h3><div className="pl-2">{lista.map(b => editingBlockId === b.id ? (<div key={b.id} className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg"><input type="date" value={editBlockForm.fecha} onChange={e => setEditBlockForm(f => ({ ...f, fecha: e.target.value }))} className="border rounded px-2 py-1 text-sm" /><input type="time" value={editBlockForm.hora_inicio} onChange={e => setEditBlockForm(f => ({ ...f, hora_inicio: e.target.value }))} className="border rounded px-2 py-1 text-sm" /><input type="time" value={editBlockForm.hora_termino} onChange={e => setEditBlockForm(f => ({ ...f, hora_termino: e.target.value }))} className="border rounded px-2 py-1 text-sm" /><div className="ml-auto flex gap-2"><button onClick={() => handleUpdateBlock(b.id)} className="text-green-600">Guardar</button><button onClick={() => setEditingBlockId(null)} className="text-gray-500">Cancelar</button></div></div>) : (<div key={b.id} className="flex justify-between items-center p-2 border-b"><div className="flex-1"><p className="font-mono">{b.hora_inicio.slice(0, 5)}–{b.hora_termino.slice(0, 5)}</p>{b.disponibilidad ? <span className="text-xs text-green-600">Disponible</span> : <span className="text-xs text-orange-400">Ocupado por: {b.citas?.[0]?.Usuario?.email ?? "Desconocido"}</span>}</div><div className="flex items-center gap-3">{b.disponibilidad ? <button onClick={() => { setEditingBlockId(b.id); setEditBlockForm({ fecha: toInputDate(b.fecha), hora_inicio: b.hora_inicio, hora_termino: b.hora_termino }); }} className="text-blue-600" title="Editar bloque"><Edit size={16} /></button> : (b.citas?.[0]?.id && <button onClick={() => handleDeleteCita(b.citas![0].id)} className="text-yellow-600" title="Cancelar cita"><UserX size={16} /></button>)}<button onClick={() => handleDeleteBlock(b.id)} className="text-red-600" title="Eliminar bloque"><Trash size={16} /></button></div></div>))}</div></div>
+                      <div key={fecha} className="space-y-2 mb-4"><h3 className="sticky top-0 bg-gray-100 p-2 rounded capitalize font-semibold">{fecha}</h3><div className="pl-2">{lista.map(b => editingBlockId === b.id ? (<div key={b.id} className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg"><div className="flex-grow space-y-2"><div className="flex items-center gap-2"><input type="date" value={editBlockForm.fecha} onChange={e => setEditBlockForm(f => ({ ...f, fecha: e.target.value }))} className="border rounded px-2 py-1 text-sm w-full" /><input type="time" value={editBlockForm.hora_inicio} onChange={e => setEditBlockForm(f => ({ ...f, hora_inicio: e.target.value }))} className="border rounded px-2 py-1 text-sm w-full" /><input type="time" value={editBlockForm.hora_termino} onChange={e => setEditBlockForm(f => ({ ...f, hora_termino: e.target.value }))} className="border rounded px-2 py-1 text-sm w-full" /></div>{editBlockError && (<div className="w-full text-red-600 text-xs bg-red-100 p-2 rounded border border-red-200">{editBlockError}</div>)}</div><div className="ml-auto flex flex-col gap-2"><button onClick={() => handleUpdateBlock(b.id)} className="text-green-600 text-sm">Guardar</button><button onClick={() => { setEditingBlockId(null); setEditBlockError(null); }} className="text-gray-500 text-sm">Cancelar</button></div></div>) : (<div key={b.id} className="flex justify-between items-center p-2 border-b"><div className="flex-1"><p className="font-mono">{b.hora_inicio.slice(0, 5)}–{b.hora_termino.slice(0, 5)}</p>{b.disponibilidad ? <span className="text-xs text-green-600">Disponible</span> : <span className="text-xs text-orange-400">Ocupado por: {b.citas?.[0]?.Usuario?.email ?? "Desconocido"}</span>}</div><div className="flex items-center gap-3">{b.disponibilidad ? <button onClick={() => { setEditingBlockId(b.id); setEditBlockForm({ fecha: toInputDate(b.fecha), hora_inicio: b.hora_inicio, hora_termino: b.hora_termino }); setEditBlockError(null); }} className="text-blue-600" title="Editar bloque"><Edit size={16} /></button> : (b.citas?.[0]?.id && <button onClick={() => handleDeleteCita(b.citas![0].id)} className="text-yellow-600" title="Cancelar cita"><UserX size={16} /></button>)}<button onClick={() => handleDeleteBlock(b.id)} className="text-red-600" title="Eliminar bloque"><Trash size={16} /></button></div></div>))}</div></div>
                     ))}
                   </div>
                 </div>
@@ -254,6 +280,17 @@ export default function ProveedorPage() {
 
               {managementView === 'details' && editServiceForm && (
                 <form onSubmit={handleServiceUpdate} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2">
+                  {/* Vista previa de imagen */}
+                  {editServiceForm.imagen && /^https?:\/\/.+\..+/.test(editServiceForm.imagen) && (
+                    <div className="col-span-full text-center">
+                      <img
+                        src={editServiceForm.imagen}
+                        alt="Vista previa del servicio"
+                        className="max-h-40 mx-auto rounded-md border"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Vista previa de la imagen</p>
+                    </div>
+                  )}
                   <label className="block col-span-full">URL de imagen<input name="imagen" value={editServiceForm.imagen} onChange={handleServiceFormChange} className="w-full border px-3 py-2 mt-1 rounded" /></label>
                   <label className="block">Nombre<input name="nombre" value={editServiceForm.nombre} onChange={handleServiceFormChange} className="w-full border px-3 py-2 mt-1 rounded" /></label>
                   <label className="block">Prestador<input name="prestador_del_servicio" value={editServiceForm.prestador_del_servicio} onChange={handleServiceFormChange} className="w-full border px-3 py-2 mt-1 rounded" /></label>
@@ -264,6 +301,21 @@ export default function ProveedorPage() {
                   <div className="col-span-full grid grid-cols-2 gap-4">
                     <label className="block">Horario atención (inicio)<input type="time" name="hora_inicio" value={editServiceForm.hora_inicio?.slice(0, 5) || ''} onChange={handleServiceFormChange} className="w-full border px-3 py-2 mt-1 rounded" /></label>
                     <label className="block">Horario atención (fin)<input type="time" name="hora_termino" value={editServiceForm.hora_termino?.slice(0, 5) || ''} onChange={handleServiceFormChange} className="w-full border px-3 py-2 mt-1 rounded" /></label>
+                  </div>
+                  <div className="col-span-full">
+                    <span className="block text-sm font-medium text-gray-700 mb-2">Días de atención</span>
+                    <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
+                      {diasSemana.map((nombre, index) => (
+                        <button
+                          type="button"
+                          key={index}
+                          onClick={() => handleDiasChange(index)}
+                          className={`p-2 text-sm rounded-lg border-2 ${(editServiceForm.dias_disponibles as unknown as number[] || []).includes(index) ? 'bg-primary1 text-white border-primary1' : 'bg-gray-100 hover:bg-gray-200'}`}
+                        >
+                          {nombre.slice(0, 3)}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                   <div className="col-span-full flex items-center gap-4">
                     <label className="flex items-center gap-2"><input type="checkbox" name="hace_domicilio" checked={editServiceForm.hace_domicilio} onChange={handleServiceFormChange} /><span>Hace domicilio</span></label>
