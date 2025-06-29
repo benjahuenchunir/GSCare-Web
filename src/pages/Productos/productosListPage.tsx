@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Search, Filter, Check } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 
 interface Producto {
   id: number;
@@ -54,6 +55,13 @@ const ProductosListPage: React.FC = () => {
 
   return (
     <main className="flex-1">
+      <Helmet>
+        <title>GSCare | Productos para el Bienestar</title>
+        <meta
+          name="description"
+          content="Descubre productos seleccionados para el cuidado y bienestar de adultos mayores. Encuentra todo lo que necesitas en un solo lugar."
+        />
+      </Helmet>
       <div className="px-6 md:px-10 py-12 bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto">
 

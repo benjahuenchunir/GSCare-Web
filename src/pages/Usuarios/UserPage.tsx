@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
 import {  PlusCircle, ShoppingCart } from "lucide-react";
 import { addTestimonio } from "../../firebase/testimoniosService";
+import { Helmet } from "react-helmet-async";
 
 import QuickAccessButton from "../../common/QuickAccessButton";
 import SectionTitle from "../../common/SectionTitle";
@@ -82,6 +83,13 @@ export default function UserPage() {
 
   return (
     <main className="flex-1 pt-10 pb-12 bg-gray-100">
+      <Helmet>
+        <title>GSCare | Mi Perfil</title>
+        <meta
+          name="description"
+          content="Accede a tu perfil de GSCare. Gestiona tus servicios, actividades, y descubre recomendaciones personalizadas para ti."
+        />
+      </Helmet>
       <div className="w-full px-6 py-8 space-y-8">
         <div className="flex justify-center mb-6">
           <h1 className="text-[2.5em] font-bold text-primary">Hola, {userName}!</h1>

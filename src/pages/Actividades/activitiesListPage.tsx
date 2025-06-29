@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchActividades, Actividad as ActividadBase } from "../../services/actividadService";
 import { Search, Filter, Check } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 
 interface Actividad extends ActividadBase {
   status: string;
@@ -72,6 +73,13 @@ const ActividadesListPage: React.FC = () => {
 
   return (
     <main className="flex-1">
+      <Helmet>
+        <title>GSCare | Actividades para Adultos Mayores</title>
+        <meta
+          name="description"
+          content="Explora nuestro catálogo de actividades y talleres para adultos mayores. Encuentra eventos online y presenciales para mantenerte activo y conectado."
+        />
+      </Helmet>
       <div className="px-6 md:px-10 py-12 bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto">
 

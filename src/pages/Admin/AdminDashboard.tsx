@@ -5,6 +5,7 @@ import { Calendar, Package, ShoppingBag, Users, Eye, ChevronRight, Flag } from "
 import { getAdminCount, getRecentUsers, getRecentActivities } from "../../services/adminService";
 import ReporteModal from "../../components/AdminComponents/ReportReviewModal"; // Ajusta si la ruta cambia
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 export default function AdminDashboard() {
   const { getAccessTokenSilently } = useAuth0();
@@ -162,6 +163,13 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 font-sans">
+      <Helmet>
+        <title>GSCare | Panel de Administración</title>
+        <meta
+          name="description"
+          content="Panel de administración de GSCare. Gestiona usuarios, servicios, actividades, productos y reportes de contenido."
+        />
+      </Helmet>
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Panel general</h1>
         <p className="text-sm text-gray-600">Bienvenido, {profile?.nombre}</p>
