@@ -2,7 +2,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 
-import { getServiciosConCitas } from "../../services/subscriptionService";
+import { getUserSubscriptions } from "../../services/subscriptionService";
 import { formatSessionTag } from "../../utils/dateHelper";
 import { getUserActivities, Actividad } from "../../services/actividadService";
 import { UserContext } from "../../context/UserContext";
@@ -32,7 +32,7 @@ type EventItem =
 
 export const UpcomingEventsSection: React.FC = () => {
   const { profile } = useContext(UserContext)!;
-  const { isAuthenticated } = useAuth0();
+  const { isAuthenticated, getAccessTokenSilently } = useAuth0();
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,32 +45,29 @@ export const UpcomingEventsSection: React.FC = () => {
     setLoading(true);
 
     // 1) Flujo de servicios periódicos
-    const pServices = getServiciosConCitas(profile.id).then((servicios): EventItem[] => {
-      return servicios.flatMap((s: any) =>
-        s.citas.map((cita: any) => {
-          const [h, m] = cita.hora_inicio.split(":").map(Number);
-          const sessionDate = new Date(cita.fecha);
-          sessionDate.setHours(h, m, 0, 0);
-
-          return {
-            type: "service" as const,
-            id: cita.id_cita,
-            nombre: s.nombre_servicio,
-            direccion: "", // Puedes extender el endpoint para incluir dirección si se necesita
-            sessionDate,
-            tag: formatSessionTag(sessionDate)
-          };
-        })
-      );
-    });
+    const pServices = (async (): Promise<EventItem[]> => {
+      const token = await getAccessTokenSilently();
+      const citas = await getUserSubscriptions(profile.id, token);
+      return citas.map((cita: any) => {
+        const sessionDate = new Date(cita.start);
+        return {
+          type: "service" as const,
+          id: cita.id,
+          nombre: cita.title,
+          direccion: cita.lugar || "Ubicación no especificada",
+          sessionDate,
+          tag: formatSessionTag(sessionDate),
+        };
+      });
+    })();
 
 
     // 2) Flujo de actividades puntuales
     const pActivities = getUserActivities(profile.id).then((acts) =>
       acts.map<EventItem>((a: Actividad) => {
-        const fecha = new Date(a.fecha);
+        const [year, month, day] = a.fecha.split('-').map(Number);
         const [h, m] = a.hora_inicio.split(":").map(Number);
-        fecha.setHours(h, m, 0, 0);
+        const fecha = new Date(year, month - 1, day, h, m);
 
         return {
           type: "activity",
@@ -83,7 +80,7 @@ export const UpcomingEventsSection: React.FC = () => {
       })
     );
 
-    // 3) Unimos, filtramos próximos 7 días y ordenamos
+    // 3) Unimos, filtramos próximos 14 días y ordenamos
     Promise.all([pServices, pActivities])
       .then(([svcs, acts]) => {
         const merged = [...svcs, ...acts]
@@ -141,5 +138,4 @@ export const UpcomingEventsSection: React.FC = () => {
       ))}
     </div>
   );
-};
-    
+}; 

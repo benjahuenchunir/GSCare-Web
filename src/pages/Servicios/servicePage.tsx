@@ -149,8 +149,11 @@ const ServicePage: React.FC = () => {
 
   useEffect(() => {
     if (!id || !profile?.id || loadingProfile) return;
-    getUserSubscriptions(profile.id)
-      .then(citas => {
+
+    const fetchUserSubscriptions = async () => {
+      try {
+        const token = await getAccessTokenSilently();
+        const citas = await getUserSubscriptions(profile.id, token);
         const citasServicio = citas.filter((c: any) => c.id_servicio === Number(id));
         const parsed = citasServicio.map((c: any) => {
           const start = new Date(c.start);
@@ -168,10 +171,15 @@ const ServicePage: React.FC = () => {
           };
         });
         setCitasDelServicio(parsed);
-      })
-      .catch(console.error)
-      .finally(() => setLoadingSub(false));
-  }, [id, profile, loadingProfile]);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoadingSub(false);
+      }
+    };
+
+    fetchUserSubscriptions();
+  }, [id, profile, loadingProfile, getAccessTokenSilently]);
 
   const refreshReviews = async () => {
     try {
@@ -210,7 +218,7 @@ const ServicePage: React.FC = () => {
 
     try {
       await createCita(profile.id, bloqueSeleccionado.id, token);
-      const citas = await getUserSubscriptions(profile.id);
+      const citas = await getUserSubscriptions(profile.id, token);
       const citasServicio = citas.filter((c: any) => c.id_servicio === Number(id));
       const parsed = citasServicio.map((c: any) => {
         const start = new Date(c.start);
