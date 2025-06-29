@@ -78,8 +78,8 @@ const RecommendedServices = () => {
       <SectionTitle title="Actividades recomendadas para ti" />
       <div className="bg-white p-6 rounded-lg shadow">
         <div className="text-center mb-6">
-          <h2 className="text-xl font-bold text-primary mb-2">¿No sabes qué agendar?</h2>
-          <p className="text-gray-600">Te recomendamos estas actividades:</p>
+          <h2 className="text-xl font-bold text-primary mb-2">¿No sabes en que actividad participar?</h2>
+          <p className="text-gray-600">En base a tus participaciones anteriores y nuestra oferta actual, te recomendamos estas actividades:</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {filledRecs.map((rec, idx) =>

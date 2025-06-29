@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { FaIndustry, FaStore, FaExternalLinkAlt } from "react-icons/fa";
+import { UserContext } from "../../context/UserContext";
+import { registrarVisitaProducto } from "../../services/productoService";
+import { useNavigate } from "react-router-dom";
 
 interface Producto {
   nombre: string;
@@ -16,6 +19,8 @@ interface Producto {
 const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [producto, setProducto] = useState<Producto | null>(null);
+  const navigate = useNavigate();
+  const { profile } = useContext(UserContext);
 
   useEffect(() => {
     const fetchProducto = async () => {
@@ -31,6 +36,14 @@ const ProductPage: React.FC = () => {
 
     fetchProducto();
   }, [id]);
+
+  const handleProductClick = async (productId: number) => {
+    // No registrar visitas de administradores
+    if (profile?.rol !== "administrador") {
+      await registrarVisitaProducto(productId);
+    }
+    navigate(`/productos/${productId}`);
+  };
 
   if (!producto) return <div className="p-4">Cargando producto...</div>;
 
@@ -92,6 +105,7 @@ const ProductPage: React.FC = () => {
                 Haz clic en el botón para visitar el sitio de compra.
               </p>
               <a
+                onClick={() => handleProductClick(Number(id))}
                 href={producto.link_al_producto}
                 target="_blank"
                 rel="noopener noreferrer"

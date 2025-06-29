@@ -268,7 +268,7 @@ export default function AdminDashboard() {
         </section>
 
         <section className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Notificaciones</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Reportes</h3>
           <p className="text-sm text-gray-600 mb-4">Contenido reportado por usuarios</p>
           {errorReportes && (
             <div className="text-red-600 text-sm mb-4">{errorReportes}</div>

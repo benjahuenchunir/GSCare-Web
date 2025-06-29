@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import ConfirmDeleteContentModal from "./ConfirmDeleteContentModal";
 import ConfirmActionModal from "./ConfirmActionModal";
+import { db } from "../../firebase/firebaseConfig"; // asegúrate que está correcto
+import { doc, deleteDoc } from "firebase/firestore";
 
 type Props = {
   reporte: any;
@@ -24,9 +26,19 @@ export default function ReporteModal({ reporte, onClose, onResolve }: Props) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const handleDeleteClick = () => setShowDeleteModal(true);
-  const handleConfirmDelete = () => {
-    setShowDeleteModal(false);
-    onResolve("revisado", true);
+  const handleConfirmDelete = async () => {
+    try {
+      // Eliminar de Firestore si es un comentario
+      if (reporte.tipo_contenido === "comentario" && reporte.id_contenido) {
+        await deleteDoc(doc(db, "threadComments", reporte.id_contenido));
+      }
+
+      // Luego actualizar estado del reporte en el backend
+      onResolve("revisado", true);
+    } catch (err) {
+      console.error("Error al eliminar comentario de Firebase:", err);
+      alert("Error al eliminar comentario en Firestore.");
+    }
   };
 
   const handleConservarClick = () => setShowConfirmModal(true);

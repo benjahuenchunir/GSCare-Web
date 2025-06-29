@@ -16,6 +16,7 @@ export interface Producto {
   imagen: string;
   createdAt: string;
   status: string;
+  visitas: number;
 }
 
 export default function AdminProductsPage() {
@@ -34,6 +35,7 @@ export default function AdminProductsPage() {
   const [marcaFilter, setMarcaFilter] = useState("");
   const [vendedorFilter, setVendedorFilter] = useState("");
   const [estadoFilter, setEstadoFilter] = useState("");
+  const [sortVisitas, setSortVisitas] = useState<"asc" | "desc" | "">("");
 
   const fetchProductos = async () => {
     setLoading(true);
@@ -72,9 +74,15 @@ export default function AdminProductsPage() {
       temp = temp.filter(p => p.status === estadoFilter);
     }
 
+    if (sortVisitas === "asc") {
+      temp.sort((a, b) => (a.visitas ?? 0) - (b.visitas ?? 0));
+    } else if (sortVisitas === "desc") {
+      temp.sort((a, b) => (b.visitas ?? 0) - (a.visitas ?? 0));
+    }
+
     setProductos(temp);
     setPage(1); // Reset page on filter change
-  }, [searchNombre, categoriaFilter, marcaFilter, vendedorFilter, estadoFilter, allProductos]);
+  }, [searchNombre, categoriaFilter, marcaFilter, vendedorFilter, estadoFilter, sortVisitas, allProductos]);
 
   const handleDelete = async (id: number) => {
     if (!window.confirm("¿Seguro que deseas eliminar este producto?")) return;
@@ -167,6 +175,15 @@ export default function AdminProductsPage() {
             <option value="aprobada">Aprobada</option>
             <option value="rechazada">Rechazada</option>
           </select>
+          <select
+            value={sortVisitas}
+            onChange={e => setSortVisitas(e.target.value as any)}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#009982] focus:outline-none bg-white"
+          >
+            <option value="">Ordenar por visitas</option>
+            <option value="asc">Menos visitados</option>
+            <option value="desc">Más visitados</option>
+          </select>
         </div>
       </div>
 
@@ -194,6 +211,7 @@ export default function AdminProductsPage() {
               <th className="p-3">Categoría</th>
               <th className="p-3">Marca</th>
               <th className="p-3">Vendedor</th>
+              <th className="p-3">Visitas</th>
               <th className="p-3">Estado</th>
               <th className="p-3">Enlace</th>
               <th className="p-3">Acciones</th>
@@ -206,6 +224,7 @@ export default function AdminProductsPage() {
                 <td className="p-3">{p.categoria}</td>
                 <td className="p-3">{p.marca}</td>
                 <td className="p-3">{p.nombre_del_vendedor}</td>
+                <td className="p-3">{p.visitas ?? 0}</td>
                 <td className="p-3">
                   <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
                     p.status === "aprobada"

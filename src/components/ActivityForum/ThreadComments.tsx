@@ -13,6 +13,7 @@ import leoProfanity from "leo-profanity";
 import spanishBadWords from "../../utils/spanishBadWords";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCommentDots } from "@fortawesome/free-solid-svg-icons";
+import { AlertTriangle } from "lucide-react";
 
 interface Comment {
   id: string;
@@ -24,6 +25,7 @@ interface Comment {
 
 interface ThreadCommentsProps {
   threadId: string;
+  onReportComment: (commentId: string) => void;
 }
 
 // Inicializar el filtro solo una vez
@@ -32,7 +34,7 @@ if (!leoProfanity.getDictionary().length) {
   leoProfanity.add(spanishBadWords);
 }
 
-export const ThreadComments: React.FC<ThreadCommentsProps> = ({ threadId }) => {
+export const ThreadComments: React.FC<ThreadCommentsProps> = ({ threadId, onReportComment }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -145,36 +147,49 @@ export const ThreadComments: React.FC<ThreadCommentsProps> = ({ threadId }) => {
                   : ""
               }`}
             >
-              <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-medium text-gray-600">
-                      {comment.createdBy.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <span className="font-medium text-gray-900">
-                      {comment.createdBy}
-                    </span>
-                    {comment.createdById === (user?.sub || user?.email) && (
-                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                        Tú
+              <div className="flex items-start justify-between space-x-3">
+                <div className="flex items-start space-x-3 flex-grow">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-medium text-gray-600">
+                        {comment.createdBy.charAt(0).toUpperCase()}
                       </span>
-                    )}
-                    <span className="text-sm text-gray-500">
-                      {comment.createdAt.toLocaleDateString()} a las{" "}
-                      {comment.createdAt.toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
+                    </div>
                   </div>
-                  <p className="text-gray-800 leading-relaxed">
-                    {comment.content}
-                  </p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <span className="font-medium text-gray-900">
+                        {comment.createdBy}
+                      </span>
+                      {comment.createdById === (user?.sub || user?.email) && (
+                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                          Tú
+                        </span>
+                      )}
+                      <span className="text-sm text-gray-500">
+                        {comment.createdAt.toLocaleDateString()} a las{" "}
+                        {comment.createdAt.toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                    <p className="text-gray-800 leading-relaxed">
+                      {comment.content}
+                    </p>
+                  </div>
                 </div>
+                {/* Botón de Reporte */}
+                {user?.email && comment.createdById !== (user?.sub || user?.email) && (
+                  <button
+                    onClick={() => onReportComment(comment.id)}
+                    title="Reportar comentario"
+                    className="border border-red-400 text-red-500 hover:bg-red-50 font-medium px-3 py-1 rounded-full text-sm flex items-center gap-1 flex-shrink-0"
+                  >
+                    <AlertTriangle className="w-4 h-4" />
+                    Reportar
+                  </button>
+                )}
               </div>
             </div>
           ))}
