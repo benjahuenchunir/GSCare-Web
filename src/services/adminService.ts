@@ -421,25 +421,56 @@ export async function getUserById(userId: number, token: string): Promise<{ id_u
 
 // --- Gestión de Bloques Horarios ---
 export const createBloque = async (servicioId: number, data: { fecha: string; hora_inicio: string; hora_termino: string }, token: string) => {
+  const normalizeHora = (h: string) => h.length === 5 ? h + ":00" : h;
+
+  const payload = {
+    ...data,
+    hora_inicio: normalizeHora(data.hora_inicio),
+    hora_termino: normalizeHora(data.hora_termino),
+  };
+
   const res = await fetch(`${import.meta.env.VITE_API_URL}/servicios/${servicioId}/bloques`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
+
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({} as any));
     const message = errorData.error || errorData.message || "Error al crear el bloque horario";
-    throw new Error(message); }
+    throw new Error(message);
+  }
+
   return res.json();
 };
 
 export const updateBloque = async (servicioId: number, bloqueId: number, data: { fecha?: string; hora_inicio?: string; hora_termino?: string }, token: string) => {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/servicios/${servicioId}/bloques/${bloqueId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("Error al actualizar el bloque horario");
+  const normalizeHora = (h?: string) =>
+    h && h.length === 5 ? h + ":00" : h;
+
+  const payload = {
+    ...data,
+    hora_inicio: normalizeHora(data.hora_inicio),
+    hora_termino: normalizeHora(data.hora_termino),
+  };
+
+  const res = await fetch(
+    `${import.meta.env.VITE_API_URL}/servicios/${servicioId}/bloques/${bloqueId}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({} as any));
+    const message = errorData.error || errorData.message || "Error al crear el bloque horario";
+    throw new Error(message);
+  }
   return res.json();
 };
 
