@@ -89,7 +89,7 @@ export default function PricingPage() {
                       onClick={() => navigate("/user")}
                       className="inline-block w-full text-[1.1em] font-semibold py-3 rounded-lg transition bg-gray-300 text-gray-800 hover:bg-gray-400"
                     >
-                      Seguir Gratis
+                      Seguir Sin Membresía
                     </button>
                   )}
                 </>

@@ -282,6 +282,20 @@ export async function rechazarActividad(id: number, token: string) {
   }
 }
 
+export async function getCitasParaProveedor(proveedorId: number, token: string) {
+  const res = await fetch(`${API_URL}/proveedores/${proveedorId}/citas`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({ message: "Error al obtener las citas del proveedor" }));
+    throw new Error(errorData.message);
+  }
+  return await res.json();
+}
+
+
 export async function actividadTieneAsistenteConEmail(
   actividadId: number,
   email: string,

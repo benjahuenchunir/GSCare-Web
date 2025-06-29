@@ -8,7 +8,11 @@ import {
   Trash,
   Globe,
   Link as LinkIcon,
-  Building2
+  Building2,
+  User,
+  Mail,
+  Cake,
+  Map,
 } from 'lucide-react';
 
 type Evento = {
@@ -23,6 +27,13 @@ type Evento = {
   link?: string | null;
   comuna?: string;
   id_foro_actividad?: number | null;
+  datos_cliente?: {
+    nombre: string;
+    email: string;
+    fecha_de_nacimiento?: string;
+    region_de_residencia?: string;
+    comuna_de_residencia?: string;
+  };
 };
 
 type Props = {
@@ -159,6 +170,27 @@ const ModalEvento = ({ evento, onClose, onCancelEvento }: Props) => {
             </div>
           )}
 
+          {/* DATOS DEL CLIENTE (PARA PROVEEDORES) */}
+          {evento.datos_cliente && (
+            <div className="border-t pt-4 mt-4 space-y-4">
+              <h3 className="font-bold text-gray-900 text-center">Información del Cliente</h3>
+              <div className="flex items-start gap-3">
+                <User className="text-primary mt-1" size={20} />
+                <div>
+                  <p className="font-semibold text-gray-900">Nombre</p>
+                  <p className="text-gray-900">{evento.datos_cliente.nombre}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Mail className="text-primary mt-1" size={20} />
+                <div>
+                  <p className="font-semibold text-gray-900">Email</p>
+                  <p className="text-gray-900">{evento.datos_cliente.email}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Foro (placeholder) */}
           {evento.id_foro_actividad && (
             <div className="text-center text-sm text-blue-600 mt-2">
@@ -171,13 +203,15 @@ const ModalEvento = ({ evento, onClose, onCancelEvento }: Props) => {
         </div>
 
         <div className="mt-6 flex justify-between">
-          <button
-            onClick={() => onCancelEvento(evento)}
-            className="inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition shadow-md"
-          >
-            <Trash size={18} />
-            Cancelar
-          </button>
+          {evento.tipo !== 'servicio' || !evento.datos_cliente ? (
+            <button
+              onClick={() => onCancelEvento(evento)}
+              className="inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition shadow-md"
+            >
+              <Trash size={18} />
+              Cancelar
+            </button>
+          ) : <div />}
           <button
             onClick={onClose}
             className="inline-flex items-center gap-2 bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition shadow-md"
