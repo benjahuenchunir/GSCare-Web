@@ -47,15 +47,17 @@ export const deleteCita = async (userId: number, citaId: number): Promise<void> 
   return;
 };
 
-export const getUserSubscriptions = async (userId: number): Promise<any[]> => {
-  try {
-    const res = await axios.get(`${API_URL}/usuarios/usuarios/${userId}/citas`);
-    return res.data;
-  } catch (error) {
-    console.error("Error al obtener citas del usuario:", error);
-    return [];
+export const getUserSubscriptions = async (userId: number, token: string) => {
+  const res = await fetch(`${API_URL}/usuarios/usuarios/${userId}/citas`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) {
+    throw new Error("Error al obtener las suscripciones del usuario");
   }
-};
+  return await res.json();
+}
 
 export const getServiciosConCitas = async (userId: number): Promise<any[]> => {
   try {
