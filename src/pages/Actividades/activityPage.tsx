@@ -169,7 +169,9 @@ const ActivityPage: React.FC = () => {
       const token = await getAccessTokenSilently();
       const u = await getUserByEmail(user.email);
 
-      await cancelAttendanceGrupo(actividad.id, u.id, token);
+      // Cancelar TODAS las actividades del grupo (recurrente)
+      const baseId = actividad.id_actividad_base || actividad.id;
+      await cancelAttendanceGrupo(baseId, u.id, token);
 
       setYaInscrito(false);
       setShowConfirmModal(false);

@@ -13,7 +13,6 @@ import RecommendedServices from "../../components/UserPageComponents/Recommended
 import { SubscribedServicesSection } from "../../components/UserPageComponents/SubscribedServicesSection";
 import { UpcomingEventsSection } from "../../components/UserPageComponents/UpcomingEventsSection";
 import QuickNavSection from "../../components/UserPageComponents/QuickNavSection";
-import RoleSwitcherButton from "../../components/RoleSwitcherButton";
 import BenefitsCard from "../../components/UserPageComponents/BenefictsCard";
 import PartnerHub from "../../components/PartnerHub/PartnerHub";
 import MyCreatedActivitiesSection from "../../components/UserPageComponents/MyCreatedActivitiesSection";
@@ -92,7 +91,12 @@ export default function UserPage() {
       </Helmet>
       <div className="w-full px-6 py-8 space-y-8">
         <div className="flex justify-center mb-6">
-          <h1 className="text-[2.5em] font-bold text-primary">Hola, {userName}!</h1>
+            <h1
+            className="text-[2.5em] font-bold text-primary"
+            style={{ lineHeight: '1.1', wordBreak: 'break-word' }}
+            >
+            Hola, {userName}!
+            </h1>
         </div>
 
         {/* === GRATIS === */}
@@ -188,15 +192,6 @@ export default function UserPage() {
             <div className="space-y-4">
               {profile && <MyCreatedActivitiesSection userId={profile.id} setView={setModalView} />}
              </div>
-
-            <div className="flex justify-center mt-4">
-              <RoleSwitcherButton
-                profile={profile!}
-                targetRole="gratis"
-                label="Cancelar mi suscripción"
-                className="bg-yellow-400 text-black hover:bg-yellow-600"
-              />
-            </div>
 
             <div className="mt-8 bg-green-50 border border-green-300 mx-auto max-w-xl rounded-lg p-6 text-center space-y-4">
               <h2 className="text-[1.8em] font-bold text-green-700">¡Gracias por ser socio!</h2>

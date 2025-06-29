@@ -143,8 +143,13 @@ export async function cancelAttendanceGrupo(
     }),
   });
 
-  if (!(res.ok || res.status === 204)) {
-    const err = await res.json();
-    throw new Error(err.message || "Error al cancelar inscripción múltiple");
+  // Solo lanza error si no es 2xx/204, pero no espera el body si no es necesario
+  if (!res.ok && res.status !== 204) {
+    let errMsg = "Error al cancelar inscripción múltiple";
+    try {
+      const err = await res.json();
+      errMsg = err.message || errMsg;
+    } catch {}
+    throw new Error(errMsg);
   }
 }

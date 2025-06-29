@@ -150,22 +150,21 @@ const Agenda = () => {
     setEventoSeleccionado(null);
     setEventoPendiente(null);
 
-    setEventos(prev =>
-      prev.filter(e =>
-        eventoPendiente.tipo === 'actividad'
-          ? (
-              eventoPendiente.id_foro_actividad
-                ? (
-                    e.tipo !== 'actividad' ||
-                    e.id_foro_actividad !== eventoPendiente.id_foro_actividad
-                  )
-                : (
-                    e.tipo !== 'actividad' || e.id !== eventoPendiente.id
-                  )
-            )
-          : e.id !== eventoPendiente.id || e.tipo !== eventoPendiente.tipo
-      )
-    );
+    // --- CAMBIO: Eliminar todos los bloques asociados al mismo id base de una sola vez ---
+    setEventos(prev => {
+      if (eventoPendiente.tipo === 'actividad') {
+        // Determinar el id base (puede ser id_actividad_base, id_foro_actividad o id)
+        const baseId = eventoPendiente.id_foro_actividad ?? eventoPendiente.id;
+        return prev.filter(e =>
+          e.tipo !== 'actividad' ||
+          // Eliminar todos los eventos con el mismo id_foro_actividad (id base)
+          (e.id_foro_actividad ?? e.id) !== baseId
+        );
+      } else {
+        // Para servicios, solo elimina el evento seleccionado
+        return prev.filter(e => e.id !== eventoPendiente.id || e.tipo !== eventoPendiente.tipo);
+      }
+    });
 
     try {
       const usuario = await getUserByEmail(user.email);
@@ -174,7 +173,12 @@ const Agenda = () => {
       if (!usuario?.id) throw new Error('No se encontró el ID del usuario');
 
       if (eventoPendiente.tipo === 'actividad') {
-        await cancelAttendanceGrupo(eventoPendiente.id, usuario.id, token);
+        // Cancelar TODAS las actividades del grupo (recurrente)
+        if (eventoPendiente.id_foro_actividad) {
+          await cancelAttendanceGrupo(eventoPendiente.id_foro_actividad, usuario.id, token);
+        } else {
+          await cancelAttendanceGrupo(eventoPendiente.id, usuario.id, token);
+        }
       } else if (eventoPendiente.tipo === 'servicio') {
         if (profile?.rol === 'socio') {
           const res = await fetch(`${API_URL}/usuarios/usuarios/${usuario.id}/citas/${eventoPendiente.id}`, {
@@ -183,6 +187,8 @@ const Agenda = () => {
           if (!res.ok) throw new Error('Error al cancelar cita');
         }
       }
+      // Espera un poco antes de refrescar para evitar parpadeos
+      setTimeout(fetchEventos, 800);
     } catch (err) {
       setEventos(eventosPrevios);
       alert('No se pudo cancelar el evento.');
@@ -271,4 +277,3 @@ const Agenda = () => {
 };
 
 export default Agenda;
-  

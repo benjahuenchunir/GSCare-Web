@@ -36,7 +36,9 @@ const SupportPage = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
-        <h1 className="text-[2.5em] md:text-[2.5em] font-bold text-gray-900 mb-6 text-center">
+        <h1
+          className="text-[2.5em] md:text-[2.5em] font-bold text-gray-900 mb-6 text-center leading-tight sm:leading-[1.2]"
+        >
           Página de Soporte
         </h1>
 

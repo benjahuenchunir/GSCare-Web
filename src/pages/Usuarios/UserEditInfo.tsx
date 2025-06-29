@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { getUserByEmail, updateUserProfile, deleteCurrentUser, User } from "../../services/userService";
 import { getAllUsers } from "../../services/adminService";
 import regionesData from "../../assets/data/comunas-regiones.json";
+import RoleSwitcherButton from "../../components/RoleSwitcherButton";
 
 export default function EditProfilePage() {
   const { user, logout, getAccessTokenSilently } = useAuth0();
@@ -23,6 +24,8 @@ export default function EditProfilePage() {
   const [communeList, setCommuneList] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMsg, setSuccessMsg] = useState<string>("");
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const regionList = regionesData.regions.map(region => region.name);
 
@@ -221,8 +224,74 @@ export default function EditProfilePage() {
           >
             Eliminar cuenta
           </button>
-         </div>
+        </div>
+        {/* Nuevo recuadro para cancelar suscripción */}
+        {form.rol === "socio" && (
+          <div className="mt-8 bg-yellow-100 border border-yellow-400 rounded-lg p-4 text-center">
+            <p className="mb-2 text-yellow-800 font-semibold">
+              ¿Deseas cancelar tu suscripción de socio?
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowCancelModal(true)}
+              className="bg-yellow-400 text-black hover:bg-yellow-600 font-semibold px-4 py-2 rounded transition"
+              disabled={isCancelling}
+            >
+              Cancelar mi suscripción
+            </button>
+          </div>
+        )}
       </form>
+      {/* Modal de confirmación de cancelación de suscripción */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl shadow-lg w-[90%] max-w-sm p-6 relative">
+            <button
+              onClick={() => setShowCancelModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              aria-label="Cerrar"
+            >
+              <span className="text-2xl font-bold">&times;</span>
+            </button>
+            <h2 className="text-[1.2em] font-semibold text-yellow-700 mb-2">Lamentamos perderte</h2>
+            <p className="text-[1em] text-gray-700 mb-6">
+              ¿Estás seguro de que deseas cancelar tu suscripción de socio? Perderás acceso a los beneficios exclusivos.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="bg-gray-100 text-gray-700 font-medium px-4 py-2 rounded-md hover:bg-gray-200"
+                disabled={isCancelling}
+              >
+                No, mantener
+              </button>
+              <RoleSwitcherButton
+                profile={form}
+                targetRole="gratis"
+                label={isCancelling ? "Cancelando..." : "Sí, cancelar"}
+                className="bg-yellow-400 text-black hover:bg-yellow-600 font-semibold px-4 py-2 rounded transition"
+                // Al hacer click, cerrar el modal y mostrar loading
+                // El propio RoleSwitcherButton recarga el perfil y muestra alert
+                // Para UX, deshabilitamos botones mientras cambia
+                {...{
+                  onClick: async (e: any) => {
+                    e.preventDefault();
+                    setIsCancelling(true);
+                    try {
+                      // RoleSwitcherButton maneja el cambio y reloadProfile
+                      // Esperamos un poco para UX
+                      await new Promise(res => setTimeout(res, 500));
+                      setShowCancelModal(false);
+                    } finally {
+                      setIsCancelling(false);
+                    }
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
