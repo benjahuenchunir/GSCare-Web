@@ -35,17 +35,19 @@ interface RecurrentActivityFormProps {
   error: string;
   success: string;
   onSwitchToUnique: () => void;
+  imagenFile?: File | null; // NUEVO
 }
 
 export default function RecurrentActivityForm({
   actividad,
   onChange,
   onSubmit,
-  onCancel,
   loading,
   error,
   success,
+  onCancel,
   onSwitchToUnique,
+  imagenFile, // NUEVO
 }: RecurrentActivityFormProps) {
   const diasSemana = [
     "Lunes",
@@ -131,6 +133,26 @@ export default function RecurrentActivityForm({
     // Llama al onSubmit real
     onSubmit(new Event("submit") as any);
   };
+
+  // NUEVO: tipo de imagen (archivo o url)
+  const [tipoImagen, setTipoImagen] = useState<'archivo' | 'url'>(
+    actividad.imagen && actividad.imagen.startsWith('http') ? 'url' : 'archivo'
+  );
+  // NUEVO: Vista previa de imagen seleccionada
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (tipoImagen === 'archivo' && imagenFile) {
+      const url = URL.createObjectURL(imagenFile);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else if (tipoImagen === 'url' && actividad.imagen) {
+      setPreviewUrl(actividad.imagen);
+      return undefined;
+    } else {
+      setPreviewUrl(null);
+      return undefined;
+    }
+  }, [imagenFile, actividad.imagen, tipoImagen]);
 
   // --- Vista previa helpers ---
   const formatearFecha = (fecha: string) => {
@@ -235,13 +257,53 @@ export default function RecurrentActivityForm({
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-lg font-medium mb-1">Imagen (opcional)</label>
-                  <input
-                    name="imagen"
-                    value={actividad.imagen || ""}
-                    onChange={onChange}
-                    placeholder="URL de imagen"
-                    className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
-                  />
+                  {/* NUEVO: Selector de tipo de imagen */}
+                  <div className="flex gap-4 mb-2">
+                    <label className="flex items-center gap-1">
+                      <input
+                        type="radio"
+                        name="tipoImagen"
+                        value="archivo"
+                        checked={tipoImagen === "archivo"}
+                        onChange={() => setTipoImagen("archivo")}
+                      />
+                      Archivo
+                    </label>
+                    <label className="flex items-center gap-1">
+                      <input
+                        type="radio"
+                        name="tipoImagen"
+                        value="url"
+                        checked={tipoImagen === "url"}
+                        onChange={() => setTipoImagen("url")}
+                      />
+                      URL
+                    </label>
+                  </div>
+                  {tipoImagen === "archivo" ? (
+                    <input
+                      type="file"
+                      name="imagen"
+                      accept="image/*"
+                      onChange={onChange}
+                      className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      name="imagen"
+                      value={actividad.imagen || ""}
+                      onChange={onChange}
+                      className="w-full border rounded-xl py-3 px-4 text-lg"
+                      placeholder="https://ejemplo.com/imagen.jpg"
+                    />
+                  )}
+                  {/* Vista previa */}
+                  {previewUrl && (
+                    <div className="mt-2">
+                      <img src={previewUrl} alt="Vista previa" className="max-h-40 rounded-lg" />
+                    </div>
+                  )}
                 </div>
               </div>
             </section>
@@ -458,7 +520,7 @@ export default function RecurrentActivityForm({
               {actividad.imagen && (
                 <div className="flex-1 flex justify-center">
                   <img
-                    src={actividad.imagen}
+                    src={previewUrl || undefined}
                     alt={`Imagen de ${actividad.nombre}`}
                     className="self-center max-h-[120px] md:max-h-[200px] w-auto rounded-xl object-contain"
                   />
@@ -478,7 +540,7 @@ export default function RecurrentActivityForm({
                 )}
               </div>
               <div className="bg-white rounded-lg shadow p-2 md:p-4">
-                <h3 className="font-bold text-[#00495C] mb-1 md:mb-2">Fechas y Horarios</h3>
+                <h3 className="font-bold text-[#00495C] mb-1 md:mb-2">Fechas and Horarios</h3>
                 {actividad.fecha && actividad.fecha_termino ? (
                   <p className="text-sm md:text-base">
                     <span className="font-semibold">Desde:</span> {formatearFecha(actividad.fecha)}<br />
