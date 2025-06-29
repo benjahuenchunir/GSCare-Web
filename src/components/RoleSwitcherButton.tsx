@@ -26,11 +26,9 @@ export default function RoleSwitcherButton({
       const token = await getAccessTokenSilently();
       await updateUserProfile({ ...profile, rol: targetRole }, token);
       await reloadProfile(); // Forzamos recarga del perfil en el contexto
-      alert(
-        targetRole === "socio"
-          ? "Ahora eres socio 🎉"
-          : "Ahora eres usuario gratuito 👤"
-      );
+      if (targetRole === "socio") {
+        alert("Ahora eres socio 🎉");
+      }
     } catch (err) {
       console.error("Error cambiando rol:", err);
       alert("No se pudo actualizar el rol.");
