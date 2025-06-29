@@ -216,6 +216,7 @@ export default function PartnerHub({ view, setView }: Props) {
       const formData = new FormData();
       Object.entries({
         ...actividadRecurrente,
+        capacidad_total: Number(actividadRecurrente.capacidad_total) || 999999,
         monday,
         id_creador_del_evento: userPartner.data.id,
       }).forEach(([key, value]) => {

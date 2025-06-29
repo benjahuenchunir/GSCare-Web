@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import {
   collection,
@@ -7,13 +7,16 @@ import {
   where,
   onSnapshot,
   serverTimestamp,
+  deleteDoc,
+  doc,
 } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import leoProfanity from "leo-profanity";
 import spanishBadWords from "../../utils/spanishBadWords";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCommentDots } from "@fortawesome/free-solid-svg-icons";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Trash2 } from "lucide-react";
+import { UserContext } from "../../context/UserContext";
 
 interface Comment {
   id: string;
@@ -41,6 +44,7 @@ export const ThreadComments: React.FC<ThreadCommentsProps> = ({ threadId, onRepo
   const [currentPage, setCurrentPage] = useState(1);
   const commentsPerPage = 15;
   const { user } = useAuth0();
+  const { profile } = useContext(UserContext)!;
 
   useEffect(() => {
     const q = query(
@@ -80,6 +84,17 @@ export const ThreadComments: React.FC<ThreadCommentsProps> = ({ threadId, onRepo
   const handlePrevPage = () => setCurrentPage((p) => Math.max(1, p - 1));
   const handleNextPage = () =>
     setCurrentPage((p) => Math.min(totalPages, p + 1));
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (window.confirm("¿Estás seguro de que quieres eliminar este comentario?")) {
+      try {
+        await deleteDoc(doc(db, "threadComments", commentId));
+      } catch (error) {
+        console.error("Error al eliminar el comentario:", error);
+        alert("No se pudo eliminar el comentario.");
+      }
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,17 +194,28 @@ export const ThreadComments: React.FC<ThreadCommentsProps> = ({ threadId, onRepo
                     </p>
                   </div>
                 </div>
-                {/* Botón de Reporte */}
-                {user?.email && comment.createdById !== (user?.sub || user?.email) && (
-                  <button
-                    onClick={() => onReportComment(comment.id)}
-                    title="Reportar comentario"
-                    className="border border-red-400 text-red-500 hover:bg-red-50 font-medium px-3 py-1 rounded-full text-sm flex items-center gap-1 flex-shrink-0"
-                  >
-                    <AlertTriangle className="w-4 h-4" />
-                    Reportar
-                  </button>
-                )}
+                {/* Botón de Reporte y Eliminar */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {user?.email && comment.createdById === (user?.sub || user?.email) && (
+                    <button
+                      onClick={() => handleDeleteComment(comment.id)}
+                      title="Eliminar comentario"
+                      className="border border-gray-400 text-gray-500 hover:bg-gray-100 font-medium px-3 py-1 rounded-full text-sm flex items-center gap-1"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                  {user?.email && comment.createdById !== (user?.sub || user?.email) && profile?.rol !== 'gratis' && (
+                    <button
+                      onClick={() => onReportComment(comment.id)}
+                      title="Reportar comentario"
+                      className="border border-red-400 text-red-500 hover:bg-red-50 font-medium px-3 py-1 rounded-full text-sm flex items-center gap-1"
+                    >
+                      <AlertTriangle className="w-4 h-4" />
+                      Reportar
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -219,7 +245,7 @@ export const ThreadComments: React.FC<ThreadCommentsProps> = ({ threadId, onRepo
       )}
 
       {/* Formulario para agregar comentario */}
-      {user?.email && (
+      {user?.email && profile?.rol !== 'gratis' && (
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
           <h5 className="font-medium text-gray-800 mb-3">Agregar comentario</h5>
           <form onSubmit={handleSubmit} className="space-y-3">
@@ -285,6 +311,14 @@ export const ThreadComments: React.FC<ThreadCommentsProps> = ({ threadId, onRepo
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {user?.email && profile?.rol === 'gratis' && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+          <p className="text-yellow-800">
+            <strong>Los usuarios con plan gratuito no pueden comentar.</strong> Mejora tu plan para participar.
+          </p>
         </div>
       )}
 

@@ -67,16 +67,12 @@ export default function RecurrentActivityForm({
       : ""
   );
 
-  const handleCategoriaChange = (e: ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+  const handleCategoriaChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    if (name === "categoria" && value !== "otros") {
+    if (value !== "otros") {
       setCategoriaOtra("");
     }
-    if (name === "categoria" && value === "otros") {
-      onChange({ target: { name: "categoria", value: "" } } as any);
-    } else {
-      onChange(e);
-    }
+    onChange({ target: { name, value } } as any);
   };
 
   const handleHorarioChange = (
@@ -216,11 +212,9 @@ export default function RecurrentActivityForm({
                   <select
                     name="categoria"
                     value={
-                      categorias.map(c => c.toLowerCase()).includes((actividad.categoria || "").toLowerCase())
-                        ? (actividad.categoria || "").toLowerCase()
-                        : actividad.categoria === "" && categoriaOtra
+                      actividad.categoria === "otros" || (actividad.categoria && !categorias.map(c => c.toLowerCase()).includes(actividad.categoria.toLowerCase()))
                         ? "otros"
-                        : (actividad.categoria || "")
+                        : actividad.categoria || ""
                     }
                     onChange={handleCategoriaChange}
                     className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
@@ -230,10 +224,10 @@ export default function RecurrentActivityForm({
                       <option key={cat} value={cat.toLowerCase()}>{cat}</option>
                     ))}
                   </select>
-                  {(actividad.categoria === "otros" || (!categorias.map(c => c.toLowerCase()).includes((actividad.categoria || "").toLowerCase()) && (actividad.categoria || categoriaOtra))) && (
+                  {(actividad.categoria === "otros" || (actividad.categoria && !categorias.map(c => c.toLowerCase()).includes(actividad.categoria.toLowerCase()))) && (
                     <input
                       type="text"
-                      name="categoria"
+                      name="categoria_otra"
                       value={categoriaOtra}
                       onChange={e => {
                         setCategoriaOtra(e.target.value);

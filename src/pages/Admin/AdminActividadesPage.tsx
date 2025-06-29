@@ -284,11 +284,21 @@ export default function AdminActividadesPage() {
                 <td className="p-3">{a.modalidad}</td>
                 <td className="p-3">{a.categoria}</td>
                 <td className="p-3">
-                  {a.capacidad_total
-                    ? `${Math.round((a.asistentes / a.capacidad_total) * 100)}%`
-                    : "-"}
+                  {a.capacidad_total === 999999 ? (
+                    <span className="text-gray-500">N/A</span>
+                  ) : (
+                    `${a.asistentes} (${Math.round(
+                      (a.asistentes / a.capacidad_total) * 100
+                    )}%)`
+                  )}
                 </td>
-                <td className="p-3">{a.capacidad_total ?? "-"}</td>
+                <td className="p-3">
+                  {a.capacidad_total === 999999 ? (
+                    <span className="text-gray-500">Sin límite</span>
+                  ) : (
+                    a.capacidad_total
+                  )}
+                </td>
                 <td className="p-3">
                   {a.asistentes ?? 0}
                   <button

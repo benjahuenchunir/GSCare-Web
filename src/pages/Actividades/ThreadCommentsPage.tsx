@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
@@ -9,6 +9,7 @@ import axios from "axios";
 import { useAuth0 } from "@auth0/auth0-react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
+import { UserContext } from "../../context/UserContext";
 
 const ThreadCommentsPage: React.FC = () => {
   const { activityId, threadId } = useParams<{
@@ -18,6 +19,7 @@ const ThreadCommentsPage: React.FC = () => {
   const navigate = useNavigate();
   const [commentToReport, setCommentToReport] = useState<string | null>(null);
   const { getAccessTokenSilently } = useAuth0();
+  const { profile } = useContext(UserContext)!;
 
   if (!activityId || !threadId) {
     return <div className="p-4">ID de actividad o hilo no válido</div>;
@@ -25,6 +27,12 @@ const ThreadCommentsPage: React.FC = () => {
 
   const handleReportComment = async (razon: string) => {
     if (!commentToReport) return;
+
+    if (profile?.rol === 'gratis') {
+      alert("Los usuarios con plan gratuito no pueden reportar comentarios.");
+      setCommentToReport(null);
+      return;
+    }
 
     try {
       const token = await getAccessTokenSilently();

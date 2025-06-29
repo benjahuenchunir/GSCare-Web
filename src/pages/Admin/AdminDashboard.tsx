@@ -1,7 +1,7 @@
 import { useEffect, useState, useContext } from "react";
 import { useAuth0, User } from "@auth0/auth0-react";
 import { UserContext } from "../../context/UserContext";
-import { Calendar, Package, ShoppingBag, Users, Eye, ChevronRight, Flag, TrendingUp, Star } from "lucide-react";
+import { Calendar, Package, ShoppingBag, Users, Eye, ChevronRight, Flag } from "lucide-react";
 import { getAdminCount, getRecentUsers, getAdminActividades } from "../../services/adminService";
 import ReporteModal from "../../components/AdminComponents/ReportReviewModal"; // Ajusta si la ruta cambia
 import { useNavigate } from "react-router-dom";
