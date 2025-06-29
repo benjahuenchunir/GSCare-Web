@@ -35,17 +35,19 @@ interface RecurrentActivityFormProps {
   error: string;
   success: string;
   onSwitchToUnique: () => void;
+  imagenFile?: File | null; // NUEVO
 }
 
 export default function RecurrentActivityForm({
   actividad,
   onChange,
   onSubmit,
-  onCancel,
   loading,
   error,
   success,
+  onCancel,
   onSwitchToUnique,
+  imagenFile, // NUEVO
 }: RecurrentActivityFormProps) {
   const diasSemana = [
     "Lunes",
@@ -132,6 +134,26 @@ export default function RecurrentActivityForm({
     onSubmit(new Event("submit") as any);
   };
 
+  // NUEVO: tipo de imagen (archivo o url)
+  const [tipoImagen, setTipoImagen] = useState<'archivo' | 'url'>(
+    actividad.imagen && actividad.imagen.startsWith('http') ? 'url' : 'archivo'
+  );
+  // NUEVO: Vista previa de imagen seleccionada
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (tipoImagen === 'archivo' && imagenFile) {
+      const url = URL.createObjectURL(imagenFile);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else if (tipoImagen === 'url' && actividad.imagen) {
+      setPreviewUrl(actividad.imagen);
+      return undefined;
+    } else {
+      setPreviewUrl(null);
+      return undefined;
+    }
+  }, [imagenFile, actividad.imagen, tipoImagen]);
+
   // --- Vista previa helpers ---
   const formatearFecha = (fecha: string) => {
     if (!fecha) return "";
@@ -158,8 +180,8 @@ export default function RecurrentActivityForm({
     .filter(Boolean);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center px-2 md:px-4">
-      <div className="bg-white w-full max-w-4xl md:max-w-5xl rounded-2xl shadow-md p-4 md:p-6 space-y-4 md:space-y-6 max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center px-4">
+      <div className="bg-white w-full max-w-6xl rounded-2xl shadow-md p-6 space-y-6 max-h-[90vh] overflow-y-auto relative">
         <div className="flex justify-between items-center mb-4 md:mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-[#009982]">Crear Actividad Recurrente</h2>
           <button
@@ -235,13 +257,53 @@ export default function RecurrentActivityForm({
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-lg font-medium mb-1">Imagen (opcional)</label>
-                  <input
-                    name="imagen"
-                    value={actividad.imagen || ""}
-                    onChange={onChange}
-                    placeholder="URL de imagen"
-                    className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
-                  />
+                  {/* NUEVO: Selector de tipo de imagen */}
+                  <div className="flex gap-4 mb-2">
+                    <label className="flex items-center gap-1">
+                      <input
+                        type="radio"
+                        name="tipoImagen"
+                        value="archivo"
+                        checked={tipoImagen === "archivo"}
+                        onChange={() => setTipoImagen("archivo")}
+                      />
+                      Archivo
+                    </label>
+                    <label className="flex items-center gap-1">
+                      <input
+                        type="radio"
+                        name="tipoImagen"
+                        value="url"
+                        checked={tipoImagen === "url"}
+                        onChange={() => setTipoImagen("url")}
+                      />
+                      URL
+                    </label>
+                  </div>
+                  {tipoImagen === "archivo" ? (
+                    <input
+                      type="file"
+                      name="imagen"
+                      accept="image/*"
+                      onChange={onChange}
+                      className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      name="imagen"
+                      value={actividad.imagen || ""}
+                      onChange={onChange}
+                      className="w-full border rounded-xl py-3 px-4 text-lg"
+                      placeholder="https://ejemplo.com/imagen.jpg"
+                    />
+                  )}
+                  {/* Vista previa */}
+                  {previewUrl && (
+                    <div className="mt-2">
+                      <img src={previewUrl} alt="Vista previa" className="max-h-40 rounded-lg" />
+                    </div>
+                  )}
                 </div>
               </div>
             </section>
@@ -335,35 +397,35 @@ export default function RecurrentActivityForm({
             {/* REPETICIÓN */}
             <section className="bg-white p-4 md:p-6 rounded-xl shadow border border-gray-200">
               <h3 className="text-xl md:text-2xl font-semibold text-[#009982] mb-2 md:mb-4">Frecuencia de repetición</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-              <div>
-                <label className="block text-lg font-medium mb-1">
-                ¿Cada cuántas semanas se repite?
-                </label>
-                <input
-                type="number"
-                name="semanas_recurrencia"
-                min={1}
-                value={actividad.semanas_recurrencia}
-                onChange={onChange}
-                className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
-                placeholder="Ej: 2 para cada 2 semanas"
-                />
-                <span className="text-[1.2em] text-black-500">
-                Ejemplo: 1 = todas las semanas, 2 = cada dos semanas, etc.
-                </span>
-              </div>
-              <div>
-                <label className="block text-lg font-medium mb-1">Fecha de inicio</label>
-                <input
-                type="date"
-                name="fecha"
-                value={actividad.fecha}
-                onChange={onChange}
-                className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
-                />
-              </div>
-              <div>
+              <div className="flex flex-col gap-4">
+                <div>
+                  <label className="block text-lg font-medium mb-1">
+                    ¿Cada cuántas semanas se repite?
+                  </label>
+                  <input
+                    type="number"
+                    name="semanas_recurrencia"
+                    min={1}
+                    value={actividad.semanas_recurrencia}
+                    onChange={onChange}
+                    className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
+                    placeholder="Ej: 2 para cada 2 semanas"
+                  />
+                  <span className="text-[1.2em] text-gray-800">
+                    Ejemplo: 1 = todas las semanas, 2 = cada dos semanas, etc.
+                  </span>
+                </div>
+                <div>
+                  <label className="block text-lg font-medium mb-1">Fecha de inicio</label>
+                  <input
+                    type="date"
+                    name="fecha"
+                    value={actividad.fecha}
+                    onChange={onChange}
+                    className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
+                  />
+                </div>
+                <div>
                 <label className="block text-lg font-medium mb-1">Fecha de término</label>
                 <input
                 type="date"
@@ -458,7 +520,7 @@ export default function RecurrentActivityForm({
               {actividad.imagen && (
                 <div className="flex-1 flex justify-center">
                   <img
-                    src={actividad.imagen}
+                    src={previewUrl || undefined}
                     alt={`Imagen de ${actividad.nombre}`}
                     className="self-center max-h-[120px] md:max-h-[200px] w-auto rounded-xl object-contain"
                   />
@@ -478,7 +540,7 @@ export default function RecurrentActivityForm({
                 )}
               </div>
               <div className="bg-white rounded-lg shadow p-2 md:p-4">
-                <h3 className="font-bold text-[#00495C] mb-1 md:mb-2">Fechas y Horarios</h3>
+                <h3 className="font-bold text-[#00495C] mb-1 md:mb-2">Fechas and Horarios</h3>
                 {actividad.fecha && actividad.fecha_termino ? (
                   <p className="text-sm md:text-base">
                     <span className="font-semibold">Desde:</span> {formatearFecha(actividad.fecha)}<br />

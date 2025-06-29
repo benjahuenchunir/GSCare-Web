@@ -66,11 +66,24 @@ export default function PartnerHub({ view, setView }: Props) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  // NUEVO: Estado para archivo de imagen
+  const [actividadImagen, setActividadImagen] = useState<File | null>(null);
+  const [actividadRecImagen, setActividadRecImagen] = useState<File | null>(null);
+
   if (!isAuthenticated) return null;
 
   const handleActividadChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => setActividad((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  ) => {
+    // Si es input file, manejar aparte
+    if (e.target.type === "file") {
+      const file = (e.target as HTMLInputElement).files?.[0] || null;
+      setActividadImagen(file);
+      setActividad((prev) => ({ ...prev, imagen: "" })); // Limpiar campo imagen texto
+    } else {
+      setActividad((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    }
+  };
 
   const handleProductoChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -80,7 +93,16 @@ export default function PartnerHub({ view, setView }: Props) {
     e:
       | ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
       | { target: { name: string; value: any } }
-  ) => setActividadRecurrente((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  ) => {
+    // Si es input file, manejar aparte
+    if ("target" in e && (e.target as any).type === "file") {
+      const file = ((e.target as any) as HTMLInputElement).files?.[0] || null;
+      setActividadRecImagen(file);
+      setActividadRecurrente((prev) => ({ ...prev, imagen: "" }));
+    } else {
+      setActividadRecurrente((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    }
+  };
 
   const handleActividadSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -100,8 +122,10 @@ export default function PartnerHub({ view, setView }: Props) {
     try {
       const token = await getAccessTokenSilently();
       const userPartner = await axios.get(`${import.meta.env.VITE_API_URL}/usuarios/email/${user?.email}`);
-      // --- Ajuste aquí: si capacidad_total es "" o undefined, enviar 999999 ---
-      const actividadData = {
+
+      // --- NUEVO: Usar FormData para enviar imagen y campos ---
+      const formData = new FormData();
+      Object.entries({
         ...actividad,
         capacidad_total:
           actividad.capacidad_total === null ||
@@ -109,14 +133,26 @@ export default function PartnerHub({ view, setView }: Props) {
             ? 999999
             : actividad.capacidad_total,
         id_creador_del_evento: userPartner.data.id,
-      };
+      }).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) formData.append(key, value as any);
+      });
+      if (actividadImagen) {
+        formData.append("imagen", actividadImagen);
+      }
+
       await axios.post(
         `${import.meta.env.VITE_API_URL}/actividades`,
-        actividadData,
-        { headers: { Authorization: `Bearer ${token}` } }
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
       setSuccess("¡Actividad creada!");
       setActividad(initialActividad);
+      setActividadImagen(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
@@ -174,13 +210,37 @@ export default function PartnerHub({ view, setView }: Props) {
       const userPartner = await axios.get(`${import.meta.env.VITE_API_URL}/usuarios/email/${user?.email}`);
       const monday = calcularLunes(actividadRecurrente.fecha);
 
+      // --- NUEVO: Usar FormData para bulk, incluyendo imagen si existe ---
+      const formData = new FormData();
+      Object.entries({
+        ...actividadRecurrente,
+        monday,
+        id_creador_del_evento: userPartner.data.id,
+      }).forEach(([key, value]) => {
+        // Para arreglos/objetos, serializar a JSON
+        if (Array.isArray(value) || typeof value === "object") {
+          formData.append(key, JSON.stringify(value));
+        } else if (value !== undefined && value !== null) {
+          formData.append(key, value as any);
+        }
+      });
+      if (actividadRecImagen) {
+        formData.append("imagen", actividadRecImagen);
+      }
+
       await axios.post(
         `${import.meta.env.VITE_API_URL}/actividades/bulk`,
-        { ...actividadRecurrente, monday, id_creador_del_evento: userPartner.data.id },
-        { headers: { Authorization: `Bearer ${token}` } }
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
       setSuccess("¡Actividad recurrente creada!");
       setActividadRecurrente(initialRecurrentActividad);
+      setActividadRecImagen(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
@@ -188,6 +248,7 @@ export default function PartnerHub({ view, setView }: Props) {
     }
   };
 
+  // Handler para el formulario de producto
   const handleProductoSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -197,7 +258,6 @@ export default function PartnerHub({ view, setView }: Props) {
     const required: (keyof ProductoForm)[] = [
       "nombre", "descripcion", "categoria", "marca", "nombre_del_vendedor", "link_al_producto"
     ];
-
     const missing = required.filter((f) => !producto[f]);
 
     if (missing.length > 0) {
@@ -206,17 +266,28 @@ export default function PartnerHub({ view, setView }: Props) {
       return;
     }
 
-    if (!/^https?:\/\/.+\..+/.test(producto.link_al_producto)) {
-      setError("URL inválida");
-      setLoading(false);
-      return;
-    }
-
     try {
       const token = await getAccessTokenSilently();
-      await axios.post(`${import.meta.env.VITE_API_URL}/productos`, producto, {
-        headers: { Authorization: `Bearer ${token}` },
+      const userPartner = await axios.get(`${import.meta.env.VITE_API_URL}/usuarios/email/${user?.email}`);
+
+      const formData = new FormData();
+      Object.entries({
+        ...producto,
+        id_creador_del_producto: userPartner.data.id,
+      }).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) formData.append(key, value as any);
       });
+
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/productos`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       setSuccess("¡Producto creado!");
       setProducto(initialProducto);
     } catch (err) {
@@ -238,6 +309,7 @@ export default function PartnerHub({ view, setView }: Props) {
         success={success}
         onCancel={() => setView(null)}
         onSwitchToRecurrente={() => setView("actividad_recurrente")}
+        imagenFile={actividadImagen}
       />
     );
   }
@@ -253,6 +325,7 @@ export default function PartnerHub({ view, setView }: Props) {
         success={success}
         onCancel={() => setView(null)}
         onSwitchToUnique={() => setView("actividad")}
+        imagenFile={actividadRecImagen}
       />
     );
   }

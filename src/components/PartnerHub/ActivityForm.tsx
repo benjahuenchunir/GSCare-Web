@@ -26,6 +26,7 @@ interface ActivityFormProps {
   error: string;
   success: string;
   onSwitchToRecurrente: () => void;
+  imagenFile?: File | null; // NUEVO
 }
 
 export default function ActivityForm({
@@ -37,6 +38,7 @@ export default function ActivityForm({
   error,
   success,
   onSwitchToRecurrente,
+  imagenFile, // NUEVO
 }: ActivityFormProps) {
   const [sinLimiteCapacidad, setSinLimiteCapacidad] = useState(false);
   const categorias = ["Salud", "Recreación", "Tecnología", "Cultura", "Deportes", "otros"];
@@ -87,6 +89,28 @@ export default function ActivityForm({
     e.preventDefault();
     setShowConfirmModal(true);
   };
+
+  // NUEVO: tipo de imagen (archivo o url)
+  const [tipoImagen, setTipoImagen] = useState<'archivo' | 'url'>(
+    actividad.imagen && actividad.imagen.startsWith('http') ? 'url' : 'archivo'
+  );
+  // NUEVO: Vista previa de imagen seleccionada
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (tipoImagen === 'archivo' && imagenFile) {
+      const url = URL.createObjectURL(imagenFile);
+      setPreviewUrl(url);
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } else if (tipoImagen === 'url' && actividad.imagen) {
+      setPreviewUrl(actividad.imagen);
+      return undefined;
+    } else {
+      setPreviewUrl(null);
+      return undefined;
+    }
+  }, [imagenFile, actividad.imagen, tipoImagen]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center px-4">
@@ -179,14 +203,53 @@ export default function ActivityForm({
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Imagen (opcional)</label>
-              <input
-                type="url"
-                name="imagen"
-                value={actividad.imagen || ""}
-                onChange={onChange}
-                className="w-full border rounded-lg px-3 py-2"
-                placeholder="https://ejemplo.com/imagen.jpg"
-              />
+              {/* NUEVO: Selector de tipo de imagen */}
+              <div className="flex gap-4 mb-2">
+                <label className="flex items-center gap-1">
+                  <input
+                    type="radio"
+                    name="tipoImagen"
+                    value="archivo"
+                    checked={tipoImagen === "archivo"}
+                    onChange={() => setTipoImagen("archivo")}
+                  />
+                  Archivo
+                </label>
+                <label className="flex items-center gap-1">
+                  <input
+                    type="radio"
+                    name="tipoImagen"
+                    value="url"
+                    checked={tipoImagen === "url"}
+                    onChange={() => setTipoImagen("url")}
+                  />
+                  URL
+                </label>
+              </div>
+              {tipoImagen === "archivo" ? (
+                <input
+                  type="file"
+                  name="imagen"
+                  accept="image/*"
+                  onChange={onChange}
+                  className="w-full border rounded-lg px-3 py-2"
+                />
+              ) : (
+                <input
+                  type="text"
+                  name="imagen"
+                  value={actividad.imagen || ""}
+                  onChange={onChange}
+                  className="w-full border rounded-lg px-3 py-2"
+                  placeholder="https://ejemplo.com/imagen.jpg"
+                />
+              )}
+              {/* Vista previa */}
+              {previewUrl && (
+                <div className="mt-2">
+                  <img src={previewUrl} alt="Vista previa" className="max-h-40 rounded-lg" />
+                </div>
+              )}
             </div>
 
             <div className="grid md:grid-cols-3 gap-4">
@@ -338,7 +401,7 @@ export default function ActivityForm({
               {actividad.imagen && (
                 <div className="flex-1 flex justify-center">
                   <img
-                    src={actividad.imagen}
+                    src={previewUrl || undefined}
                     alt={`Imagen de ${actividad.nombre}`}
                     className="self-center max-h-[250px] w-auto rounded-xl object-contain"
                   />
@@ -360,7 +423,7 @@ export default function ActivityForm({
               </div>
 
               <div className="bg-white rounded-lg shadow p-4">
-                <h3 className="font-bold text-[#00495C] mb-2">Fechas y Horarios</h3>
+                <h3 className="font-bold text-[#00495C] mb-2">Fechas and Horarios</h3>
                 {actividad.fecha ? (
                   <p>{formatearFecha(actividad.fecha)} — {actividad.hora_inicio?.slice(0, 5)} a {actividad.hora_final?.slice(0, 5)}</p>
                 ) : (
