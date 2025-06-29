@@ -133,8 +133,8 @@ const Agenda = () => {
     return () => clearInterval(interval);
   }, [isAuthenticated, user, profile]);
 
-  const eventosFiltrados = (profile?.rol === "socio" || profile?.rol === "proveedor") ? eventos : [];
 
+  const eventosFiltrados = (profile?.rol === "socio" || profile?.rol === "proveedor") ? eventos : [];
   if (loading) return <p className="text-center mt-10">Cargando agenda…</p>;
 
   const cancelarEventoOptimista = async (evento: Evento) => {

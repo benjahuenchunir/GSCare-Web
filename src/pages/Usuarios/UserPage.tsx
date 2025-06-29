@@ -179,7 +179,7 @@ export default function UserPage() {
             {profile?.rol === 'socio' && (
               <RecommendedServices />
             )}
-
+            
             <div className="space-y-4">
               {profile && <MyCreatedActivitiesSection userId={profile.id} setView={setModalView} />}
              </div>
