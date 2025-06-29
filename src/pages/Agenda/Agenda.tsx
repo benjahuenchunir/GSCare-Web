@@ -134,7 +134,6 @@ const Agenda = () => {
   }, [isAuthenticated, user, profile]);
 
   const eventosFiltrados = (profile?.rol === "socio" || profile?.rol === "proveedor") ? eventos : [];
-
   if (loading) return <p className="text-center mt-10">Cargando agenda…</p>;
 
   const cancelarEventoOptimista = async (evento: Evento) => {
@@ -153,7 +152,16 @@ const Agenda = () => {
     setEventos(prev =>
       prev.filter(e =>
         eventoPendiente.tipo === 'actividad'
-          ? e.tipo !== 'actividad' || (e.id_foro_actividad !== eventoPendiente.id_foro_actividad && e.id !== eventoPendiente.id)
+          ? (
+              eventoPendiente.id_foro_actividad
+                ? (
+                    e.tipo !== 'actividad' ||
+                    e.id_foro_actividad !== eventoPendiente.id_foro_actividad
+                  )
+                : (
+                    e.tipo !== 'actividad' || e.id !== eventoPendiente.id
+                  )
+            )
           : e.id !== eventoPendiente.id || e.tipo !== eventoPendiente.tipo
       )
     );

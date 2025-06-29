@@ -14,6 +14,7 @@ import {
   Cake,
   Map,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 type Evento = {
   id: number;
@@ -64,6 +65,14 @@ const ModalEvento = ({ evento, onClose, onCancelEvento }: Props) => {
   });
 
   const colorTipo = evento.tipo === 'servicio' ? '#62CBC9' : '#d4bbef';
+
+  const navigate = useNavigate();
+
+  const handleGoToForum = () => {
+    if (evento.id_foro_actividad) {
+      navigate(`/actividades/${evento.id}/foro`);
+    }
+  };
 
   return (
     <motion.div
@@ -166,6 +175,15 @@ const ModalEvento = ({ evento, onClose, onCancelEvento }: Props) => {
               <div>
                 <p className="font-semibold text-gray-900">Detalle</p>
                 <p className="text-gray-900">{evento.descripcion}</p>
+                {/* Link al foro de la actividad */}
+                {evento.tipo === 'actividad' && evento.id_foro_actividad && (
+                  <a
+                    href={`/actividades/${evento.id}/foro`}
+                    className="text-blue-600 underline mt-2 inline-block"
+                  >
+                    Ir al foro de la actividad
+                  </a>
+                )}
               </div>
             </div>
           )}
@@ -202,6 +220,19 @@ const ModalEvento = ({ evento, onClose, onCancelEvento }: Props) => {
           )}
         </div>
 
+        {/* Foro (botón para ir al foro si es una actividad y existe foro) */}
+        {evento.tipo === 'actividad' && evento.id_foro_actividad && (
+          <div className="text-center mt-4">
+            <button
+              onClick={handleGoToForum}
+              className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md"
+            >
+              <MessageSquareText size={18} />
+              Ir al foro de mi actividad
+            </button>
+          </div>
+        )}
+
         <div className="mt-6 flex justify-between">
           {evento.tipo !== 'servicio' || !evento.datos_cliente ? (
             <button
@@ -220,6 +251,17 @@ const ModalEvento = ({ evento, onClose, onCancelEvento }: Props) => {
             Cerrar
           </button>
         </div>
+        {/* Nuevo botón para ir a la actividad */}
+        {evento.tipo === 'actividad' && (
+          <div className="mt-4 flex justify-center">
+            <button
+              onClick={() => navigate(`/actividades/${evento.id}`)}
+              className="inline-flex items-center gap-2 bg-[#009982] text-white px-4 py-2 rounded-lg hover:bg-[#007c6c] transition shadow-md"
+            >
+              Ver actividad
+            </button>
+          </div>
+        )}
       </motion.div>
     </motion.div>
   );

@@ -12,12 +12,12 @@ import {
   fetchActividades,
   attendActivity,
   cancelAttendanceGrupo,
+  getAssistantsCountByActivity, // <-- nuevo import
 } from "../../services/actividadService";
 
 import ActividadInfoCard from "./ActividadInfoCard";
 import ModalInscripcion from "./ModalInscripcion";
 import ActivityForum from "../../components/ActivityForum/ActivityForum";
-import ForumFloatingButton from "../../components/ActivityForum/ForumFloatingButton";
 import ExclusiveSubscriptionCard from "../../components/ExclusiveSubscriptionCard";
 
 const formatearFecha = (fecha: string) => {
@@ -51,6 +51,7 @@ const ActivityPage: React.FC = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const { profile, reloadProfile } = useContext(UserContext);
   const [showSubscribeConfirm, setShowSubscribeConfirm] = useState(false);
+  const [cuposDisponibles, setCuposDisponibles] = useState<{ [id: number]: number }>({});
 
   useEffect(() => {
     if (isAuthenticated) reloadProfile();
@@ -93,6 +94,35 @@ const ActivityPage: React.FC = () => {
       .catch((err) => console.warn("No se pudo verificar inscripción:", err));
   }, [id, isAuthenticated, user, actividad]);
 
+  // Obtener cupos disponibles para cada bloque
+  useEffect(() => {
+    if (grupoActividades.length === 0) return;
+    const fetchCupos = async () => {
+      const cupos: { [id: number]: number } = {};
+      await Promise.all(
+        grupoActividades.map(async (a) => {
+          const asistentes = await getAssistantsCountByActivity(a.id);
+          cupos[a.id] = (a.capacidad_total ?? 999999) - asistentes;
+        })
+      );
+      setCuposDisponibles(cupos);
+    };
+    fetchCupos();
+  }, [grupoActividades]);
+
+  // Refrescar cupos después de inscribirse/cancelar
+  const refreshCupos = async () => {
+    if (grupoActividades.length === 0) return;
+    const cupos: { [id: number]: number } = {};
+    await Promise.all(
+      grupoActividades.map(async (a) => {
+        const asistentes = await getAssistantsCountByActivity(a.id);
+        cupos[a.id] = (a.capacidad_total ?? 999999) - asistentes;
+      })
+    );
+    setCuposDisponibles(cupos);
+  };
+
   const handleInscribirse = async () => {
     if (!isAuthenticated) {
       return loginWithRedirect({
@@ -124,6 +154,7 @@ const ActivityPage: React.FC = () => {
       }
 
       setYaInscrito(true);
+      await refreshCupos(); // <-- refrescar cupos
     } catch (err: unknown) {
       console.error("Error al inscribirse:", err);
       const errorMessage =
@@ -138,11 +169,11 @@ const ActivityPage: React.FC = () => {
       const token = await getAccessTokenSilently();
       const u = await getUserByEmail(user.email);
 
-      // Solo enviamos la actividad base (una sola), el backend resuelve el grupo
       await cancelAttendanceGrupo(actividad.id, u.id, token);
 
       setYaInscrito(false);
       setShowConfirmModal(false);
+      await refreshCupos(); // <-- refrescar cupos
     } catch (err) {
       console.error("Error al cancelar inscripción:", err);
       alert("No se pudo cancelar la inscripción.");
@@ -157,11 +188,12 @@ const ActivityPage: React.FC = () => {
         nombre={actividad.nombre}
         descripcion={actividad.descripcion}
         imagen={actividad.imagen ?? ""}
+        capacidad_total={actividad.capacidad_total ?? 999999}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Modalidad */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-6 md:col-span-1">
           <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">
             Modalidad
           </h2>
@@ -185,25 +217,31 @@ const ActivityPage: React.FC = () => {
           ) : (
             <div className="text-gray-800">
               <div className="flex items-start gap-3">
-                <FaMapMarkerAlt className="text-[#009982]" />
-                <div>
-                  <h3 className="font-semibold">Link de acceso</h3>
-                  <a
-                    href={actividad.link ?? "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 underline hover:text-blue-800"
-                  >
-                    {actividad.link}
-                  </a>
-                </div>
+              <FaMapMarkerAlt className="text-[#009982]" />
+              <div>
+                <h3 className="font-semibold">Link de acceso</h3>
+                {profile?.rol === "socio" ? (
+                <a
+                  href={actividad.link ?? "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline hover:text-blue-800"
+                >
+                  {actividad.link}
+                </a>
+                ) : (
+                <span className="text-gray-500 italic">
+                  Solo disponible para socios
+                </span>
+                )}
+              </div>
               </div>
             </div>
           )}
         </div>
 
         {/* Fechas y horarios */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-6 md:col-span-1">
           <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">
             Fechas y Horarios
           </h2>
@@ -215,6 +253,31 @@ const ActivityPage: React.FC = () => {
               </li>
             ))}
           </ul>
+        </div>
+
+        {/* Cupos disponibles */}
+        <div className="bg-white rounded-lg shadow p-6 md:col-span-1 flex flex-col items-center justify-center">
+          <h2 className="font-bold text-[1.2em] text-[#00495C] mb-4">
+            Cupos disponibles
+          </h2>
+          <div className="text-gray-800 space-y-1 text-center text-lg font-semibold">
+            {grupoActividades.length > 0 ? (
+              (() => {
+                const primeraActividad = grupoActividades[0];
+                if (primeraActividad.capacidad_total === null || primeraActividad.capacidad_total === 999999) {
+                  return <p className="text-green-700">Actividad sin límite</p>;
+                }
+                const cupos = cuposDisponibles[primeraActividad.id] ?? (primeraActividad.capacidad_total ?? 0);
+                return (
+                  <p className={cupos > 0 ? "text-gray-800" : "text-red-600"}>
+                    {cupos > 0 ? `${cupos} cupos` : "Sin cupos"}
+                  </p>
+                );
+              })()
+            ) : (
+              <p>Calculando...</p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -322,8 +385,6 @@ const ActivityPage: React.FC = () => {
         yaInscrito={yaInscrito}
       />
 
-      {/* Botón flotante del foro */}
-      {actividad && <ForumFloatingButton activityId={actividad.id} />}
     </div>
   );
 };

@@ -15,7 +15,7 @@ export interface Actividad {
   categoria: string;
   comuna: string;
   link: string;
-  capacidad_total: number | null;
+  capacidad_total: number;
   asistentes: number;
   status: string;
   fecha: string;

@@ -16,6 +16,7 @@ const initialActividad: ActividadForm = {
   fecha: "",
   hora_inicio: "",
   hora_final: "",
+  capacidad_total: 999999, 
 };
 
 const initialRecurrentActividad: RecurrentActivityFormType = {
@@ -26,9 +27,10 @@ const initialRecurrentActividad: RecurrentActivityFormType = {
   comuna: "",
   fecha: "",
   fecha_termino: "",
-  semanas_recurrencia: 2,
+  semanas_recurrencia: 2, 
   horarios_por_dia: Array(7).fill([]),
   dias_seleccionados: Array(7).fill(false),
+  capacidad_total: 999999, // <--- cambiado de null a 999999
 };
 
 const initialProducto: ProductoForm = {
@@ -98,9 +100,19 @@ export default function PartnerHub({ view, setView }: Props) {
     try {
       const token = await getAccessTokenSilently();
       const userPartner = await axios.get(`${import.meta.env.VITE_API_URL}/usuarios/email/${user?.email}`);
+      // --- Ajuste aquí: si capacidad_total es "" o undefined, enviar 999999 ---
+      const actividadData = {
+        ...actividad,
+        capacidad_total:
+          actividad.capacidad_total === null ||
+          actividad.capacidad_total === undefined
+            ? 999999
+            : actividad.capacidad_total,
+        id_creador_del_evento: userPartner.data.id,
+      };
       await axios.post(
         `${import.meta.env.VITE_API_URL}/actividades`,
-        { ...actividad, id_creador_del_evento: userPartner.data.id },
+        actividadData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setSuccess("¡Actividad creada!");
@@ -140,8 +152,19 @@ export default function PartnerHub({ view, setView }: Props) {
       return;
     }
 
-    if (new Date(actividadRecurrente.fecha_termino) <= new Date(actividadRecurrente.fecha)) {
-      setError("La fecha de término debe ser posterior.");
+    // Validación: fecha de término debe ser igual o posterior a la de inicio
+    const fechaInicio = new Date(actividadRecurrente.fecha);
+    const fechaTermino = new Date(actividadRecurrente.fecha_termino);
+
+    if (fechaTermino < fechaInicio) {
+      setError("La fecha de término debe ser posterior o igual a la de inicio.");
+      setLoading(false);
+      return;
+    }
+
+    // semanas_recurrencia debe ser >= 1
+    if (!actividadRecurrente.semanas_recurrencia || actividadRecurrente.semanas_recurrencia < 1) {
+      setError("El intervalo de semanas de recurrencia debe ser al menos 1.");
       setLoading(false);
       return;
     }
