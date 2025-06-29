@@ -176,7 +176,8 @@ export default function Navbar() {
                   profile?.rol === "administrador"
                     ? { to: "/admin", label: "Administración" }
                     : { to: "/user", label: "Ver mi perfil" },
-                  { to: "/user/mi-agenda", label: "Mi Agenda" },
+                  { to: "/mi-agenda", label: "Mi Agenda" },
+                  { to: "/noticias", label: "Noticias" },
                   { to: "/games", label: "Ver Juegos" },
                   { to: "/productos", label: "Productos" },
                   { to: "/servicios", label: "Servicios" },

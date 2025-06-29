@@ -43,7 +43,7 @@ export default function Services() {
 
         const uniqueServices = Array.from(groupedServices.values());
         const sortedServices = uniqueServices
-          .filter(s => s.promedio_rating !== null && s.promedio_rating !== undefined)
+          .filter(s => typeof s.promedio_rating === 'number' && !isNaN(s.promedio_rating) && s.total_opiniones > 0)
           .sort((a, b) => (b.promedio_rating ?? 0) - (a.promedio_rating ?? 0));
 
         setTopServices(sortedServices.slice(0, 4));

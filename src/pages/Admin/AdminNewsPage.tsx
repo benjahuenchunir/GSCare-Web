@@ -44,21 +44,33 @@ const NewsModal = ({
   };
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal-content">
-        <h2 className="text-xl font-bold mb-4">{newsItem ? "Editar Noticia" : "Crear Noticia"}</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg">
+        <h2 className="text-xl font-bold mb-4 text-gray-800">{newsItem ? "Editar Noticia" : "Crear Noticia"}</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input type="text" placeholder="Nombre" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} className="modal-input" required />
-          <textarea placeholder="Resumen" value={form.resumen} onChange={(e) => setForm({ ...form, resumen: e.target.value })} className="modal-input" rows={3} required />
-          <input type="text" placeholder="URL de Imagen (opcional)" value={form.imagen} onChange={(e) => setForm({ ...form, imagen: e.target.value })} className="modal-input" />
-          <input type="text" placeholder="Link a la noticia" value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} className="modal-input" required />
-          <div className="flex items-center gap-2">
-            <input type="checkbox" id="proveedor" checked={form.proveedor} onChange={(e) => setForm({ ...form, proveedor: e.target.checked })} />
-            <label htmlFor="proveedor">Es de un proveedor externo</label>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+            <input type="text" placeholder="Título de la noticia" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#009982] focus:outline-none" required />
           </div>
-          <div className="flex justify-end gap-2 mt-4">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">Cancelar</button>
-            <button type="submit" className="px-4 py-2 rounded bg-[#009982] text-white hover:bg-[#007c6b]">{newsItem ? "Guardar Cambios" : "Crear"}</button>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Resumen</label>
+            <textarea placeholder="Un breve resumen de la noticia" value={form.resumen} onChange={(e) => setForm({ ...form, resumen: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#009982] focus:outline-none" rows={3} required />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">URL de Imagen (opcional)</label>
+            <input type="text" placeholder="https://ejemplo.com/imagen.png" value={form.imagen} onChange={(e) => setForm({ ...form, imagen: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#009982] focus:outline-none" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Link a la noticia</label>
+            <input type="text" placeholder="https://ejemplo.com/noticia-completa" value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#009982] focus:outline-none" required />
+          </div>
+          <div className="flex items-center gap-2">
+            <input type="checkbox" id="proveedor" checked={form.proveedor} onChange={(e) => setForm({ ...form, proveedor: e.target.checked })} className="h-4 w-4 rounded border-gray-300 text-[#009982] focus:ring-[#009982]" />
+            <label htmlFor="proveedor" className="text-sm text-gray-700">Es de un proveedor externo</label>
+          </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold text-sm transition">Cancelar</button>
+            <button type="submit" className="px-4 py-2 rounded-lg bg-[#009982] text-white hover:bg-[#007c6b] font-semibold text-sm transition">{newsItem ? "Guardar Cambios" : "Crear Noticia"}</button>
           </div>
         </form>
       </div>

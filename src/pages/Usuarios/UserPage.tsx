@@ -184,9 +184,6 @@ export default function UserPage() {
             </div>
 
             {/* Actividades recomendadas (solo socios) */}
-            {profile?.rol === 'socio' && (
-              <RecommendedServices />
-            )}
             
             <div className="space-y-4">
               {profile && <MyCreatedActivitiesSection userId={profile.id} setView={setModalView} />}
