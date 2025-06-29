@@ -10,9 +10,7 @@ import {
   Link as LinkIcon,
   Building2,
   User,
-  Mail,
-  Cake,
-  Map,
+  Mail
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
