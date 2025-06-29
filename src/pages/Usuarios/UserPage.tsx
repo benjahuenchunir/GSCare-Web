@@ -175,6 +175,11 @@ export default function UserPage() {
               </div>
             </div>
 
+            {/* Actividades recomendadas (solo socios) */}
+            {profile?.rol === 'socio' && (
+              <RecommendedServices />
+            )}
+
             <div className="space-y-4">
               {profile && <MyCreatedActivitiesSection userId={profile.id} setView={setModalView} />}
              </div>
@@ -187,8 +192,6 @@ export default function UserPage() {
                 className="bg-yellow-400 text-black hover:bg-yellow-600"
               />
             </div>
-
-            <RecommendedServices />
 
             <div className="mt-8 bg-green-50 border border-green-300 mx-auto max-w-xl rounded-lg p-6 text-center space-y-4">
               <h2 className="text-[1.8em] font-bold text-green-700">¡Gracias por ser socio!</h2>
