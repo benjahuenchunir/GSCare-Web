@@ -4,6 +4,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { getPaginatedAdminProductos, deleteProductoById, aprobarProducto, rechazarProducto } from "../../services/adminService";
 import { Pencil, Trash, Link as LinkIcon, Filter } from "lucide-react";
 import ProductEditModal from "../../components/AdminComponents/ProductEditModal";
+import ProductCreateForm from "../../components/AdminComponents/ProductCreateForm";
 
 export interface Producto {
   id: number;
@@ -129,7 +130,9 @@ export default function AdminProductsPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Gestión de Productos</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold text-gray-800">Gestión de Productos</h1>
+      </div>
 
       <div className="bg-white rounded-xl shadow p-5 mb-6">
         <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2 mb-4">
@@ -330,6 +333,7 @@ export default function AdminProductsPage() {
           onUpdate={fetchProductos}
         />
       )}
+      <ProductCreateForm onUpdate={fetchProductos} />
     </div>
   );
   

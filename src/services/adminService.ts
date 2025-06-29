@@ -72,7 +72,7 @@ export async function getAllAdminUsers(token: string): Promise<User[]> {
   return data.usuarios;
 }
 
-export async function getPaginatedAdminProductos(token: string, page = 1, limit = 10) {
+export async function getPaginatedAdminProductos(token: string, page: number, limit: number) {
   const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/productos?page=${page}&limit=${limit}`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -82,6 +82,27 @@ export async function getPaginatedAdminProductos(token: string, page = 1, limit 
   if (!res.ok) throw new Error("Error al obtener productos");
 
   return await res.json(); // { productos, total, page, limit }
+}
+
+export async function createProducto(producto: any, token: string) {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/productos`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(producto),
+    });
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Error al crear el producto");
+    }
+    return await res.json();
+  } catch (error) {
+    console.error("Error en createProducto:", error);
+    throw error;
+  }
 }
 
 export async function deleteProductoById(id: number, token: string): Promise<void> {
