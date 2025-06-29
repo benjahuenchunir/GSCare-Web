@@ -214,6 +214,17 @@ export default function CreateServiceForm({ onSuccess }: Props) {
               </label>
               {renderInput("imagen", "URL de Imagen", "https://ejemplo.com/imagen.jpg")}
             </div>
+            {/* Vista previa de imagen */}
+            {nuevoServicio.imagen && /^https?:\/\/.+\..+/.test(nuevoServicio.imagen) && (
+              <div className="mt-4 text-center">
+                <img
+                  src={nuevoServicio.imagen}
+                  alt="Vista previa del servicio"
+                  className="max-h-40 mx-auto rounded-md border"
+                />
+                <p className="text-xs text-gray-500 mt-1">Vista previa de la imagen</p>
+              </div>
+            )}
           </Section>
 
           <Section title="Detalles de Contacto y Ubicación" icon={<Contact />}>

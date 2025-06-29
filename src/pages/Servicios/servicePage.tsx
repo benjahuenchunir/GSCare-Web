@@ -65,7 +65,32 @@ const ServicePage: React.FC = () => {
   const isSubscribed = citasDelServicio.length > 0;
   const reseñasRef = useRef<HTMLDivElement>(null);
   const [reviewToReport, setReviewToReport] = useState<Review | null>(null);
-  const [showReportModal, setShowReportModal] = useState(false);  
+  const [showReportModal, setShowReportModal] = useState(false);
+
+
+  const submitReport = async (razon: string) => {
+    if (!reviewToReport) return;
+    try {
+      const token = await getAccessTokenSilently();
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/reportes_contenido`,
+        {
+          tipo_contenido: "rating",
+          id_contenido: reviewToReport.id.toString(),
+          razon: razon,
+          descripcion: reviewToReport.review,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("Reseña reportada con éxito. Gracias por tu colaboración.");
+    } catch (error) {
+      console.error("Error al reportar reseña:", error);
+      alert("Hubo un error al enviar el reporte.");
+    } finally {
+      setShowReportModal(false);
+      setReviewToReport(null);
+    }
+  };
 
   useEffect(() => {
     if (isAuthenticated) reloadProfile();
@@ -172,32 +197,6 @@ const ServicePage: React.FC = () => {
     }
     setShowSelectBloqueModal(true);
   };
-
-  const handleReportReview = async (reviewId: number, motivo: string) => {
-    try {
-      const token = await getAccessTokenSilently();
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/reportes_contenido`,
-        {
-          tipo_contenido: "rating",
-          id_contenido: reviewId,
-          razon: motivo,
-          
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      alert("Gracias por tu reporte. Será revisado pronto.");
-    } catch (error) {
-      console.error("Error al reportar la reseña:", error);
-      alert("No se pudo enviar el reporte. Intenta más tarde.");
-    } finally {
-      setReviewToReport(null);
-      setShowReportModal(false);
-    }
-  };
-
 
   const handleConfirmSubscribe = async () => {
     if (!profile?.id || !bloqueSeleccionado) return;
@@ -386,18 +385,12 @@ const ServicePage: React.FC = () => {
         />
       )}
 
-      {showReportModal && reviewToReport && (
-        <ModalReportarReseña
-          open={showReportModal}
-          onClose={() => {
-            setShowReportModal(false);
-            setReviewToReport(null);
-          }}
-          onSubmit={(motivo) => handleReportReview(reviewToReport.id, motivo)}
-        />
-      )}
-
-
+      <ModalReportarReseña
+        open={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        onSubmit={submitReport}
+        contentType="Reseña"
+      />
 
       {/* AgendarBox */}
       {isAuthenticated ? (

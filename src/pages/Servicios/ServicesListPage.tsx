@@ -10,6 +10,7 @@ import {
 } from "../../services/serviceService";
 import EmptyState from "../../common/EmptyState";
 import { Search, Filter, Check, MapPin } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 
 interface ServicioConRating extends Servicio {
   beneficios: Beneficio[];
@@ -100,6 +101,13 @@ const ServicesListPage: React.FC = () => {
 
   return (
     <main className="flex-1">
+      <Helmet>
+        <title>GSCare | Servicios de Cuidado y Apoyo</title>
+        <meta
+          name="description"
+          content="Encuentra servicios profesionales de cuidado, apoyo y bienestar para adultos mayores. Conecta con proveedores de confianza en tu comuna."
+        />
+      </Helmet>
       <div className="px-6 md:px-10 py-12 bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto">
           {/* Buscador + Filtros */}

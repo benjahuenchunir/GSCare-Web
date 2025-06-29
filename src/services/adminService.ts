@@ -72,7 +72,7 @@ export async function getAllAdminUsers(token: string): Promise<User[]> {
   return data.usuarios;
 }
 
-export async function getPaginatedAdminProductos(token: string, page = 1, limit = 10) {
+export async function getPaginatedAdminProductos(token: string, page: number, limit: number) {
   const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/productos?page=${page}&limit=${limit}`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -82,6 +82,27 @@ export async function getPaginatedAdminProductos(token: string, page = 1, limit 
   if (!res.ok) throw new Error("Error al obtener productos");
 
   return await res.json(); // { productos, total, page, limit }
+}
+
+export async function createProducto(producto: any, token: string) {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/productos`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(producto),
+    });
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Error al crear el producto");
+    }
+    return await res.json();
+  } catch (error) {
+    console.error("Error en createProducto:", error);
+    throw error;
+  }
 }
 
 export async function deleteProductoById(id: number, token: string): Promise<void> {
@@ -282,6 +303,31 @@ export async function rechazarActividad(id: number, token: string) {
   }
 }
 
+export async function deleteResena(resenaId: number, token: string) {
+  const res = await fetch(`${API_URL}/servicios_ratings/${resenaId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) {
+    throw new Error("Error al eliminar la reseña");
+  }
+}
+
+export async function getResenasForServicio(servicioId: number, token: string) {
+  const res = await fetch(`${API_URL}/servicios_ratings/servicio/${servicioId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) {
+    if (res.status === 404) return [];
+    throw new Error("Error al cargar reseñas");
+  }
+  return await res.json();
+}
+
 export async function getCitasParaProveedor(proveedorId: number, token: string) {
   const res = await fetch(`${API_URL}/proveedores/${proveedorId}/citas`, {
     headers: {
@@ -341,18 +387,34 @@ export const getBeneficios = async (token: string) => {
   return res.json();
 };
 
-export const createBeneficio = async (data: { nombre: string; descripcion: string }, token: string) => {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/beneficios`, {
+export async function createBeneficio(data: { nombre: string; descripcion: string; icono: string }, token: string) {
+  const res = await fetch(`${API_URL}/beneficios`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("Error al crear beneficio");
-  return res.json();
-};
+  return await res.json();
+}
 
-export const deleteBeneficio = async (id: number, token: string) => {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/beneficios/${id}`, {
+export async function updateBeneficio(id: number, data: { nombre: string; descripcion: string; icono: string }, token: string) {
+  const res = await fetch(`${API_URL}/beneficios/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Error al actualizar beneficio");
+  return await res.json();
+}
+
+export async function deleteBeneficio(id: number, token: string) {
+  const res = await fetch(`${API_URL}/beneficios/${id}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -377,17 +439,16 @@ export const addBeneficioToServicio = async (id_servicio: number, id_beneficio: 
   return res.json();
 };
 
-export const removeBeneficioFromServicio = async (id_servicio: number, id_beneficio: number, token: string) => {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/beneficios/desasociar`, {
+export async function removeBeneficioFromServicio(servicioId: number, beneficioId: number, token: string) {
+  const res = await fetch(`${API_URL}/beneficios/servicio/${servicioId}/beneficio/${beneficioId}`, {
     method: "DELETE",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ id_servicio, id_beneficio }),
+    headers: { Authorization: `Bearer ${token}` },
   });
-  if (!res.ok) throw new Error("Error al desasociar beneficio");
-};
+  if (!res.ok && res.status !== 204) throw new Error("Error al quitar beneficio del servicio");
+}
 
-// --- Bloques y Reseñas ---
-export const getBloquesForServicio = async (servicioId: number, token: string) => {
+// --- Bloques ---
+export async function getBloquesForServicio(servicioId: number, token: string) {
   const res = await fetch(`${import.meta.env.VITE_API_URL}/servicios/${servicioId}/bloques`, {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -410,16 +471,6 @@ export const getBloquesForServicio = async (servicioId: number, token: string) =
       citas: [] // las agregas luego por separado si es necesario
     };
   });
-};
-
-
-
-export const getResenasForServicio = async (servicioId: number, token: string) => {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/servicios/${servicioId}/resenas`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) throw new Error("Error al obtener reseñas");
-  return res.json();
 };
 
 // --- Gestión de Usuarios (por ID) ---

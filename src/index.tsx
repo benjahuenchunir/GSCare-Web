@@ -6,7 +6,8 @@ import "slick-carousel/slick/slick-theme.css";
 import Routing from "./Routing.tsx";
 import { Auth0Provider } from "@auth0/auth0-react";
 import { UserProvider } from "./context/UserContext.tsx";
-import { FontSizeProvider } from "./context/FontSizeContext"; // 👈 nuevo import
+import { FontSizeProvider } from "./context/FontSizeContext"; 
+import { HelmetProvider } from "react-helmet-async";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -20,11 +21,13 @@ createRoot(document.getElementById("root")!).render(
       cacheLocation="localstorage"
       useRefreshTokens={true}
     >
-      <UserProvider>
-        <FontSizeProvider>
-          <Routing />
-        </FontSizeProvider>
-      </UserProvider>
+      <HelmetProvider> 
+        <UserProvider>
+          <FontSizeProvider>
+            <Routing />
+          </FontSizeProvider>
+        </UserProvider>
+      </HelmetProvider>
     </Auth0Provider>
   </StrictMode>
 );

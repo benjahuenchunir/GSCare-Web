@@ -86,8 +86,10 @@ export default function PartnerHub({ view, setView }: Props) {
   };
 
   const handleProductoChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => setProducto((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setProducto((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
   const handleActividadRecurrenteChange = (
     e:
@@ -270,25 +272,22 @@ export default function PartnerHub({ view, setView }: Props) {
       const token = await getAccessTokenSilently();
       const userPartner = await axios.get(`${import.meta.env.VITE_API_URL}/usuarios/email/${user?.email}`);
 
-      const formData = new FormData();
-      Object.entries({
+      const payload = {
         ...producto,
         id_creador_del_producto: userPartner.data.id,
-      }).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) formData.append(key, value as any);
-      });
+      };
 
       await axios.post(
         `${import.meta.env.VITE_API_URL}/productos`,
-        formData,
+        payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
+            "Content-Type": "application/json",
           },
         }
       );
-      setSuccess("¡Producto creado!");
+      setSuccess("¡Producto sugerido con éxito! Será revisado por un administrador.");
       setProducto(initialProducto);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");

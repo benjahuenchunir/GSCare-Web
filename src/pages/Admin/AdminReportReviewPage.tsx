@@ -11,9 +11,10 @@ type Reporte = {
   estado: "pendiente" | "revisado" | "descartado";
   createdAt: string;
   Usuario?: { nombre: string };
-  Comentario?: { contenido: string };
   Rating?: { review: string; rating: number; id_servicio: number };
   id_servicio?: number;
+  contenido?: string; 
+  id_contenido: string; // 👈 AÑADE ESTA LÍNEA
 };
 
 export default function ReportesAdminPage() {
@@ -23,7 +24,7 @@ export default function ReportesAdminPage() {
   const [loading, setLoading] = useState(false);
   const [, setError] = useState<string | null>(null);
 
-  const [estadoFiltro, setEstadoFiltro] = useState("todos");
+  const [estadoFiltro, setEstadoFiltro] = useState("pendiente");
   const [tipoFiltro, setTipoFiltro] = useState("todos");
   const [motivoFiltro, setMotivoFiltro] = useState("todos");
   const [busqueda, setBusqueda] = useState("");
@@ -80,7 +81,6 @@ export default function ReportesAdminPage() {
     const matchTexto =
       busqueda === "" ||
       r.Usuario?.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      r.Comentario?.contenido?.toLowerCase().includes(busqueda.toLowerCase()) ||
       r.Rating?.review?.toLowerCase().includes(busqueda.toLowerCase());
     return matchEstado && matchTipo && matchMotivo && matchTexto;
   });
@@ -190,11 +190,7 @@ const reportesPaginados = reportesFiltrados.slice(
                 <tr key={r.id} className="border-t">
                   <td className="p-3">{r.tipo_contenido === "rating" ? "Reseña" : "Comentario"}</td>
                   <td className="p-3">{r.Usuario?.nombre || "Desconocido"}</td>
-                  <td className="p-3">
-                    {r.tipo_contenido === "rating"
-                      ? `${r.Rating?.review ?? "—"} ${r.Rating?.rating ? `⭐ ${r.Rating.rating}/5` : ""}`
-                      : r.Comentario?.contenido || "—"}
-                  </td>
+                  <td className="p-3">{r.contenido || r.descripcion || "—"}</td>
                   <td className="p-3">
                     <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">{r.razon}</span>
                   </td>
