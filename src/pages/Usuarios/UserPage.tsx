@@ -8,6 +8,7 @@ import { addTestimonio } from "../../firebase/testimoniosService";
 import QuickAccessButton from "../../common/QuickAccessButton";
 import SectionTitle from "../../common/SectionTitle";
 
+import RecommendedServices from "../../components/UserPageComponents/RecommendedServices";
 import { SubscribedServicesSection } from "../../components/UserPageComponents/SubscribedServicesSection";
 import { UpcomingEventsSection } from "../../components/UserPageComponents/UpcomingEventsSection";
 import QuickNavSection from "../../components/UserPageComponents/QuickNavSection";
@@ -174,6 +175,11 @@ export default function UserPage() {
               </div>
             </div>
 
+            {/* Actividades recomendadas (solo socios) */}
+            {profile?.rol === 'socio' && (
+              <RecommendedServices />
+            )}
+            
             <div className="space-y-4">
               {profile && <MyCreatedActivitiesSection userId={profile.id} setView={setModalView} />}
              </div>

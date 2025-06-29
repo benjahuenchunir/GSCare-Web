@@ -255,6 +255,22 @@ export default function AdminProductsPage() {
                         </button>
                       </>
                     )}
+                    {p.status === "aprobada" && (
+                      <button
+                        className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"
+                        onClick={() => handleChangeStatus(p.id, "rechazada")}
+                      >
+                        Rechazar
+                      </button>
+                    )}
+                    {p.status === "rechazada" && (
+                      <button
+                        className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs"
+                        onClick={() => handleChangeStatus(p.id, "aprobada")}
+                      >
+                        Aprobar
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
