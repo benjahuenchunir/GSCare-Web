@@ -22,6 +22,7 @@ export default function AdminDashboard() {
   const [errorReportes, setErrorReportes] = useState<string | null>(null);
 
   const { profile } = useContext(UserContext);  
+  const navigate = useNavigate();
 
   const uniqueByActividadBase = (activities: any[]): any[] => {
     const seen = new Set();
@@ -183,9 +184,9 @@ export default function AdminDashboard() {
       <section className="mb-8">
         <h2 className="text-lg font-semibold text-gray-900 mb-2">Acciones rápidas</h2>
         <div className="grid gap-4 md:grid-cols-3">
-          <QuickAction title="Ver usuarios" description="Gestionar usuarios registrados" color="#62CBC9" icon={Users} to="/admin/users" />
-          <QuickAction title="Ir a reportes" description="Ver contenido reportado" color="#FFC600" icon={Flag} to="/admin/reports" />
-          <QuickAction title="Crear nuevo servicio" description="Agregar servicio al catálogo" color="#FF8D6B" icon={Package} to="/admin/services" />
+          <QuickAction title="Ver usuarios" description="Gestionar usuarios registrados" color="#62CBC9" icon={Users} to="/admin/usuarios" />
+          <QuickAction title="Ir a reportes" description="Ver contenido reportado" color="#FFC600" icon={Flag} to="/admin/reportes" />
+          <QuickAction title="Crear nuevo servicio" description="Agregar servicio al catálogo" color="#FF8D6B" icon={Package} to="/admin/servicios" />
         </div>
       </section>
 
@@ -196,7 +197,10 @@ export default function AdminDashboard() {
               <h3 className="text-lg font-semibold text-gray-900">Registros recientes</h3>
               <p className="text-sm text-gray-600">Los usuarios más recientes</p>
             </div>
-            <button className="text-[#62CBC9] hover:text-[#006881] flex items-center text-sm">
+            <button
+              onClick={() => navigate("/admin/usuarios")}
+              className="text-[#62CBC9] hover:text-[#006881] flex items-center text-sm"
+            >
               Ver todos <ChevronRight className="h-4 w-4 ml-1" />
             </button>
           </div>
@@ -234,7 +238,10 @@ export default function AdminDashboard() {
               <h3 className="text-lg font-semibold text-gray-900">Actividades recientes</h3>
               <p className="text-sm text-gray-600">Últimas actividades creadas</p>
             </div>
-            <button className="text-[#62CBC9] hover:text-[#006881] flex items-center text-sm">
+            <button
+              onClick={() => navigate("/admin/actividades")}
+              className="text-[#62CBC9] hover:text-[#006881] flex items-center text-sm"
+            >
               Ver todas <ChevronRight className="h-4 w-4 ml-1" />
             </button>
           </div>
