@@ -52,12 +52,12 @@ export default function ActivityForm({
     return `https://meet.jit.si/${slug}-${random}`;
   };
 
-  const handleCategoriaChange = (e: ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+  const handleCategoriaChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    if (name === "categoria" && value !== "otros") {
+    if (value !== "otros") {
       setCategoriaOtra("");
     }
-    onChange(e);
+    onChange({ target: { name, value } } as any);
   };
 
   useEffect(() => {
@@ -156,7 +156,7 @@ export default function ActivityForm({
                 name="nombre"
                 value={actividad.nombre}
                 onChange={onChange}
-                className="w-full border rounded-lg px-3 py-2"
+                className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
                 placeholder="Título de la actividad"
               />
             </div>
@@ -165,25 +165,29 @@ export default function ActivityForm({
               <label className="block text-sm font-semibold text-gray-700 mb-1">Categoría</label>
               <select
                 name="categoria"
-                value={actividad.categoria || ""}
+                value={
+                  actividad.categoria && !categorias.map(c => c.toLowerCase()).includes(actividad.categoria.toLowerCase())
+                    ? "otros"
+                    : actividad.categoria || ""
+                }
                 onChange={handleCategoriaChange}
-                className="w-full border rounded-lg px-3 py-2"
+                className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
               >
                 <option value="">Selecciona una categoría</option>
                 {categorias.map((cat) => (
                   <option key={cat} value={cat.toLowerCase()}>{cat}</option>
                 ))}
               </select>
-              {actividad.categoria === "otros" && (
+              {(actividad.categoria === "otros" || (actividad.categoria && !categorias.map(c => c.toLowerCase()).includes(actividad.categoria.toLowerCase()))) && (
                 <input
                   type="text"
-                  name="categoria"
+                  name="categoria_otra"
                   value={categoriaOtra}
                   onChange={(e) => {
                     setCategoriaOtra(e.target.value);
-                    onChange(e);
+                    onChange({ target: { name: "categoria", value: e.target.value } } as any);
                   }}
-                  className="w-full mt-2 border rounded-lg px-3 py-2"
+                  className="w-full mt-2 border rounded-xl py-3 px-4 text-lg"
                   placeholder="Ej: Manualidades"
                 />
               )}
@@ -195,7 +199,7 @@ export default function ActivityForm({
                 name="descripcion"
                 value={actividad.descripcion}
                 onChange={onChange}
-                className="w-full border rounded-lg px-3 py-2"
+                className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
                 placeholder="Breve descripción de la actividad"
                 rows={3}
               />
@@ -232,7 +236,7 @@ export default function ActivityForm({
                   name="imagen"
                   accept="image/*"
                   onChange={onChange}
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
                 />
               ) : (
                 <input
@@ -240,7 +244,7 @@ export default function ActivityForm({
                   name="imagen"
                   value={actividad.imagen || ""}
                   onChange={onChange}
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border rounded-xl py-3 px-4 text-lg"
                   placeholder="https://ejemplo.com/imagen.jpg"
                 />
               )}
@@ -259,7 +263,7 @@ export default function ActivityForm({
                   name="modalidad"
                   value={actividad.modalidad}
                   onChange={onChange}
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
                 >
                   <option value="presencial">Presencial</option>
                   <option value="online">Online</option>
@@ -275,7 +279,7 @@ export default function ActivityForm({
                       name="lugar"
                       value={actividad.lugar || ""}
                       onChange={onChange}
-                      className="w-full border rounded-lg px-3 py-2"
+                      className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
                       placeholder="Ej: Centro"
                     />
                   </div>
@@ -286,7 +290,7 @@ export default function ActivityForm({
                       name="comuna"
                       value={actividad.comuna || ""}
                       onChange={onChange}
-                      className="w-full border rounded-lg px-3 py-2"
+                      className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
                       placeholder="Ej: San Joaquín"
                     />
                   </div>
@@ -302,7 +306,7 @@ export default function ActivityForm({
                   name="fecha"
                   value={actividad.fecha}
                   onChange={onChange}
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
                 />
               </div>
               <div>
@@ -312,7 +316,7 @@ export default function ActivityForm({
                   name="hora_inicio"
                   value={actividad.hora_inicio}
                   onChange={onChange}
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
                 />
               </div>
               <div>
@@ -322,7 +326,7 @@ export default function ActivityForm({
                   name="hora_final"
                   value={actividad.hora_final}
                   onChange={onChange}
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
                 />
               </div>
             </div>
@@ -358,7 +362,7 @@ export default function ActivityForm({
                     }
                   } as any);
                 }}
-                className={`w-full border rounded-lg px-3 py-2 ${sinLimiteCapacidad ? "bg-gray-100 text-gray-400" : ""}`}
+                className={`w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none ${sinLimiteCapacidad ? "bg-gray-100 text-gray-400" : ""}`}
                 placeholder={sinLimiteCapacidad ? "Sin límite" : "Ej: 20"}
                 disabled={sinLimiteCapacidad}
               />
@@ -366,18 +370,18 @@ export default function ActivityForm({
 
             {error && <p className="text-red-500 text-sm">{error}</p>}
             {success && <p className="text-green-600 text-sm">{success}</p>}
-            <div className="flex justify-center items-center gap-4 mt-4">
+            <div className="flex justify-end items-center gap-4 mt-4">
               <button
                 type="button"
                 onClick={onCancel}
-                className="bg-[#FF4D4F] hover:bg-[#d32f2f] text-white px-6 py-3 rounded-lg font-semibold text-lg transition"
+                className="bg-[#FF8D6B] hover:bg-[#CD4422] text-white px-6 py-3 rounded-xl font-semibold text-lg transition"
                 disabled={loading}
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="bg-[#009982] hover:bg-[#007b6d] text-white rounded-lg font-semibold text-lg transition px-6 py-3"
+                className="bg-[#009982] hover:bg-[#007b6d] text-white rounded-xl font-semibold text-lg transition px-6 py-3"
                 disabled={loading}
               >
                 {loading ? "Creando..." : "Crear Actividad"}

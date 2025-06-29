@@ -41,13 +41,6 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
               <span>•</span>
               <span>{thread.members.length} participantes</span>
             </div>
-            <div className="flex items-center space-x-2">
-              {isMember && (
-                <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                  Participando
-                </span>
-              )}
-            </div>
           </div>
         </div>
         <div className="flex flex-col space-y-2 ml-4">
@@ -67,6 +60,13 @@ const ThreadCard: React.FC<ThreadCardProps> = ({
           </button>
         </div>
       </div>
+      {isMember && (
+        <div className="flex justify-end mt-2">
+          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+            Participando
+          </span>
+        </div>
+      )}
     </div>
   );
 };

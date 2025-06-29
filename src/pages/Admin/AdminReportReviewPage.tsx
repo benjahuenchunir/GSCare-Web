@@ -8,7 +8,7 @@ type Reporte = {
   tipo_contenido: "comentario" | "rating";
   razon: string;
   descripcion: string;
-  estado: "pendiente" | "revisado" | "descartado";
+  estado: "pendiente" | "revisado";
   createdAt: string;
   Usuario?: { nombre: string };
   Rating?: { review: string; rating: number; id_servicio: number };
@@ -55,7 +55,7 @@ export default function ReportesAdminPage() {
     }
   };
 
-  const handleResolve = async (estado: "revisado" | "descartado", eliminar: boolean) => {
+  const handleResolve = async (estado: "revisado", eliminar: boolean) => {
     if (!reporteActivo) return;
     try {
       const token = await getAccessTokenSilently();
@@ -116,7 +116,6 @@ const reportesPaginados = reportesFiltrados.slice(
             <option value="todos">Todos los estados</option>
             <option value="pendiente">Pendiente</option>
             <option value="revisado">Revisado</option>
-            <option value="descartado">Descartado</option>
           </select>
 
           <select
@@ -199,9 +198,7 @@ const reportesPaginados = reportesFiltrados.slice(
                       className={`px-2 py-1 rounded-full text-xs font-semibold ${
                         r.estado === "pendiente"
                           ? "bg-yellow-100 text-yellow-800"
-                          : r.estado === "revisado"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-200 text-gray-600"
+                          : "bg-green-100 text-green-800"
                       }`}
                     >
                       {r.estado}
@@ -259,7 +256,7 @@ const reportesPaginados = reportesFiltrados.slice(
         <ReporteModal
           reporte={reporteActivo}
           onClose={() => setReporteActivo(null)}
-          onResolve={handleResolve}
+          onResolve={(eliminar) => handleResolve("revisado", !!eliminar)}
         />
       )}
     </div>

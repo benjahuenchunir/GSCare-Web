@@ -177,6 +177,7 @@ export default function Navbar() {
                     ? { to: "/admin", label: "Administración" }
                     : { to: "/user", label: "Ver mi perfil" },
                   { to: "/mi-agenda", label: "Mi Agenda" },
+                  { to: "/noticias", label: "Noticias" },
                   { to: "/games", label: "Ver Juegos" },
                   { to: "/productos", label: "Productos" },
                   { to: "/servicios", label: "Servicios" },

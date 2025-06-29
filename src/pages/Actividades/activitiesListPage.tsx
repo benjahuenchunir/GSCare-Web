@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchActividades, Actividad as ActividadBase } from "../../services/actividadService";
 import { Search, Filter, Check } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import RecommendedServices from "../../components/UserPageComponents/RecommendedServices";
+import { UserContext } from "../../context/UserContext";
 
 interface Actividad extends ActividadBase {
   status: string;
@@ -24,6 +26,7 @@ const ActividadesListPage: React.FC = () => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
+  const { profile } = useContext(UserContext);
 
   useEffect(() => {
     fetchActividades()
@@ -141,6 +144,13 @@ const ActividadesListPage: React.FC = () => {
               )}
             </div>
           </div>
+
+          {/* Actividades recomendadas (solo socios) */}
+          {profile?.rol === 'socio' && (
+            <div className="my-10">
+              <RecommendedServices />
+            </div>
+          )}
 
           {/* Lista agrupada */}
           {loading ? (
