@@ -4,6 +4,7 @@ import { UserContext } from '../../context/UserContext';
 import { getRecommendationsForUser } from '../../services/recommendationService';
 import { Sparkles } from 'lucide-react';
 import SectionTitle from '../../common/SectionTitle';
+import { fetchActividades, Actividad } from '../../services/actividadService';
 
 interface Recommendation {
   id: number;
@@ -23,12 +24,24 @@ const RecommendedServices = () => {
       const fetchRecommendations = async () => {
         setLoading(true);
         try {
-          const recs = await getRecommendationsForUser(profile.id);
-          // Normalizamos los datos para evitar problemas de consistencia
-          const normalizadas = recs.map((rec: Recommendation) => ({
-            ...rec,
-            id_base: rec.id_base ?? rec.id,
-          }));
+          const [recs, allActivities] = await Promise.all([
+            getRecommendationsForUser(profile.id),
+            fetchActividades()
+          ]);
+          
+          const approvedActivityIds = new Set(
+            (allActivities as Actividad[])
+              .filter(a => a.status === 'aprobada')
+              .map(a => a.id_actividad_base ?? a.id)
+          );
+
+          const normalizadas = recs
+            .map((rec: Recommendation) => ({
+              ...rec,
+              id_base: rec.id_base ?? rec.id,
+            }))
+            .filter((rec: { id_base: number }) => rec.id_base !== undefined && approvedActivityIds.has(rec.id_base));
+
           setRecommendations(normalizadas);
         } catch (error) {
           console.error('No se pudieron obtener las recomendaciones:', error);

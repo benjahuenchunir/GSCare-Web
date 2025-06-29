@@ -357,6 +357,22 @@ export default function AdminActividadesPage() {
                         </button>
                       </>
                     )}
+                    {a.status === "aprobada" && (
+                      <button
+                        className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"
+                        onClick={() => handleChangeStatus(a.id_actividad_base ?? a.id, "rechazada")}
+                      >
+                        Rechazar
+                      </button>
+                    )}
+                    {a.status === "rechazada" && (
+                      <button
+                        className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs"
+                        onClick={() => handleChangeStatus(a.id_actividad_base ?? a.id, "aprobada")}
+                      >
+                        Aprobar
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
