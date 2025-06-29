@@ -5,6 +5,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { getUserSubscriptions } from "../../services/subscriptionService";
 import { formatSessionTag } from "../../utils/dateHelper";
 import { getUserActivities, Actividad } from "../../services/actividadService";
+import { fetchServicios } from "../../services/serviceService";
 import { UserContext } from "../../context/UserContext";
 import EmptyState from "../../common/EmptyState";
 
@@ -47,14 +48,21 @@ export const UpcomingEventsSection: React.FC = () => {
     // 1) Flujo de servicios periódicos
     const pServices = (async (): Promise<EventItem[]> => {
       const token = await getAccessTokenSilently();
-      const citas = await getUserSubscriptions(profile.id, token);
+      const [citas, todosLosServicios] = await Promise.all([
+        getUserSubscriptions(profile.id, token),
+        fetchServicios()
+      ]);
+
+      const serviciosMap = new Map(todosLosServicios.map(s => [s.id, s]));
+
       return citas.map((cita: any) => {
         const sessionDate = new Date(cita.start);
+        const servicio = serviciosMap.get(cita.id_servicio);
         return {
           type: "service" as const,
           id: cita.id,
           nombre: cita.title,
-          direccion: cita.lugar || "Ubicación no especificada",
+          direccion: servicio?.direccion_principal_del_prestador || "Ubicación no especificada",
           sessionDate,
           tag: formatSessionTag(sessionDate),
         };
@@ -138,4 +146,4 @@ export const UpcomingEventsSection: React.FC = () => {
       ))}
     </div>
   );
-}; 
+};

@@ -9,7 +9,6 @@ import { Helmet } from "react-helmet-async";
 import QuickAccessButton from "../../common/QuickAccessButton";
 import SectionTitle from "../../common/SectionTitle";
 
-import RecommendedServices from "../../components/UserPageComponents/RecommendedServices";
 import { SubscribedServicesSection } from "../../components/UserPageComponents/SubscribedServicesSection";
 import { UpcomingEventsSection } from "../../components/UserPageComponents/UpcomingEventsSection";
 import QuickNavSection from "../../components/UserPageComponents/QuickNavSection";

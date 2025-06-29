@@ -25,6 +25,7 @@ export interface Servicio {
   email_de_contacto: string;
   imagen?: string;
   id_usuario_creador?: number;
+  status?: string;
 }
 
 export async function fetchServicios(): Promise<Servicio[]> {

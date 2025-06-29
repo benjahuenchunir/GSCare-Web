@@ -96,8 +96,8 @@ export const ForumProvider: React.FC<{
     const identifier = user?.sub || user?.email || "";
     return !!(
       identifier &&
-      thread.membersId &&
-      thread.membersId.includes(identifier)
+      thread.members &&
+      thread.members.includes(identifier)
     );
   };
 

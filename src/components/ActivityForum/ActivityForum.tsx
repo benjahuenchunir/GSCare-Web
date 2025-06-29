@@ -49,7 +49,13 @@ const ActivityForum: React.FC<ActivityForumProps> = ({
                 </div>
               </div>
 
-              <ThreadComments threadId={selectedThread.id} />
+              <ThreadComments
+                threadId={selectedThread.id}
+                onReportComment={(commentId) => {
+                  console.log("Comentario reportado:", commentId);
+                }}
+              />
+
             </>
           )}
         </div>

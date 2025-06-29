@@ -1,4 +1,4 @@
-import { collection, getDocs, doc, updateDoc, getDoc, DocumentReference } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, DocumentReference } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 
 export interface PlanData {

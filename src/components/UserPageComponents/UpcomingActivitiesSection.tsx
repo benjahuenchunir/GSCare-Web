@@ -28,50 +28,62 @@ interface Upcoming {
 
 export const UpcomingActivitiesSection: React.FC = () => {
   const { profile } = useContext(UserContext)!;
-  const { isAuthenticated } = useAuth0();
+  const { isAuthenticated, getAccessTokenSilently } = useAuth0();
   const [upcoming, setUpcoming] = useState<Upcoming[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isAuthenticated || !profile?.id) {
-      setLoading(false);
-      return;
-    }
+    const fetchUpcomingActivities = async () => {
+      if (!isAuthenticated || !profile?.id) {
+        setLoading(false);
+        return;
+      }
 
-    setLoading(true);
-    // 1. Obtener servicios suscritos
-    getUserSubscriptions(profile.id)
-        .then((servs) =>
-          Promise.all(
-            servs.map(async (s) => {
-              const servicio = s as unknown as ServicioConHorario; // aseguramos el tipo
-              const sessionDate = getNextSessionDate(
-                servicio.dias_disponibles,
-                servicio.hora_inicio
-              );
-              if (!sessionDate) return null;
-              return {
-                servicio,
-                sessionDate,
-                tag: formatSessionTag(sessionDate),
-              };
-            })
-          )
-        )
+      setLoading(true);
+      try {
+        const token = await getAccessTokenSilently();
+        // 1. Obtener servicios suscritos
+        const servs = await getUserSubscriptions(profile.id, token);
+        const list = await Promise.all(
+          servs.map(async (cita: any) => {
+            const servicio: ServicioConHorario = {
+              id: cita.id_servicio,
+              nombre: cita.title,
+              dias_disponibles: cita.dias_disponibles,
+              hora_inicio: cita.hora_inicio,
+              direccion_principal_del_prestador: cita.direccion_principal_del_prestador,
+            };
 
-      .then((list) => {
+            const sessionDate = getNextSessionDate(
+              servicio.dias_disponibles,
+              servicio.hora_inicio
+            );
+            if (!sessionDate) return null;
+            return {
+              servicio,
+              sessionDate,
+              tag: formatSessionTag(sessionDate),
+            };
+          })
+        );
+
         // 3. Filtrar nulos, ordenar y limitar a próximos 7 días
         const filtered = (list.filter((x): x is Upcoming => !!x) as Upcoming[])
-          .filter(u => {
+          .filter((u) => {
             const diffMs = u.sessionDate.getTime() - new Date().getTime();
             return diffMs >= 0 && diffMs <= 7 * 24 * 60 * 60 * 1000;
           })
           .sort((a, b) => a.sessionDate.getTime() - b.sessionDate.getTime());
         setUpcoming(filtered);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [isAuthenticated, profile]);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUpcomingActivities();
+  }, [isAuthenticated, profile, getAccessTokenSilently]);
 
   if (loading) return <p className="text-center py-10">Cargando próximas actividades…</p>;
 

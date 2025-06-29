@@ -42,7 +42,12 @@ const ModalConfirmarCita: React.FC<ModalConfirmarCitaProps> = ({
         </h2>
 
         {/* Sección destacada de fecha y hora */}
-    
+        <div className="bg-gray-100 p-4 rounded-lg mb-6 text-center">
+          <p className="text-lg font-semibold text-gray-800">{fechaCompleta}</p>
+          <p className="text-md text-gray-600">
+            {bloque.inicio} - {bloque.fin}
+          </p>
+        </div>
 
         <p className="text-gray-700 mb-6 text-center">
           ¿Estás seguro de que deseas suscribirte a este servicio?
