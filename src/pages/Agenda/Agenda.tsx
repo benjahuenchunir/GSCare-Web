@@ -190,6 +190,21 @@ const Agenda = () => {
     }
   };
 
+  const CustomEvent = ({ event }: { event: Evento }) => {
+    // Formatea la hora de inicio y fin
+    const horaInicio = format(event.start, 'hh:mm a');
+    const horaFin = format(event.end, 'hh:mm a');
+    const hora = `${horaInicio} - ${horaFin}`;
+    // El texto es el título del evento
+    const texto = event.title;
+    return (
+      <div className="flex flex-col text-sm leading-tight">
+        <span className="font-semibold">{hora}</span>
+        <span className="text-sm font-semibold truncate">{texto}</span>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen flex-1 bg-gray-100 p-6">
       <h1 className="text-[2em] font-bold flex-1 text-center mb-6 text-primary mt-8">
@@ -224,6 +239,12 @@ const Agenda = () => {
               },
             };
           }}
+          components={{
+            event: (props: { event: Evento }) => <CustomEvent {...props} />,
+          }}
+            formats={{
+    eventTimeRangeFormat: () => '', // <-- Aquí ocultas la hora automática
+  }}
         />
       </div>
 
@@ -250,3 +271,4 @@ const Agenda = () => {
 };
 
 export default Agenda;
+  

@@ -33,8 +33,9 @@ export default function NewsListPage() {
             <img
               src={item.imagen || "https://via.placeholder.com/400x200.png?text=Noticia"}
               alt={item.nombre}
-              className="w-full h-48 object-cover"
+              className="w-full h-48 object-contain"
             />
+
             <div className="p-6 flex flex-col flex-grow">
               <h2 className="text-xl font-bold mb-2">{item.nombre}</h2>
               <p className="text-gray-700 mb-4 flex-grow">{item.resumen}</p>

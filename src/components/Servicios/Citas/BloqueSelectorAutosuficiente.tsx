@@ -98,12 +98,14 @@ export default function BloqueSelectorAutosuficiente({ onContinue, onClose }: Pr
 
   const handleInscription = () => {
     if (!selectedBloque) return
-    const fecha = new Date(selectedBloque.start)
+    // Obtener solo la fecha (sin hora) del bloque seleccionado
+    const fechaCompleta = new Date(selectedBloque.start)
+    const fechaSoloDia = new Date(fechaCompleta.getFullYear(), fechaCompleta.getMonth(), fechaCompleta.getDate())
     onContinue({
       id: selectedBloque.id,
       inicio: selectedBloque.start,
       fin: selectedBloque.end,
-      fecha,
+      fecha: fechaSoloDia, 
     })
   }
 
@@ -148,7 +150,7 @@ export default function BloqueSelectorAutosuficiente({ onContinue, onClose }: Pr
             <h2 className="text-lg font-medium text-blue-500 mx-4">{currentMonth}</h2>
           </div>
           <div className="flex items-center">
-            <button className="text-sm text-gray-600 hover:text-gray-800 mr-4">Otras fechas disponibles</button>
+            <button className="text-[1em] text-gray-600 hover:text-gray-800 mr-4">Otras fechas disponibles</button>
             <button onClick={() => setCurrentWeekOffset(o => o + 1)} className="p-1 hover:bg-gray-200 rounded transition-colors">
               <ChevronRight className="w-5 h-5 text-gray-600" />
             </button>
@@ -191,8 +193,8 @@ export default function BloqueSelectorAutosuficiente({ onContinue, onClose }: Pr
                     ${isToday ? "text-gray-500" : ""}
                   `}
                 >
-                  <span className="text-xs font-medium mb-1">{d.day}</span>
-                  <span className="text-sm font-bold">{d.num.toString().padStart(2, "0")}</span>
+                  <span className="text-[0.8em] font-medium mb-1">{d.day}</span>
+                  <span className="text-[1em] font-bold">{d.num.toString().padStart(2, "0")}</span>
                 </button>
               )
             })}
@@ -206,7 +208,7 @@ export default function BloqueSelectorAutosuficiente({ onContinue, onClose }: Pr
           <div className="space-y-6">
             {(groupedBloques[selectedDate] || []).length > 0 ? (
               <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-3">Horarios disponibles</h3>
+                <h3 className="text-[1em] font-medium text-gray-700 mb-3">Horarios disponibles</h3>
                 <div className="flex flex-wrap gap-2">
                   {groupedBloques[selectedDate].map((bloque) => {
                     const horaInicio = new Date(bloque.start).toTimeString().slice(0, 5)

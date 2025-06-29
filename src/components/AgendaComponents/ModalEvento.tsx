@@ -169,10 +169,7 @@ const ModalEvento = ({ evento, onClose, onCancelEvento }: Props) => {
           {/* Descripción */}
           {evento.descripcion && (
             <div className="flex items-start gap-3">
-              <MessageSquareText className="text-primary mt-1" size={20} />
               <div>
-                <p className="font-semibold text-gray-900">Detalle</p>
-                <p className="text-gray-900">{evento.descripcion}</p>
                 {/* Link al foro de la actividad */}
                 {evento.tipo === 'actividad' && evento.id_foro_actividad && (
                   <a

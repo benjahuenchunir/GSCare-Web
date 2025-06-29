@@ -17,7 +17,6 @@ export default function EditProfilePage() {
     fecha_de_nacimiento: "",
     region_de_residencia: "",
     comuna_de_residencia: "",
-    direccion_particular: "",
     rol: ""
   });
 
@@ -37,7 +36,6 @@ export default function EditProfilePage() {
           fecha_de_nacimiento: data.fecha_de_nacimiento || "",
           region_de_residencia: data.region_de_residencia || "",
           comuna_de_residencia: data.comuna_de_residencia || "",
-          direccion_particular: data.direccion_particular || "",
           rol: data.rol
         });
       });
@@ -66,7 +64,6 @@ export default function EditProfilePage() {
     if (!form.fecha_de_nacimiento) newErrors.fecha_de_nacimiento = "Fecha de nacimiento es obligatoria.";
     if (!form.region_de_residencia) newErrors.region_de_residencia = "Debes seleccionar una región.";
     if (!form.comuna_de_residencia) newErrors.comuna_de_residencia = "Debes seleccionar una comuna.";
-    if (!form.direccion_particular) newErrors.direccion_particular = "Debes ingresar tu dirección particular.";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -207,19 +204,6 @@ export default function EditProfilePage() {
           </select>
           {errors["comuna_de_residencia"] && (
             <p className="text-[1em] text-red-600 mt-1">{errors["comuna_de_residencia"]}</p>
-          )}
-        </label>
-
-        <label className="block">
-          Dirección particular *
-          <input
-            name="direccion_particular"
-            value={form.direccion_particular}
-            onChange={handleChange}
-            className="mt-1 w-full border rounded px-3 py-2"
-          />
-          {errors["direccion_particular"] && (
-            <p className="text-[1em] text-red-600 mt-1">{errors["direccion_particular"]}</p>
           )}
         </label>
 

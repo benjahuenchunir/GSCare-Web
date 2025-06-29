@@ -130,8 +130,9 @@ const ProductosListPage: React.FC = () => {
                     <img
                       src={p.imagen}
                       alt={p.nombre}
-                      className="w-full h-40 object-cover rounded-md mb-4"
+                      className="w-full h-40 object-contain rounded-md mb-4"
                     />
+
                     <h3 className="text-[1.5em] font-semibold text-[#009982] mb-2">
                       {p.nombre}
                     </h3>
