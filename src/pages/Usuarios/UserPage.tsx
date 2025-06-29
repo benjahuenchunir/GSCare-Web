@@ -139,12 +139,12 @@ export default function UserPage() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <QuickAccessButton
                   icon={<PlusCircle className="w-8 h-8 text-purple-600" />}
-                  label="Añadir Actividad"
+                  label="Proponer Actividad"
                   onClick={() => setModalView("actividad")}
                 />
                 <QuickAccessButton
                   icon={<ShoppingCart className="w-8 h-8 text-orange-500" />}
-                  label="Añadir Producto"
+                  label="Proponer Producto"
                   onClick={() => setModalView("producto")}
                 />
               </div>
