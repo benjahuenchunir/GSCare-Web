@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
-import { getAdminServicios, getBeneficios, createBeneficio, deleteBeneficio } from "../../services/adminService";
+import { getAdminServicios, getBeneficios, createBeneficio, deleteBeneficio, updateBeneficio } from "../../services/adminService";
 import ServiceEditModal from "../../components/AdminComponents/ServiceEditModal";
 import ServiceBenefitsModal from "../../components/AdminComponents/ServiceBenefitsModal";
 import ServiceBlocksModal from "../../components/AdminComponents/ServiceBlocksModal";
 import ServiceReviewsModal from "../../components/AdminComponents/ServiceReviewsModal";
 import CreateServiceForm from "../../components/AdminComponents/CreateServiceForm";
-import { Pencil, Trash, Filter } from "lucide-react";
+import { Pencil, Trash, Filter, PlusCircle } from "lucide-react";
 
 export interface Servicio {
   id: number;
@@ -51,6 +51,7 @@ export default function AdminServicesPage() {
   const [beneficios, setBeneficios] = useState<Beneficio[]>([]);
   const [newBeneficioName, setNewBeneficioName] = useState("");
   const [newBeneficioDesc, setNewBeneficioDesc] = useState("");
+  const [editingBeneficio, setEditingBeneficio] = useState<Beneficio | null>(null);
 
   // Filtros
   const [searchNombre, setSearchNombre] = useState("");
@@ -109,12 +110,26 @@ export default function AdminServicesPage() {
     if (!newBeneficioName.trim()) return;
     try {
       const token = await getAccessTokenSilently();
-      await createBeneficio({ nombre: newBeneficioName, descripcion: newBeneficioDesc }, token);
+      await createBeneficio({ nombre: newBeneficioName, descripcion: newBeneficioDesc, icono: "default" }, token);
       setNewBeneficioName("");
       setNewBeneficioDesc("");
       await fetchAllBeneficios();
     } catch (err) {
       alert("Error al crear beneficio");
+      console.error(err);
+    }
+  };
+
+  const handleUpdateBeneficio = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingBeneficio) return;
+    try {
+      const token = await getAccessTokenSilently();
+      await updateBeneficio(editingBeneficio.id, { ...editingBeneficio, icono: "default" }, token);
+      setEditingBeneficio(null);
+      await fetchAllBeneficios();
+    } catch (err) {
+      alert("Error al actualizar beneficio");
       console.error(err);
     }
   };
@@ -270,7 +285,91 @@ export default function AdminServicesPage() {
       {viewingBlocks && <ServiceBlocksModal servicio={viewingBlocks} onClose={() => setViewingBlocks(null)} />}
       {viewingReviews && <ServiceReviewsModal servicio={viewingReviews} onClose={() => setViewingReviews(null)} />}
 
+      {/* Gestión de Beneficios */}
+      <div className="mt-8">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Gestión de Beneficios</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Formulario para crear */}
+          <div className="bg-white rounded-xl shadow p-5">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Crear Nuevo Beneficio</h3>
+            <form onSubmit={handleCreateBeneficio} className="space-y-3">
+              <input
+                type="text"
+                placeholder="Nombre del beneficio"
+                value={newBeneficioName}
+                onChange={e => setNewBeneficioName(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                required
+              />
+              <textarea
+                placeholder="Descripción"
+                value={newBeneficioDesc}
+                onChange={e => setNewBeneficioDesc(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                rows={2}
+                required
+              />
+              <button type="submit" className="bg-primary1 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary2 flex items-center gap-2">
+                <PlusCircle className="w-4 h-4" />
+                Crear Beneficio
+              </button>
+            </form>
+          </div>
+
+          {/* Lista de beneficios existentes */}
+          <div className="bg-white rounded-xl shadow p-5">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Catálogo de Beneficios</h3>
+            <ul className="space-y-2 max-h-72 overflow-y-auto">
+              {beneficios.map(b => (
+                <li key={b.id} className="flex justify-between items-center p-2 rounded-lg hover:bg-gray-50">
+                  <div>
+                    <p className="font-medium">{b.nombre}</p>
+                    <p className="text-xs text-gray-500">{b.descripcion}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setEditingBeneficio(b)} className="text-blue-600 hover:text-blue-800">
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleDeleteBeneficio(b.id)} className="text-red-600 hover:text-red-800">
+                      <Trash className="w-4 h-4" />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal para editar beneficio */}
+      {editingBeneficio && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg">
+            <h3 className="text-lg font-semibold mb-4">Editar Beneficio</h3>
+            <form onSubmit={handleUpdateBeneficio} className="space-y-4">
+              <input
+                type="text"
+                value={editingBeneficio.nombre}
+                onChange={e => setEditingBeneficio(b => b ? { ...b, nombre: e.target.value } : null)}
+                className="w-full border rounded-lg px-3 py-2"
+              />
+              <textarea
+                value={editingBeneficio.descripcion}
+                onChange={e => setEditingBeneficio(b => b ? { ...b, descripcion: e.target.value } : null)}
+                className="w-full border rounded-lg px-3 py-2"
+                rows={3}
+              />
+              <div className="flex justify-end gap-3">
+                <button type="button" onClick={() => setEditingBeneficio(null)} className="px-4 py-2 bg-gray-100 rounded">Cancelar</button>
+                <button type="submit" className="px-4 py-2 bg-primary1 text-white rounded">Guardar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <CreateServiceForm onSuccess={fetchServicios} />
+      
     </div>
   );
 }
