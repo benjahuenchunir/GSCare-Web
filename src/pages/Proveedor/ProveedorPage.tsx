@@ -58,6 +58,7 @@ export default function ProveedorPage() {
   const [editingBlockId, setEditingBlockId] = useState<number | null>(null);
   const [editBlockForm, setEditBlockForm] = useState({ fecha: "", hora_inicio: "", hora_termino: "" });
   const [editBlockError, setEditBlockError] = useState<string | null>(null);
+  const [blockFilter, setBlockFilter] = useState<'upcoming' | 'all'>('upcoming');
 
   // Estado para editar servicio
   const [editServiceForm, setEditServiceForm] = useState<Servicio | null>(null);
@@ -201,8 +202,13 @@ export default function ProveedorPage() {
         ...data,
         dias_disponibles: Array.isArray(data.dias_disponibles) ? data.dias_disponibles.join(',') : data.dias_disponibles,
       };
-      await updateServicio(id, dataToUpdate, token);
-      fetchAndSetServicios();
+      const updatedServicio = await updateServicio(id, dataToUpdate, token);
+      
+      // Actualiza el estado local para reflejar los cambios inmediatamente
+      setServicioSeleccionado(prev => ({ ...prev!, ...updatedServicio }));
+      setEditServiceForm(prev => ({ ...prev!, ...updatedServicio }));
+
+      fetchAndSetServicios(); // Sincroniza la lista completa en segundo plano
       alert("Servicio actualizado con éxito");
     } catch (err) {
       alert("Error al actualizar el servicio");
@@ -211,7 +217,17 @@ export default function ProveedorPage() {
     }
   };
 
-  const groupedByDate = bloques.reduce((acc, b) => {
+  const filteredBloques = bloques.filter(b => {
+    if (blockFilter === 'upcoming') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const blockDate = new Date(b.fecha + 'T00:00:00');
+      return blockDate >= today;
+    }
+    return true;
+  });
+
+  const groupedByDate = filteredBloques.reduce((acc, b) => {
     const key = new Date(`${b.fecha}T00:00:00`).toLocaleDateString("es-CL", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
     (acc[key] ||= []).push(b);
     return acc;
@@ -304,7 +320,14 @@ export default function ProveedorPage() {
               {managementView === 'blocks' && (
                 <div>
                   <form onSubmit={handleCreateBlock} className="bg-gray-50 p-4 rounded-lg mb-6 flex flex-col gap-4">
-                    <h3 className="w-full font-semibold">Crear Nuevo Bloque</h3>
+                    <div>
+                      <h3 className="w-full font-semibold">Crear Nuevo Bloque</h3>
+                      {servicioSeleccionado?.hora_inicio && servicioSeleccionado?.hora_termino && (
+                        <p className="text-sm text-gray-600">
+                          Horario de atención del servicio: {servicioSeleccionado.hora_inicio.slice(0, 5)} - {servicioSeleccionado.hora_termino.slice(0, 5)}
+                        </p>
+                      )}
+                    </div>
                     <div className="flex gap-4 flex-wrap items-end">
                       <div><label className="text-xs font-medium">Fecha</label><input type="date" value={newBlockForm.fecha} onChange={e => setNewBlockForm(f => ({ ...f, fecha: e.target.value }))} className="border rounded px-3 py-2 w-full" required /></div>
                       <div><label className="text-xs font-medium">Hora Inicio</label><input type="time" value={newBlockForm.hora_inicio} onChange={e => setNewBlockForm(f => ({ ...f, hora_inicio: e.target.value }))} className="border rounded px-3 py-2 w-full" required /></div>
@@ -313,10 +336,18 @@ export default function ProveedorPage() {
                     </div>
                     {creationError && <div className="w-full text-red-600 text-sm mt-2 bg-red-100 p-2 rounded border border-red-200">{creationError}</div>}
                   </form>
+
+                  <div className="flex gap-2 mb-4">
+                    <button onClick={() => setBlockFilter('upcoming')} className={`px-3 py-1 text-sm rounded-full ${blockFilter === 'upcoming' ? 'bg-primary1 text-white' : 'bg-gray-200 text-gray-700'}`}>Próximos</button>
+                    <button onClick={() => setBlockFilter('all')} className={`px-3 py-1 text-sm rounded-full ${blockFilter === 'all' ? 'bg-primary1 text-white' : 'bg-gray-200 text-gray-700'}`}>Todos</button>
+                  </div>
+
                   <div className="max-h-[50vh] overflow-y-auto">
-                    {loadingBloques ? <p>Cargando horarios...</p> : Object.entries(groupedByDate).map(([fecha, lista]) => (
+                    {loadingBloques ? <p>Cargando horarios...</p> : Object.entries(groupedByDate).length > 0 ? Object.entries(groupedByDate).map(([fecha, lista]) => (
                       <div key={fecha} className="space-y-2 mb-4"><h3 className="sticky top-0 bg-gray-100 p-2 rounded capitalize font-semibold">{fecha}</h3><div className="pl-2">{lista.map(b => editingBlockId === b.id ? (<div key={b.id} className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg"><div className="flex-grow space-y-2"><div className="flex items-center gap-2"><input type="date" value={editBlockForm.fecha} onChange={e => setEditBlockForm(f => ({ ...f, fecha: e.target.value }))} className="border rounded px-2 py-1 text-sm w-full" /><input type="time" value={editBlockForm.hora_inicio} onChange={e => setEditBlockForm(f => ({ ...f, hora_inicio: e.target.value }))} className="border rounded px-2 py-1 text-sm w-full" /><input type="time" value={editBlockForm.hora_termino} onChange={e => setEditBlockForm(f => ({ ...f, hora_termino: e.target.value }))} className="border rounded px-2 py-1 text-sm w-full" /></div>{editBlockError && (<div className="w-full text-red-600 text-xs bg-red-100 p-2 rounded border border-red-200">{editBlockError}</div>)}</div><div className="ml-auto flex flex-col gap-2"><button onClick={() => handleUpdateBlock(b.id)} className="text-green-600 text-sm">Guardar</button><button onClick={() => { setEditingBlockId(null); setEditBlockError(null); }} className="text-gray-500 text-sm">Cancelar</button></div></div>) : (<div key={b.id} className="flex justify-between items-center p-2 border-b"><div className="flex-1"><p className="font-mono">{b.hora_inicio.slice(0, 5)}–{b.hora_termino.slice(0, 5)}</p>{b.disponibilidad ? <span className="text-xs text-green-600">Disponible</span> : <span className="text-xs text-orange-400">Ocupado por: {b.citas?.[0]?.Usuario?.email ?? "Desconocido"}</span>}</div><div className="flex items-center gap-3">{b.disponibilidad ? <button onClick={() => { setEditingBlockId(b.id); setEditBlockForm({ fecha: toInputDate(b.fecha), hora_inicio: b.hora_inicio, hora_termino: b.hora_termino }); setEditBlockError(null); }} className="text-blue-600" title="Editar bloque"><Edit size={16} /></button> : (b.citas?.[0]?.id && <button onClick={() => handleDeleteCita(b.citas![0].id)} className="text-yellow-600" title="Cancelar cita"><UserX size={16} /></button>)}<button onClick={() => handleDeleteBlock(b.id)} className="text-red-600" title="Eliminar bloque"><Trash size={16} /></button></div></div>))}</div></div>
-                    ))}
+                    )) : (
+                      <p className="text-gray-500 text-center py-4">No hay bloques para mostrar con el filtro actual.</p>
+                    )}
                   </div>
                 </div>
               )}
