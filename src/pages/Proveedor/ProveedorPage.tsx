@@ -13,9 +13,12 @@ import {
   getUserById,
   updateServicio,
 } from "../../services/adminService";
-import { Loader2, Edit, Trash, UserX, PlusCircle } from "lucide-react";
+import { Loader2, Edit, Trash, UserX, PlusCircle, Handshake } from "lucide-react";
 import UserIcon from '../../assets/Person.svg?react';
 import QuickAccessButton from "../../common/QuickAccessButton";
+import { FaEnvelope } from "react-icons/fa";
+import { getConfig, Config } from "../../firebase/configService";
+
 
 interface Cita {
   id: number;
@@ -59,6 +62,11 @@ export default function ProveedorPage() {
   // Estado para editar servicio
   const [editServiceForm, setEditServiceForm] = useState<Servicio | null>(null);
   const [isSavingService, setIsSavingService] = useState(false);
+  const [appConfig, setAppConfig] = useState<Config | null>(null);
+
+  useEffect(() => {
+    getConfig().then(data => setAppConfig(data as Config | null));
+  }, []);
 
   const fetchAndSetServicios = () => {
     if (!profile?.id) return;
@@ -225,29 +233,64 @@ export default function ProveedorPage() {
         <div className="flex justify-center mb-6">
           <h1 className="text-[2.5em] font-bold text-primary">Hola, {userName}!</h1>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-lg mx-auto mb-12">
-          <div className="sm:col-start-2">
-            <QuickAccessButton icon={<UserIcon className="w-8 h-8 text-accent2" />} label="Mi perfil" onClick={() => navigate("/edit-profile")} />
-          </div>
-        </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 flex flex-col lg:flex-row gap-6">
-        <aside className="w-full lg:w-1/3 bg-white shadow rounded-xl p-4 self-start">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">Mis servicios</h2>
-          {servicios.length === 0 ? (
-            <p className="text-sm text-gray-500">Aún no has registrado servicios.</p>
-          ) : (
-            <ul className="space-y-2">
-              {servicios.map((servicio) => (
-                <li key={servicio.id} className={`p-3 rounded cursor-pointer border ${servicioSeleccionado?.id === servicio.id ? "bg-primary1 text-white border-primary1" : "bg-gray-50 hover:bg-gray-100 border-gray-300"}`} onClick={() => setServicioSeleccionado(servicio)}>
-                  <h3 className="text-md font-medium">{servicio.nombre}</h3>
-                </li>
-              ))}
-            </ul>
-          )}
+      <div className="max-w-7xl mx-auto px-6 flex flex-col lg:flex-row gap-8">
+        {/* --- Columna Izquierda --- */}
+        <aside className="w-full lg:w-1/3 space-y-6 self-start">
+          {/* Lista de servicios */}
+          <div className="bg-white shadow rounded-xl p-4">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Mis servicios</h2>
+            {servicios.length === 0 ? (
+              <p className="text-sm text-gray-500">Aún no has registrado servicios.</p>
+            ) : (
+              <ul className="space-y-2">
+                {servicios.map((servicio) => (
+                  <li key={servicio.id} className={`p-3 rounded cursor-pointer border ${servicioSeleccionado?.id === servicio.id ? "bg-primary1 text-white border-primary1" : "bg-gray-50 hover:bg-gray-100 border-gray-300"}`} onClick={() => setServicioSeleccionado(servicio)}>
+                    <h3 className="text-md font-medium">{servicio.nombre}</h3>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {/* Proponer nuevo servicio y editar perfil */}
+          <div className="bg-white shadow rounded-xl p-4 space-y-4">
+            <div className="bg-[#E0F5F5] rounded-xl p-6 text-center space-y-4">
+              <div className="flex justify-center">
+                <div className="p-3 rounded-full bg-[#009982] shadow-md inline-block">
+                  <Handshake className="w-6 h-6 text-white" />
+                </div>
+              </div>
+              <h3 className="text-[1.2em] font-bold text-[#006881]">
+                ¿Quieres ofrecer otro servicio?
+              </h3>
+              <p className="text-gray-700 text-[1em]">
+                Para crear nuevos servicios, contáctate con un administrador.
+              </p>
+              {appConfig?.contactEmail && (
+                <div className="flex items-center justify-center gap-3 bg-white p-3 rounded-lg shadow-sm">
+                  <FaEnvelope className="text-secondary1 text-lg" />
+                  <div>
+                    <a href={`mailto:${appConfig.contactEmail}`} className="text-secondary1 hover:underline font-semibold">
+                      {appConfig.contactEmail}
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="border-t pt-4">
+              <QuickAccessButton
+                icon={<UserIcon className="w-8 h-8 text-accent2" />}
+                label="Editar mi perfil"
+                onClick={() => navigate("/edit-profile")}
+              />
+            </div>
+          </div>
+
+          
         </aside>
 
+        {/* --- Columna Derecha --- */}
         <section className="flex-1 bg-white shadow rounded-xl p-4 min-h-[400px]">
           {servicioSeleccionado ? (
             <div>

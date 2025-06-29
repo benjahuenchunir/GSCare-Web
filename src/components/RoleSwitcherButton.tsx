@@ -29,7 +29,7 @@ export default function RoleSwitcherButton({
       alert(
         targetRole === "socio"
           ? "Ahora eres socio 🎉"
-          : "Ahora eres usuario gratis 👤"
+          : "Ahora eres usuario gratuito 👤"
       );
     } catch (err) {
       console.error("Error cambiando rol:", err);

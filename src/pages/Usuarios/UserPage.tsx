@@ -21,6 +21,7 @@ import CalendarIcon from '../../assets/Calendar2.svg?react';
 import HeadsetIcon from '../../assets/Support.svg?react';
 import UserIcon from '../../assets/Person.svg?react';
 import { allConsejos } from "../../constants/consejos";
+import ProposeServiceCard from "../../common/ProposeServiceCard";
 
 export default function UserPage() {
   const { isAuthenticated } = useAuth0();
@@ -95,8 +96,15 @@ export default function UserPage() {
               <QuickAccessButton icon={<UserIcon className="w-8 h-8 text-accent2" />} label="Mi perfil" onClick={() => navigate("/edit-profile")} />
             </div>
 
-            {/* Mensaje de promocion socio */}
-            <BenefitsCard onClickCTA={() => navigate("/pricing")} />
+            {/* Mensaje de promocion socio y proponer servicio */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-2">
+                <BenefitsCard onClickCTA={() => navigate("/pricing")} />
+              </div>
+              <div className="md:col-span-1">
+                <ProposeServiceCard />
+              </div>
+            </div>
 
 
             {/* QuickNav + Consejos en columnas */}
