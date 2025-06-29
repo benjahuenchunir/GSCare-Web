@@ -1,11 +1,12 @@
 import { useEffect, useState, useContext } from "react";
 import { useAuth0, User } from "@auth0/auth0-react";
 import { UserContext } from "../../context/UserContext";
-import { Calendar, Package, ShoppingBag, Users, Eye, ChevronRight, Flag } from "lucide-react";
-import { getAdminCount, getRecentUsers, getRecentActivities } from "../../services/adminService";
+import { Calendar, Package, ShoppingBag, Users, Eye, ChevronRight, Flag, TrendingUp, Star } from "lucide-react";
+import { getAdminCount, getRecentUsers, getAdminActividades } from "../../services/adminService";
 import ReporteModal from "../../components/AdminComponents/ReportReviewModal"; // Ajusta si la ruta cambia
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import axios from "axios";
 
 export default function AdminDashboard() {
   const { getAccessTokenSilently } = useAuth0();
@@ -16,7 +17,8 @@ export default function AdminDashboard() {
     productos: 0,
   });
   const [recentUsers, setRecentUsers] = useState<User[]>([]);
-  const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [topActivities, setTopActivities] = useState<any[]>([]);
+  const [topProducts, setTopProducts] = useState<any[]>([]);
   const [reportesPendientes, setReportesPendientes] = useState<any[]>([]);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [reporteSeleccionado, setReporteSeleccionado] = useState<any>(null);
@@ -28,14 +30,29 @@ export default function AdminDashboard() {
   const uniqueByActividadBase = (activities: any[]): any[] => {
     const seen = new Set();
     const unique: any[] = [];
+    const today = new Date().toISOString().split("T")[0];
 
+    const grouped: Record<number, any[]> = {};
     for (const act of activities) {
+      const baseId = act.id_actividad_base ?? act.id;
+      if (!grouped[baseId]) grouped[baseId] = [];
+      grouped[baseId].push(act);
+    }
+
+    const latestPerGroup = Object.values(grouped).map(group => {
+      const future = group.filter(a => a.fecha >= today);
+      if (future.length > 0) {
+        return future.sort((a, b) => a.fecha.localeCompare(b.fecha))[0];
+      }
+      return group.sort((a, b) => b.fecha.localeCompare(a.fecha))[0];
+    });
+
+    for (const act of latestPerGroup) {
       const baseId = act.id_actividad_base ?? act.id;
       if (!seen.has(baseId)) {
         seen.add(baseId);
         unique.push(act);
       }
-      if (unique.length >= 5) break;
     }
 
     return unique;
@@ -45,21 +62,49 @@ export default function AdminDashboard() {
     const fetchData = async () => {
       try {
         const token = await getAccessTokenSilently();
+        const apiUrl = import.meta.env.VITE_API_URL;
 
-        const [usuarios, servicios, actividades, productos, recent] = await Promise.all([
+        const [usuarios, servicios, actividadesCount, productosCount, recent, activitiesData, productsData] = await Promise.all([
           getAdminCount("usuarios", token),
           getAdminCount("servicios", token),
           getAdminCount("actividades", token),
           getAdminCount("productos", token),
-          getRecentUsers(token, 5)
+          getRecentUsers(token, 5),
+          getAdminActividades({ page: 1, limit: 1000, token }),
+          axios.get(`${apiUrl}/productos`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
 
-        const actsRaw = await getRecentActivities(token, 20);
-        const actsFiltered = uniqueByActividadBase(actsRaw);
+        // Calcular top 5 actividades por ocupación
+        const allActivities = activitiesData.actividades;
+        const uniqueActivities = uniqueByActividadBase(allActivities);
+        const topActivities = uniqueActivities
+          .filter((a: any) => a.capacidad_total > 0)
+          .map((a: any) => ({
+            ...a,
+            porcentaje_ocupacion: (a.asistentes / a.capacidad_total) * 100,
+          }))
+          .sort((a: any, b: any) => b.porcentaje_ocupacion - a.porcentaje_ocupacion)
+          .slice(0, 5);
 
-        setCounts({ usuarios, servicios, actividades, productos });
+        // Calcular top 5 productos por visitas
+        // Corregido para manejar diferentes estructuras de respuesta de la API de productos
+        const productsResponse = productsData.data;
+        const allProducts = Array.isArray(productsResponse) 
+          ? productsResponse 
+          : productsResponse.productos || [];
+          
+        const topProducts = allProducts
+          .filter((p: any) => p.visitas > 0)
+          .sort((a: any, b: any) => b.visitas - a.visitas)
+          .slice(0, 5);
+
+        console.log(topActivities, topProducts);
+
+        setCounts({ usuarios, servicios, actividades: actividadesCount, productos: productosCount });
         setRecentUsers(recent);
-        setRecentActivities(actsFiltered);
+        setTopActivities(topActivities);
+        setTopProducts(topProducts);
+
       } catch (err) {
         console.error("Error al cargar datos del dashboard:", err);
       }
@@ -199,84 +244,97 @@ export default function AdminDashboard() {
       </section>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <section className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Registros recientes</h3>
-              <p className="text-sm text-gray-600">Los usuarios más recientes</p>
+        <section className="lg:col-span-2 space-y-6">
+          {/* Actividades con mayor ocupación */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Actividades con mayor ocupación</h3>
+                <p className="text-sm text-gray-600">Top 5 actividades por cupos llenos</p>
+              </div>
+              <button onClick={() => navigate("/admin/actividades")} className="text-[#62CBC9] hover:text-[#006881] flex items-center text-sm">
+                Ver todas <ChevronRight className="h-4 w-4 ml-1" />
+              </button>
             </div>
-            <button
-              onClick={() => navigate("/admin/usuarios")}
-              className="text-[#62CBC9] hover:text-[#006881] flex items-center text-sm"
-            >
-              Ver todos <ChevronRight className="h-4 w-4 ml-1" />
-            </button>
-          </div>
-          <table className="w-full text-sm">
-            <thead className="text-left text-gray-600 border-b">
-              <tr>
-                <th className="py-2">Nombre</th>
-                <th>Rol</th>
-                <th>Fecha de registro</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentUsers.map((user, i) => (
-                <tr key={i} className="border-b hover:bg-gray-50">
-                  <td className="py-2">{user.nombre}</td>
-                  <td>
-                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                      user.rol === "socio"
-                        ? "bg-yellow-600/20 text-yellow-600"
-                        : user.rol === "administrador" ? "bg-[#6B21A8]/20 text-[#6B21A8]"
-                        : user.rol === "proveedor" ? "bg-green-200 text-green-800"
-                        : "bg-[#009982]/10 text-[#006881]"
-                    }`}>
-                      {user.rol === "socio" ? "Socio" : user.rol === "administrador" ? "Administrador" : user.rol === "proveedor" ? "Proveedor" : "General"}
-                    </span>
-                  </td>
-                  <td>{new Date(user.createdAt).toLocaleDateString("es-CL")}</td>
-                </tr>
+            <ul className="space-y-3">
+              {topActivities.map((act) => (
+                <li key={act.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50">
+                  <span className="font-medium text-gray-800">{act.nombre}</span>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span>{act.porcentaje_ocupacion.toFixed(1)}%</span>
+                  </div>
+                </li>
               ))}
-            </tbody>
-          </table>
+            </ul>
+          </div>
 
-          <div className="flex justify-between items-center mb-4 mt-10">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Actividades recientes</h3>
-              <p className="text-sm text-gray-600">Últimas actividades creadas</p>
+          {/* Productos más visitados */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Productos más visitados</h3>
+                <p className="text-sm text-gray-600">Top 5 productos con mayor cantidad de visitas</p>
+              </div>
+              <button onClick={() => navigate("/admin/productos")} className="text-[#62CBC9] hover:text-[#006881] flex items-center text-sm">
+                Ver todos <ChevronRight className="h-4 w-4 ml-1" />
+              </button>
             </div>
-            <button
-              onClick={() => navigate("/admin/actividades")}
-              className="text-[#62CBC9] hover:text-[#006881] flex items-center text-sm"
-            >
-              Ver todas <ChevronRight className="h-4 w-4 ml-1" />
-            </button>
-          </div>
-          <table className="w-full text-sm">
-            <thead className="text-left text-gray-600 border-b">
-              <tr>
-                <th className="py-2">Título</th>
-                <th>Categoría</th>
-                <th>Comuna</th>
-                <th>Fecha de creación</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentActivities.map((act, i) => (
-                <tr key={i} className="border-b hover:bg-gray-50">
-                  <td className="py-2">{act.nombre || "Sin título"}</td>
-                  <td>{act.categoria || "General"}</td>
-                  <td>{act.comuna || "No especificada"}</td>
-                  <td>{new Date(act.createdAt).toLocaleDateString("es-CL")}</td>
-                </tr>
+            <ul className="space-y-3">
+              {topProducts.map((prod) => (
+                <li key={prod.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50">
+                  <span className="font-medium text-gray-800">{prod.nombre}</span>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span>{prod.visitas} visitas</span>
+                  </div>
+                </li>
               ))}
-            </tbody>
-          </table>
+            </ul>
+          </div>
+
+          {/* Últimos usuarios registrados */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Registros recientes</h3>
+                <p className="text-sm text-gray-600">Los usuarios más recientes</p>
+              </div>
+              <button onClick={() => navigate("/admin/usuarios")} className="text-[#62CBC9] hover:text-[#006881] flex items-center text-sm">
+                Ver todos <ChevronRight className="h-4 w-4 ml-1" />
+              </button>
+            </div>
+            <table className="w-full text-sm">
+              <thead className="text-left text-gray-600 border-b">
+                <tr>
+                  <th className="py-2">Nombre</th>
+                  <th>Rol</th>
+                  <th>Fecha de registro</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentUsers.map((user, i) => (
+                  <tr key={i} className="border-b hover:bg-gray-50">
+                    <td className="py-2">{user.nombre}</td>
+                    <td>
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                        user.rol === "socio"
+                          ? "bg-yellow-600/20 text-yellow-600"
+                          : user.rol === "administrador" ? "bg-[#6B21A8]/20 text-[#6B21A8]"
+                          : user.rol === "proveedor" ? "bg-green-200 text-green-800"
+                          : "bg-[#009982]/10 text-[#006881]"
+                      }`}>
+                        {user.rol === "socio" ? "Socio" : user.rol === "administrador" ? "Administrador" : user.rol === "proveedor" ? "Proveedor" : "General"}
+                      </span>
+                    </td>
+                    <td>{new Date(user.createdAt).toLocaleDateString("es-CL")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Reportes</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Reportes pendientes</h3>
           <p className="text-sm text-gray-600 mb-4">Contenido reportado por usuarios</p>
           {errorReportes && (
             <div className="text-red-600 text-sm mb-4">{errorReportes}</div>
