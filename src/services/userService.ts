@@ -5,7 +5,6 @@ export interface User {
   fecha_de_nacimiento: string;
   region_de_residencia: string;
   comuna_de_residencia: string;
-  direccion_particular: string;
   rol: string;
 }
 
@@ -28,7 +27,6 @@ export async function createUser(data: {
   fecha_de_nacimiento: string;
   region_de_residencia: string;
   comuna_de_residencia: string;
-  direccion_particular: string;
 }): Promise<User> {
   console.log("Creando usuario con:", data); // Debugging
   const res = await fetch(`${API_URL}/usuarios`, {

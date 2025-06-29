@@ -15,7 +15,7 @@ export default function GamesView() {
         <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto px-4">
           {games.map((game) => (
             <div key={game.id} className="bg-white rounded-xl shadow-md overflow-hidden border flex flex-col items-center h-full">
-              <img src={game.image} alt={game.title} className="w-full h-48 object-cover" />
+<img src={game.image} alt={game.title} className="w-full h-48 object-contain" />
               <div className="p-5 flex flex-col flex-1 w-full text-center">
                 <h3 className="text-[1.5em] font-semibold text-gray-800 mb-2">{game.title}</h3>
                 <p className="text-[1em] text-gray-600 mb-4">{game.description}</p>
