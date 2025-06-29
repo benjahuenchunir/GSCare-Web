@@ -19,7 +19,10 @@ const AgendarBox: React.FC<Props> = ({
   onSubscribe,
   onUnsubscribe
 }) => (
-  <div className="bg-[#36A2A1] text-white rounded-lg p-8 text-center flex flex-col items-center gap-4">
+  <div
+    id="agendar-box"
+    className="bg-[#36A2A1] text-white rounded-lg p-8 text-center flex flex-col items-center gap-4"
+  >
     <h3 className="text-[1.5em] font-bold">¿Quieres agendar?</h3>
 
     {!isSubscribed && (
@@ -43,23 +46,32 @@ const AgendarBox: React.FC<Props> = ({
         <div className="py-2 px-6 bg-white text-[#009982] rounded-lg font-semibold border border-white">
           Ya estás suscrito 😊
         </div>
-        <p className="text-white text-[1em] max-w-md">
-          ¿Quieres cancelar tu suscripción? Puedes hacerlo presionando el botón de abajo.
-        </p>
-        <button
-          onClick={onUnsubscribe}
-          className="py-2 px-6 bg-red-100 text-red-700 rounded-lg font-semibold hover:bg-red-200 border border-red-300"
-        >
-          Cancelar suscripción
-        </button>
-
-        {/* 👉 Nuevo botón para agendar otra hora */}
-        <button
-          onClick={onSubscribe}
-          className="mt-2 px-6 py-2 bg-white text-[#00495C] rounded-lg font-semibold hover:bg-gray-100"
-        >
-          Agendar otra hora
-        </button>
+        <div className="flex flex-row gap-8 w-full justify-center">
+          {/* Cancelar suscripción */}
+          <div className="flex flex-col items-center flex-1 min-w-[200px]">
+            <p className="text-white text-[1em] max-w-md text-center">
+              ¿Quieres cancelar tu suscripción? Puedes hacerlo presionando el botón de abajo.
+            </p>
+            <button
+              onClick={onUnsubscribe}
+              className="py-2 px-6 bg-red-100 text-red-700 rounded-lg font-semibold hover:bg-red-200 border border-red-300 mt-2"
+            >
+              Cancelar suscripción
+            </button>
+          </div>
+          {/* Agendar otra hora */}
+          <div className="flex flex-col items-center flex-1 min-w-[200px]">
+            <p className="text-white text-[1em] max-w-md text-center">
+              ¿Quieres agendar otra hora? Puedes hacerlo presionando el botón de abajo.
+            </p>
+            <button
+              onClick={onSubscribe}
+              className="mt-2 px-6 py-2 bg-white text-[#00495C] rounded-lg font-semibold hover:bg-gray-100"
+            >
+              Agendar otra hora
+            </button>
+          </div>
+        </div>
       </div>
     ) : (
       <button

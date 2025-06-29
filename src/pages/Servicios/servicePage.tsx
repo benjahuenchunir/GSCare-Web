@@ -16,6 +16,7 @@ import ExclusiveSubscriptionCard from "../../components/ExclusiveSubscriptionCar
 import ReviewForm from "../../components/Servicios/Resenas/ReviewForm";
 import ModalEliminarReseña from "../../components/Servicios/Resenas/ModalEliminarReseña";
 import ModalReportarReseña from "../../components/Servicios/Resenas/ModalReportarReseña";
+import ComunasDomicilioBox from "./ComunasDomicilioBox";
 
 import { createCita, getUserSubscriptions, deleteCita } from "../../services/subscriptionService";
 import { BloqueHorario } from "../../components/Servicios/Citas/SelectorDeBloque";
@@ -35,6 +36,8 @@ interface Servicio {
   dias_disponibles: number[];
   hora_inicio: string;
   hora_termino: string;
+  hace_domicilio?: boolean;
+  comunas_a_las_que_hace_domicilio?: string;
 }
 
 const ServicePage: React.FC = () => {
@@ -265,11 +268,20 @@ const ServicePage: React.FC = () => {
 
   if (!servicio) return <div className="p-4">Cargando servicio...</div>;
 
+  // Obtener comunas si hace domicilio
+  const comunas = servicio.hace_domicilio && servicio.comunas_a_las_que_hace_domicilio
+    ? servicio.comunas_a_las_que_hace_domicilio.split(",").map((c: string) => c.trim()).filter(Boolean)
+    : null;
+
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8 pt-20">
       <ServicioInfoCard nombre={servicio.nombre} descripcion={servicio.descripcion} imagen={servicio.imagen} />
       <BeneficiosBox beneficios={beneficios} />
       <DisponibilidadBox dias_disponibles={servicio.dias_disponibles} hora_inicio={servicio.hora_inicio} hora_termino={servicio.hora_termino} />
+      {/* Bloque de comunas a domicilio */}
+      {comunas && comunas.length > 0 && (
+        <ComunasDomicilioBox comunas={comunas} />
+      )}
 
       {/* Reseñas */}
       <div ref={reseñasRef} className="bg-white shadow-lg rounded-lg p-6">

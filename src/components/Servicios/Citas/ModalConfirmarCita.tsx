@@ -1,5 +1,4 @@
 import React from "react";
-import { CalendarDays, Clock } from "lucide-react"; // Asegúrate de tener lucide-react instalado
 import { BloqueHorario } from "./SelectorDeBloque";
 
 interface ModalConfirmarCitaProps {
@@ -13,6 +12,28 @@ const ModalConfirmarCita: React.FC<ModalConfirmarCitaProps> = ({
   onCancel,
   onConfirm
 }) => {
+  // Formatear la fecha si está disponible
+  let fechaCompleta = "";
+  // 1. Si bloque.fecha existe y es Date, úsala
+  if ((bloque as any).fecha instanceof Date) {
+    const date = (bloque as any).fecha;
+    const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+    const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+    fechaCompleta = `${dias[date.getDay()]} ${date.getDate()} de ${meses[date.getMonth()]} de ${date.getFullYear()}`;
+  } else if ((bloque as any).fecha && typeof (bloque as any).fecha === "string") {
+    // 2. Si bloque.fecha es string tipo "YYYY-MM-DD"
+    const [a, m, d] = ((bloque as any).fecha as string).split("-");
+    if (a && m && d) {
+      const date = new Date(Number(a), Number(m) - 1, Number(d));
+      const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+      const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+      fechaCompleta = `${dias[date.getDay()]} ${date.getDate()} de ${meses[date.getMonth()]} de ${date.getFullYear()}`;
+    }
+  } else if (bloque.dia && bloque.inicio) {
+    // 3. Si solo hay día y hora, muestra el día textual
+    fechaCompleta = bloque.dia;
+  }
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 items-center justify-center flex">
       <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md border border-[#009982]">
@@ -21,23 +42,17 @@ const ModalConfirmarCita: React.FC<ModalConfirmarCitaProps> = ({
         </h2>
 
         {/* Sección destacada de fecha y hora */}
-        <div className="bg-[#F5F5F5] rounded-xl p-4 mb-6 border-l-4 border-[#009982]">
-          <div className="flex items-center gap-2 mb-2">
-            <CalendarDays className="w-5 h-5 text-[#009982]" />
-            <p className="text-[#009982] text-lg font-semibold">{bloque.dia}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Clock className="w-5 h-5 text-[#292929]" />
-            <p className="text-[#292929] text-lg font-semibold">
-              {bloque.inicio} - {bloque.fin}
-            </p>
-          </div>
-        </div>
+    
 
         <p className="text-gray-700 mb-6 text-center">
           ¿Estás seguro de que deseas suscribirte a este servicio?
         </p>
-
+        {/* Mensaje destacado para servicios a domicilio */}
+        <div className="mb-6 p-3 rounded-lg bg-[#FFF0F6] border border-[#CD3272] flex items-center justify-center">
+          <span className="text-[#CD3272] font-semibold">
+            Si deseas servicio a domicilio, recuerda coordinarlo directamente con el encargado.
+          </span>
+        </div>
         <div className="flex justify-center gap-4">
           <button
             onClick={onCancel}

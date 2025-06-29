@@ -7,7 +7,7 @@ interface BloqueSeleccionado {
   id: number
   inicio: string
   fin: string
-  fecha: Date
+  fecha: Date // Se espera que sea solo la fecha (00:00:00)
 }
 
 interface ModalSelectorDeBloqueProps {

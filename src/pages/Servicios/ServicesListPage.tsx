@@ -166,42 +166,63 @@ const ServicesListPage: React.FC = () => {
                 const comunas = servicio.comunas_a_las_que_hace_domicilio?.split(",").map((c: string) => c.trim()).filter(Boolean);
 
                 return (
-                  <div key={servicio.id} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition flex flex-col justify-between h-full">
-                    <div className="mb-4">
-                      <h3 className="text-[1.3em] font-bold text-[#009982] mb-2">{servicio.nombre}</h3>
+                  <div key={servicio.id} className="relative bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition flex flex-col h-full">
+                    <div className="flex flex-col h-full">
+                      <div className="absolute top-4 right-4 z-10">
+                        {servicio.hace_domicilio && (
+                          <span className="inline-flex items-center gap-1 bg-white/80 border border-[#009982] text-[#009982] text-xs font-bold px-3 py-1 rounded-full shadow-sm backdrop-blur-sm">
+                            <Check className="w-4 h-4" /> Hace a domicilio
+                          </span>
+                        )}
+                      </div>
+                      {/* Espacio para separar del título */}
+                      <div className="h-7" />
 
-                      {typeof servicio.promedio_rating === "number" && !isNaN(servicio.promedio_rating) && (
-                        <div className="flex items-center gap-1 mb-2 text-yellow-600 text-[1em] font-semibold">
-                          {Array.from({ length: 5 }, (_, i) => (
-                            <span key={i}>{i < Math.round(servicio.promedio_rating!) ? "⭐" : "☆"}</span>
-                          ))}
-                          {servicio.total_opiniones > 0 && (
-                            <span className="ml-2 text-gray-700 text-[0.95em]">
-                              ({servicio.total_opiniones} opini{servicio.total_opiniones === 1 ? "ón" : "ones"})
-                            </span>
-                          )}
-                        </div>
-                      )}
+                      <div className="flex-1 mb-4">
+                        <h3 className="text-[1.3em] font-bold text-[#009982] mb-2">{servicio.nombre}</h3>
 
-                      {comunas && comunas.length > 0 && (
-                        <div className="text-[1em] text-gray-800 font-medium mb-4">
-                          <div className="flex items-center gap-2 text-[#CD3272] mb-1">
-                            <MapPin className="w-5 h-5" />
-                            <span className="text-gray-800 font-semibold">Comunas donde se ofrece:</span>
+                        {typeof servicio.promedio_rating === "number" && !isNaN(servicio.promedio_rating) && (
+                          <div className="flex items-center gap-1 mb-2 text-yellow-600 text-[1em] font-semibold">
+                            {Array.from({ length: 5 }, (_, i) => (
+                              <span key={i}>{i < Math.round(servicio.promedio_rating!) ? "⭐" : "☆"}</span>
+                            ))}
+                            {servicio.total_opiniones > 0 && (
+                              <span className="ml-2 text-gray-700 text-[0.95em]">
+                                ({servicio.total_opiniones} opini{servicio.total_opiniones === 1 ? "ón" : "ones"})
+                              </span>
+                            )}
                           </div>
-                          <p className="ml-6 text-[0.95em] font-normal text-gray-800">{comunas.join(", ")}</p>
-                        </div>
-                      )}
+                        )}
 
-                      {servicio.beneficios.length > 0 && (
-                        <ul className="flex flex-col gap-1 text-[1em] text-[#009982] font-medium mb-3 ml-1">
-                          {servicio.beneficios.map((b: Beneficio) => (
-                            <li key={b.id} className="flex items-center gap-2">
-                              <Check className="w-4 h-4 text-[#009982]" /> {b.nombre}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
+                        {/* Mostrar comunas si hace domicilio, si no mostrar dirección */}
+                        {servicio.hace_domicilio && comunas && comunas.length > 0 ? (
+                          <div className="text-[1em] text-gray-800 font-medium mb-4">
+                            <div className="flex items-center gap-2 text-[#CD3272] mb-1">
+                              <MapPin className="w-5 h-5" />
+                              <span className="text-gray-800 font-semibold">Comunas donde hace a domicilio:</span>
+                            </div>
+                            <p className="ml-6 text-[0.95em] font-normal text-gray-800">{comunas.join(", ")}</p>
+                          </div>
+                        ) : (
+                          <div className="text-[1em] text-gray-800 font-medium mb-4">
+                            <div className="flex items-center gap-2 text-[#CD3272] mb-1">
+                              <MapPin className="w-5 h-5" />
+                              <span className="text-gray-800 font-semibold">Dirección del servicio:</span>
+                            </div>
+                            <p className="ml-6 text-[0.95em] font-normal text-gray-800">{servicio.direccion_principal_del_prestador}</p>
+                          </div>
+                        )}
+
+                        {servicio.beneficios.length > 0 && (
+                          <ul className="flex flex-col gap-1 text-[1em] text-[#009982] font-medium mb-3 ml-1">
+                            {servicio.beneficios.map((b: Beneficio) => (
+                              <li key={b.id} className="flex items-center gap-2">
+                                <Check className="w-4 h-4 text-[#009982]" /> {b.nombre}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
                     </div>
                     <div className="mt-auto">
                       <button
