@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../context/UserContext";
@@ -21,6 +21,7 @@ import CalendarIcon from '../../assets/Calendar2.svg?react';
 import HeadsetIcon from '../../assets/Support.svg?react';
 import UserIcon from '../../assets/Person.svg?react';
 import { allConsejos } from "../../constants/consejos";
+import ProposeServiceCard from "../../common/ProposeServiceCard";
 
 export default function UserPage() {
   const { isAuthenticated } = useAuth0();
@@ -32,6 +33,16 @@ export default function UserPage() {
   const [modalView, setModalView] = useState<
     "main" | "actividad" | "actividad_recurrente" | "producto" | "servicio" | null
   >(null);
+
+  useEffect(() => {
+    if (loading || !profile) return;
+
+    if (profile.rol === 'administrador') {
+      navigate('/admin', { replace: true });
+    } else if (profile.rol === 'proveedor') {
+      navigate('/proveedor', { replace: true });
+    }
+  }, [profile, loading, navigate]);
 
   function getDailyConsejos(consejos: { text: string }[], count = 4) {
     const today = new Date();
@@ -47,7 +58,9 @@ export default function UserPage() {
 
   const consejos = getDailyConsejos(allConsejos, 4);
 
-  if (loading) return <p className="text-center mt-10">Cargando perfil…</p>;
+  if (loading || (profile && ['administrador', 'proveedor'].includes(profile.rol))) {
+    return <p className="text-center mt-10">Cargando perfil…</p>;
+  }
 
   if (!isAuthenticated) {
     return (
@@ -83,8 +96,15 @@ export default function UserPage() {
               <QuickAccessButton icon={<UserIcon className="w-8 h-8 text-accent2" />} label="Mi perfil" onClick={() => navigate("/edit-profile")} />
             </div>
 
-            {/* Mensaje de promocion socio */}
-            <BenefitsCard onClickCTA={() => navigate("/pricing")} />
+            {/* Mensaje de promocion socio y proponer servicio */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-2">
+                <BenefitsCard onClickCTA={() => navigate("/pricing")} />
+              </div>
+              <div className="md:col-span-1">
+                <ProposeServiceCard />
+              </div>
+            </div>
 
 
             {/* QuickNav + Consejos en columnas */}

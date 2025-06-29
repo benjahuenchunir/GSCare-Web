@@ -14,8 +14,15 @@ export default function AdminRoute({ children }: { children: React.ReactNode }) 
     return <p className="text-center mt-10">Cargando…</p>
   }
 
-  if (!isAuthenticated || profile?.rol !== "administrador") {
+  if (!isAuthenticated) {
     return <Navigate to="/" />
+  }
+
+  if (profile?.rol !== "administrador") {
+    if (profile?.rol === "proveedor") {
+      return <Navigate to="/proveedor" />
+    }
+    return <Navigate to="/user" />
   }
 
   return <>{children}</>

@@ -1,5 +1,9 @@
 import axios from "axios";
 
+import { fetchServicios } from "./serviceService";
+import { getBloquesForServicio, getCitaByBloque } from "./adminService";
+import { getUserById } from "./userService";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 export const isUserSubscribed = async (servicioId: number, userId: number): Promise<boolean> => {
@@ -63,3 +67,43 @@ export const getServiciosConCitas = async (userId: number): Promise<any[]> => {
     return [];
   }
 };
+
+
+// Devuelve eventos tipo "cita" para el proveedor
+export async function getCitasParaProveedor(proveedorId: number, token: string) {
+  const servicios = await fetchServicios();
+  const serviciosPropios = servicios.filter(s => s.id_usuario_creador === proveedorId);
+
+  const eventos = [];
+
+  for (const servicio of serviciosPropios) {
+    const bloques = await getBloquesForServicio(servicio.id, token);
+
+    for (const bloque of bloques) {
+      if (!bloque.disponibilidad) {
+        try {
+          const citas = await getCitaByBloque(bloque.id, token); // puede ser array
+          const cita = Array.isArray(citas) ? citas[0] : citas;
+          const usuario = await getUserById(cita.id_usuario);
+
+          eventos.push({
+            id: cita.id,
+            title: `Cita: ${servicio.nombre}`,
+            start: new Date(`${bloque.fecha}T${bloque.hora_inicio}`),
+            end: new Date(`${bloque.fecha}T${bloque.hora_termino}`),
+            tipo: 'servicio',
+            descripcion: `Servicio: ${servicio.nombre}`,
+            datos_cliente: {
+              nombre: usuario.nombre,
+              email: usuario.email,
+            }
+          });
+        } catch (error) {
+          console.warn(`Error al obtener cita/bloque/usuario: ${error}`);
+        }
+      }
+    }
+  }
+
+  return eventos;
+}

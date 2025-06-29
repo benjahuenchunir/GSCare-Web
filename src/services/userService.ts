@@ -90,3 +90,14 @@ export async function deleteUserById(id: number, token: string): Promise<void> {
     throw new Error("Error al eliminar el usuario");
   }
 }
+
+export async function getUserById(id: number): Promise<User> {
+  const res = await fetch(`${API_URL}/usuarios/id/${id}`);
+  if (res.ok) return await res.json();
+  if (res.status === 404) {
+    const err: any = new Error("Not Found");
+    err.status = 404;
+    throw err;
+  }
+  throw new Error("Error fetching user by ID");
+}

@@ -25,10 +25,11 @@ const AuthHandler: React.FC = () => {
       // Chequear existencia en tu API
       getUserByEmail(user.email)
         .then(async (dbUser) => {
-          // Recarga el contexto antes de mostrar /user
           await reloadProfile();
           if (dbUser.rol === "administrador") {
             navigate("/admin", { replace: true })
+          } else if (dbUser.rol === "proveedor") {
+            navigate("/proveedor", { replace: true })
           } else {
             navigate("/user", { replace: true })
           }

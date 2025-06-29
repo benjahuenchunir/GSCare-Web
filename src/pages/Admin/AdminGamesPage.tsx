@@ -50,7 +50,7 @@ export default function AdminGamesPage() {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto font-sans">
+    <div className="p-6">
       <h1 className="text-2xl font-bold text-gray-800 mb-4">Administración de Juegos</h1>
 
       {/* Formulario */}
@@ -65,28 +65,28 @@ export default function AdminGamesPage() {
             placeholder="Título"
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#009982] focus:border-[#009982]"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#009982] focus:outline-none"
           />
           <input
             type="text"
             placeholder="Descripción"
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#009982] focus:border-[#009982]"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#009982] focus:outline-none"
           />
           <input
             type="text"
             placeholder="URL de la Imagen"
             value={form.image}
             onChange={(e) => setForm({ ...form, image: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#009982] focus:border-[#009982]"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#009982] focus:outline-none"
           />
           <input
             type="text"
             placeholder="Link del Juego"
             value={form.link}
             onChange={(e) => setForm({ ...form, link: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#009982] focus:border-[#009982]"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#009982] focus:outline-none"
           />
         </div>
         <div className="flex gap-4 items-center mt-4">
@@ -114,15 +114,15 @@ export default function AdminGamesPage() {
       {loading ? (
         <p className="text-center text-gray-500">Cargando juegos...</p>
       ) : (
-        <div className="overflow-x-auto bg-white rounded-xl shadow">
-          <table className="min-w-full text-sm table-auto">
+        <div className="overflow-x-auto bg-white rounded-lg shadow">
+          <table className="w-full text-sm text-left table-auto">
             <thead className="bg-gray-100 text-gray-700">
               <tr>
-                <th className="p-3 text-left">Imagen</th>
-                <th className="p-3 text-left">Título</th>
-                <th className="p-3 text-left">Descripción</th>
-                <th className="p-3 text-left">Link</th>
-                <th className="p-3 text-left">Acciones</th>
+                <th className="p-3">Imagen</th>
+                <th className="p-3">Título</th>
+                <th className="p-3">Descripción</th>
+                <th className="p-3">Link</th>
+                <th className="p-3">Acciones</th>
               </tr>
             </thead>
             <tbody>

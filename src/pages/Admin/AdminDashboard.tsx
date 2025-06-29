@@ -1,9 +1,10 @@
 import { useEffect, useState, useContext } from "react";
 import { useAuth0, User } from "@auth0/auth0-react";
 import { UserContext } from "../../context/UserContext";
-import { Calendar, Package, ShoppingBag, Users, Eye, ChevronRight } from "lucide-react";
+import { Calendar, Package, ShoppingBag, Users, Eye, ChevronRight, Flag } from "lucide-react";
 import { getAdminCount, getRecentUsers, getRecentActivities } from "../../services/adminService";
 import ReporteModal from "../../components/AdminComponents/ReportReviewModal"; // Ajusta si la ruta cambia
+import { useNavigate } from "react-router-dom";
 
 export default function AdminDashboard() {
   const { getAccessTokenSilently } = useAuth0();
@@ -182,9 +183,9 @@ export default function AdminDashboard() {
       <section className="mb-8">
         <h2 className="text-lg font-semibold text-gray-900 mb-2">Acciones rápidas</h2>
         <div className="grid gap-4 md:grid-cols-3">
-          <QuickAction title="Ver usuarios" description="Gestionar usuarios registrados" color="#62CBC9" />
-          <QuickAction title="Ir a reportes" description="Ver estadísticas detalladas" color="#FFC600" />
-          <QuickAction title="Crear nuevo servicio" description="Agregar servicio al catálogo" color="#FF8D6B" />
+          <QuickAction title="Ver usuarios" description="Gestionar usuarios registrados" color="#62CBC9" icon={Users} to="/admin/users" />
+          <QuickAction title="Ir a reportes" description="Ver contenido reportado" color="#FFC600" icon={Flag} to="/admin/reports" />
+          <QuickAction title="Crear nuevo servicio" description="Agregar servicio al catálogo" color="#FF8D6B" icon={Package} to="/admin/services" />
         </div>
       </section>
 
@@ -216,9 +217,10 @@ export default function AdminDashboard() {
                       user.rol === "socio"
                         ? "bg-yellow-600/20 text-yellow-600"
                         : user.rol === "administrador" ? "bg-[#6B21A8]/20 text-[#6B21A8]"
+                        : user.rol === "proveedor" ? "bg-green-200 text-green-800"
                         : "bg-[#009982]/10 text-[#006881]"
                     }`}>
-                      {user.rol === "socio" ? "Socio" : user.rol === "administrador" ? "Administrador" : "General"}
+                      {user.rol === "socio" ? "Socio" : user.rol === "administrador" ? "Administrador" : user.rol === "proveedor" ? "Proveedor" : "General"}
                     </span>
                   </td>
                   <td>{new Date(user.createdAt).toLocaleDateString("es-CL")}</td>
@@ -304,20 +306,28 @@ function QuickAction({
   title,
   description,
   color,
+  icon: Icon,
+  to,
 }: {
   title: string;
   description: string;
   color: string;
+  icon: React.ElementType;
+  to: string;
 }) {
+  const navigate = useNavigate();
   return (
-    <div className="flex flex-col items-start gap-2 bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition">
+    <button
+      onClick={() => navigate(to)}
+      className="flex flex-col text-left items-start gap-2 bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition"
+    >
       <div className={`rounded-lg p-2`} style={{ backgroundColor: color }}>
-        <Users className="h-5 w-5 text-white" />
+        <Icon className="h-5 w-5 text-white" />
       </div>
       <div>
         <p className="font-medium text-gray-900">{title}</p>
         <p className="text-sm text-gray-600">{description}</p>
       </div>
-    </div>
+    </button>
   );
 }

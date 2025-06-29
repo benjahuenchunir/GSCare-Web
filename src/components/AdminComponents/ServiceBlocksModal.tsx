@@ -50,6 +50,7 @@ export default function ServiceBlocksModal({ servicio, onClose }: Props) {
   const [creationError, setCreationError] = useState<string | null>(null);
   const [editingBlockId, setEditingBlockId] = useState<number | null>(null)
   const [editForm, setEditForm] = useState({ fecha: "", hora_inicio: "", hora_termino: "" })
+  const [editError, setEditError] = useState<string | null>(null);
 
   // 1) Trae bloques + para cada ocupado busca su cita y luego el email
   const fetchBloquesYUsuarios = async () => {
@@ -111,13 +112,14 @@ export default function ServiceBlocksModal({ servicio, onClose }: Props) {
     }
   }
   const handleUpdateBlock = async (bloqueId: number) => {
+    setEditError(null);
     try {
       const token = await getAccessTokenSilently()
       await updateBloque(servicio.id, bloqueId, editForm, token)
       await fetchBloquesYUsuarios()
       setEditingBlockId(null)
-    } catch {
-      alert("Error al actualizar el bloque.")
+    } catch (err: any) {
+      setEditError(err.message);
     }
   }
   const handleDeleteBlock = async (bloqueId: number) => {
@@ -158,27 +160,36 @@ export default function ServiceBlocksModal({ servicio, onClose }: Props) {
     if (editingBlockId === b.id) {
       return (
         <div key={b.id} className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg">
-          <input
-            type="date"
-            value={editForm.fecha}
-            onChange={e => setEditForm(f => ({ ...f, fecha: e.target.value }))}
-            className="border rounded px-2 py-1 text-sm"
-          />
-          <input
-            type="time"
-            value={editForm.hora_inicio}
-            onChange={e => setEditForm(f => ({ ...f, hora_inicio: e.target.value }))}
-            className="border rounded px-2 py-1 text-sm"
-          />
-          <input
-            type="time"
-            value={editForm.hora_termino}
-            onChange={e => setEditForm(f => ({ ...f, hora_termino: e.target.value }))}
-            className="border rounded px-2 py-1 text-sm"
-          />
-          <div className="ml-auto flex gap-2">
-            <button onClick={() => handleUpdateBlock(b.id)} className="text-green-600">Guardar</button>
-            <button onClick={() => setEditingBlockId(null)} className="text-gray-500">Cancelar</button>
+          <div className="flex-grow space-y-2">
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={editForm.fecha}
+                onChange={e => setEditForm(f => ({ ...f, fecha: e.target.value }))}
+                className="border rounded px-2 py-1 text-sm w-full"
+              />
+              <input
+                type="time"
+                value={editForm.hora_inicio}
+                onChange={e => setEditForm(f => ({ ...f, hora_inicio: e.target.value }))}
+                className="border rounded px-2 py-1 text-sm w-full"
+              />
+              <input
+                type="time"
+                value={editForm.hora_termino}
+                onChange={e => setEditForm(f => ({ ...f, hora_termino: e.target.value }))}
+                className="border rounded px-2 py-1 text-sm w-full"
+              />
+            </div>
+            {editError && (
+              <div className="w-full text-red-600 text-xs bg-red-100 p-2 rounded border border-red-200">
+                {editError}
+              </div>
+            )}
+          </div>
+          <div className="ml-auto flex flex-col gap-2">
+            <button onClick={() => handleUpdateBlock(b.id)} className="text-green-600 text-sm">Guardar</button>
+            <button onClick={() => { setEditingBlockId(null); setEditError(null); }} className="text-gray-500 text-sm">Cancelar</button>
           </div>
         </div>
       )
@@ -208,6 +219,7 @@ export default function ServiceBlocksModal({ servicio, onClose }: Props) {
                   hora_inicio: b.hora_inicio,
                   hora_termino: b.hora_termino,
                 })
+                setEditError(null);
               }}
               className="text-blue-600"
               title="Editar bloque"

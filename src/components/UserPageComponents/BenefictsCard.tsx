@@ -2,7 +2,7 @@ import { Sparkles, ArrowRight, Users, Gift } from 'lucide-react';
 
 const BenefitsCard = ({ onClickCTA }: { onClickCTA?: () => void }) => {
   return (
-    <div className="relative overflow-hidden bg-[#F5F5F5] rounded-[2rem] border border-[#E0E0E0] shadow-md p-6 sm:p-10 max-w-5xl mx-auto transition-all duration-300">
+    <div className="relative overflow-hidden bg-[#FFFFFF] rounded-[2rem] border border-[#E0E0E0] shadow-md p-6 sm:p-10 max-w-5xl mx-auto transition-all duration-300">
 
       <div className="relative z-10">
         {/* Header */}

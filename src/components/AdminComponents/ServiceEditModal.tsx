@@ -9,13 +9,25 @@ interface Props {
   onUpdate: () => void;
 }
 
+const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+
 export default function ServiceEditModal({ servicio, onClose, onUpdate }: Props) {
   const { getAccessTokenSilently } = useAuth0();
-  const [form, setForm] = useState(servicio);
+  const [form, setForm] = useState({
+    ...servicio,
+    dias_disponibles: typeof (servicio.dias_disponibles as any) === 'string'
+      ? (servicio.dias_disponibles as any).split(',').map(Number)
+      : servicio.dias_disponibles || []
+  });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setForm(servicio);
+    setForm({
+      ...servicio,
+      dias_disponibles: typeof (servicio.dias_disponibles as any) === 'string'
+        ? (servicio.dias_disponibles as any).split(',').map(Number)
+        : servicio.dias_disponibles || []
+    });
   }, [servicio]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -26,6 +38,17 @@ export default function ServiceEditModal({ servicio, onClose, onUpdate }: Props)
     } else {
       setForm(prev => ({ ...prev, [name]: value }));
     }
+  };
+
+  const handleDiasChange = (dia: number) => {
+    setForm(prev => {
+      const dias = prev.dias_disponibles;
+      if (dias.includes(dia)) {
+        return { ...prev, dias_disponibles: dias.filter((d: number) => d !== dia) };
+      } else {
+        return { ...prev, dias_disponibles: [...dias, dia].sort() };
+      }
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,6 +68,7 @@ export default function ServiceEditModal({ servicio, onClose, onUpdate }: Props)
         imagen: form.imagen,
         hora_inicio: form.hora_inicio,
         hora_termino: form.hora_termino,
+        dias_disponibles: form.dias_disponibles.join(','),
       };
       await updateServicio(form.id, dataToUpdate, token);
       onUpdate();
@@ -84,6 +108,22 @@ export default function ServiceEditModal({ servicio, onClose, onUpdate }: Props)
           <div className="col-span-full grid grid-cols-2 gap-4">
             <label className="block">Horario atención (inicio)<input type="time" name="hora_inicio" value={form.hora_inicio?.slice(0, 5) || ''} onChange={handleChange} className="w-full border px-3 py-2 mt-1 rounded" /></label>
             <label className="block">Horario atención (fin)<input type="time" name="hora_termino" value={form.hora_termino?.slice(0, 5) || ''} onChange={handleChange} className="w-full border px-3 py-2 mt-1 rounded" /></label>
+          </div>
+
+          <div className="col-span-full">
+            <span className="block text-sm font-medium text-gray-700 mb-2">Días de atención</span>
+            <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
+              {diasSemana.map((nombre, index) => (
+                <button
+                  type="button"
+                  key={index}
+                  onClick={() => handleDiasChange(index)}
+                  className={`p-2 text-sm rounded-lg border-2 ${form.dias_disponibles.includes(index) ? 'bg-primary1 text-white border-primary1' : 'bg-gray-100 hover:bg-gray-200'}`}
+                >
+                  {nombre.slice(0, 3)}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="col-span-full flex items-center gap-4">

@@ -75,20 +75,24 @@ export default function PricingPage() {
 
             {/* CTA */}
             <div className="p-6 text-center">
-              {plan.id === "socio" ? (
-                <button
-                  onClick={handleSocioClick}
-                  className="inline-block w-full text-[1.1em] font-semibold py-3 rounded-lg transition bg-[#009982] text-white hover:bg-[#007e6e]"
-                >
-                  Hacerse Socio
-                </button>
-              ) : (
-                <button
-                  onClick={() => navigate("/user")}
-                  className="inline-block w-full text-[1.1em] font-semibold py-3 rounded-lg transition bg-gray-300 text-gray-800 hover:bg-gray-400"
-                >
-                  Seguir Gratis
-                </button>
+              {profile?.rol !== "administrador" && profile?.rol !== "proveedor" && (
+                <>
+                  {plan.id === "socio" ? (
+                    <button
+                      onClick={handleSocioClick}
+                      className="inline-block w-full text-[1.1em] font-semibold py-3 rounded-lg transition bg-[#009982] text-white hover:bg-[#007e6e]"
+                    >
+                      Hacerse Socio
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => navigate("/user")}
+                      className="inline-block w-full text-[1.1em] font-semibold py-3 rounded-lg transition bg-gray-300 text-gray-800 hover:bg-gray-400"
+                    >
+                      Seguir Sin Membresía
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>

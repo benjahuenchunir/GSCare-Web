@@ -33,6 +33,7 @@ import SupportPage from "./pages/Soporte/SupportPage.tsx";
 import AdminNewsPage from "./pages/Admin/AdminNewsPage.tsx";
 import NewsListPage from "./pages/Noticias/NewsListPage.tsx";
 import AdminTestimoniosPage from "./pages/Admin/AdminTestimoniosPage.tsx";
+import ProveedorPage from "./pages/Proveedor/ProveedorPage.tsx";
 
 export default function Routing() {
   return (
@@ -133,6 +134,15 @@ export default function Routing() {
             element={
               <ProtectedRoute>
                 <PricingPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* Rutas de Proveedor */}
+          <Route
+            path="/proveedor"
+            element={
+              <ProtectedRoute role="proveedor">
+                <ProveedorPage />
               </ProtectedRoute>
             }
           />
