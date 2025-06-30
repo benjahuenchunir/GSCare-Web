@@ -93,11 +93,11 @@ export const ForumProvider: React.FC<{
   };
 
   const isMemberOfThread = (thread: Thread): boolean => {
-    const identifier = user?.sub || user?.email || "";
+    const identifier = user?.sub || ""; // Usar siempre el ID de usuario (sub)
     return !!(
       identifier &&
-      thread.members &&
-      thread.members.includes(identifier)
+      thread.membersId &&
+      thread.membersId.includes(identifier)
     );
   };
 

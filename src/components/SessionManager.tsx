@@ -1,11 +1,12 @@
-// src/components/SessionManager.tsx
 import { useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 
 export default function SessionManager() {
-  const { getAccessTokenSilently, logout } = useAuth0();
+  const { isAuthenticated, getAccessTokenSilently, logout } = useAuth0();
 
   useEffect(() => {
+    if (!isAuthenticated) return; // 🔐 Evita ejecutar si el usuario no está autenticado
+
     const interval = setInterval(async () => {
       try {
         await getAccessTokenSilently();
@@ -16,7 +17,7 @@ export default function SessionManager() {
     }, 30000); // cada 30 segundos
 
     return () => clearInterval(interval);
-  }, [getAccessTokenSilently, logout]);
+  }, [isAuthenticated, getAccessTokenSilently, logout]);
 
   return null;
 }

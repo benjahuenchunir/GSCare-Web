@@ -50,10 +50,10 @@ const ThreadList: React.FC<ThreadListProps> = ({
 
   // Ordenar hilos: primero los que no son miembros, luego los que son miembros
   const notMember = threads.filter(
-    (thread) => !thread.members.includes(user?.email || "")
+    (thread) => !thread.members.includes(user?.sub || "")
   );
   const member = threads.filter((thread) =>
-    thread.members.includes(user?.email || "")
+    thread.members.includes(user?.sub || "")
   );
   const orderedThreads = [...notMember, ...member];
 
@@ -78,7 +78,7 @@ const ThreadList: React.FC<ThreadListProps> = ({
                 </p>
               </div>
             </div>
-            {!thread.members.includes(user?.email || "") && (
+            {!thread.members.includes(user?.sub || "") && (
               <button
                 onClick={() => onThreadSelect(thread)}
                 className="bg-[#009982] text-white px-4 py-2 rounded-lg hover:bg-[#006E5E] transition flex items-center gap-2"

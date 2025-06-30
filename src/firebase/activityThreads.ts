@@ -20,6 +20,7 @@ export interface Thread {
   updatedAt: Date;
   createdBy: string;
   members: string[];
+  membersId: string[]; 
 }
 
 export const createThread = async (
@@ -78,23 +79,16 @@ export const joinThread = async (
   try {
     const threadRef = doc(db, "activityThreads", threadId);
     const threadDoc = await getDoc(threadRef);
-
-    if (!threadDoc.exists()) {
-      throw new Error("El hilo no existe");
-    }
+    if (!threadDoc.exists()) throw new Error("Thread not found");
 
     const currentMembers = threadDoc.data().members || [];
     const currentMembersId = threadDoc.data().membersId || [];
-    const needsUpdate =
-      !currentMembers.includes(userName) || !currentMembersId.includes(userId);
+    const needsUpdate = !currentMembersId.includes(userId);
+
     if (needsUpdate) {
       await updateDoc(threadRef, {
-        members: currentMembers.includes(userName)
-          ? currentMembers
-          : [...currentMembers, userName],
-        membersId: currentMembersId.includes(userId)
-          ? currentMembersId
-          : [...currentMembersId, userId],
+        members: [...currentMembers, userName],
+        membersId: [...currentMembersId, userId],
         updatedAt: serverTimestamp(),
       });
     }
