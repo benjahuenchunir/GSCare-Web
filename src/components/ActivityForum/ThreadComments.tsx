@@ -17,6 +17,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCommentDots } from "@fortawesome/free-solid-svg-icons";
 import { AlertTriangle, Trash2 } from "lucide-react";
 import { UserContext } from "../../context/UserContext";
+import { joinThread } from "../../firebase/activityThreads";
 
 interface Comment {
   id: string;
@@ -99,7 +100,7 @@ export const ThreadComments: React.FC<ThreadCommentsProps> = ({ threadId, onRepo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user?.email || !newComment.trim() || isSubmitting) return;
+    if (!user?.email || !newComment.trim() || isSubmitting || !user.sub) return;
 
     setIsSubmitting(true);
     try {
@@ -108,8 +109,16 @@ export const ThreadComments: React.FC<ThreadCommentsProps> = ({ threadId, onRepo
         content: newComment.trim(),
         createdAt: serverTimestamp(),
         createdBy: user.name || user.nickname || user.email,
-        createdById: user.sub || user.email,
+        createdById: user.sub,
       });
+
+      // Unirse automáticamente al hilo al comentar
+      await joinThread(
+        threadId,
+        user.name || user.nickname || user.email || "Usuario",
+        user.sub
+      );
+
       setNewComment("");
     } catch (error) {
       console.error("Error al agregar comentario:", error);
