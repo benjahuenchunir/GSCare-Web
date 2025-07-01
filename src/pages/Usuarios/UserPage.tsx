@@ -29,6 +29,7 @@ export default function UserPage() {
   const { profile, loading } = useContext(UserContext);
   const [testimonioTexto, setTestimonioTexto] = useState("");
   const [enviado, setEnviado] = useState(false);
+  const [activityCreationKey, setActivityCreationKey] = useState(0);
 
   const [modalView, setModalView] = useState<
     "main" | "actividad" | "actividad_recurrente" | "producto" | "servicio" | null
@@ -43,6 +44,11 @@ export default function UserPage() {
       navigate('/proveedor', { replace: true });
     }
   }, [profile, loading, navigate]);
+
+  const handleActivityCreated = () => {
+    setModalView(null); // Cierra el modal
+    setActivityCreationKey(prev => prev + 1); // Actualiza la key para forzar el re-render
+  };
 
   function getDailyConsejos(consejos: { text: string }[], count = 4) {
     const today = new Date();
@@ -189,7 +195,7 @@ export default function UserPage() {
             {/* Actividades recomendadas (solo socios) */}
             
             <div className="space-y-4">
-              {profile && <MyCreatedActivitiesSection userId={profile.id} setView={setModalView} />}
+              {profile && <MyCreatedActivitiesSection key={activityCreationKey} userId={profile.id} setView={setModalView} />}
              </div>
 
             <div className="mt-8 bg-green-50 border border-green-300 mx-auto max-w-xl rounded-lg p-6 text-center space-y-4">
@@ -237,7 +243,7 @@ export default function UserPage() {
       {modalView && (
         <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white max-w-2xl w-full mx-4 p-6 rounded-2xl shadow-lg">
-            <PartnerHub view={modalView} setView={setModalView} inline />
+            <PartnerHub view={modalView} setView={setModalView} inline onActivityCreated={handleActivityCreated} />
           </div>
         </div>
       )}

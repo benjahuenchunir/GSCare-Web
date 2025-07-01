@@ -55,9 +55,10 @@ type Props = {
   view: "main" | "actividad" | "actividad_recurrente" | "producto" | "servicio";
   setView: (v: "main" | "actividad" | "actividad_recurrente" | "producto" | "servicio" | null) => void;
   inline?: boolean;
+  onActivityCreated?: () => void;
 };
 
-export default function PartnerHub({ view, setView }: Props) {
+export default function PartnerHub({ view, setView, onActivityCreated }: Props) {
   const { isAuthenticated, user, getAccessTokenSilently } = useAuth0();
   const [actividad, setActividad] = useState(initialActividad);
   const [actividadRecurrente, setActividadRecurrente] = useState(initialRecurrentActividad);
@@ -155,6 +156,7 @@ export default function PartnerHub({ view, setView }: Props) {
       setSuccess("¡Actividad creada!");
       setActividad(initialActividad);
       setActividadImagen(null);
+      if (onActivityCreated) onActivityCreated();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
@@ -244,6 +246,7 @@ export default function PartnerHub({ view, setView }: Props) {
       setSuccess("¡Actividad recurrente creada!");
       setActividadRecurrente(initialRecurrentActividad);
       setActividadRecImagen(null);
+      if (onActivityCreated) onActivityCreated();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
