@@ -284,7 +284,7 @@ export default function AdminActividadesPage() {
                 <td className="p-3">{a.modalidad}</td>
                 <td className="p-3">{a.categoria}</td>
                 <td className="p-3">
-                  {a.capacidad_total === 999999 ? (
+                  {a.capacidad_total >= 99999 ? (
                     <span className="text-gray-500">N/A</span>
                   ) : (
                     `${a.asistentes} (${Math.round(
@@ -293,7 +293,7 @@ export default function AdminActividadesPage() {
                   )}
                 </td>
                 <td className="p-3">
-                  {a.capacidad_total === 999999 ? (
+                  {a.capacidad_total >= 99999 ? (
                     <span className="text-gray-500">Sin límite</span>
                   ) : (
                     a.capacidad_total
