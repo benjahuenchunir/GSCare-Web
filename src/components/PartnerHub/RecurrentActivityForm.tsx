@@ -101,16 +101,16 @@ export default function RecurrentActivityForm({
 
   // --- NUEVO: Manejo de "sin límite" de capacidad ---
   const [sinLimiteCapacidad, setSinLimiteCapacidad] = useState(
-    actividad.capacidad_total === 999999 ||
     actividad.capacidad_total === null ||
-    actividad.capacidad_total === undefined
+    actividad.capacidad_total === undefined ||
+    actividad.capacidad_total >= 99999
   );
 
   useEffect(() => {
     setSinLimiteCapacidad(
-      actividad.capacidad_total === 999999 ||
       actividad.capacidad_total === null ||
-      actividad.capacidad_total === undefined
+      actividad.capacidad_total === undefined ||
+      actividad.capacidad_total >= 99999
     );
   }, [actividad.capacidad_total]);
 
@@ -120,6 +120,10 @@ export default function RecurrentActivityForm({
   // NUEVO: Handler para submit que muestra el modal
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (actividad.capacidad_total === 99999) {
+      alert("La capacidad no puede ser 99999. Marca la casilla 'Sin límite de capacidad' en su lugar.");
+      return;
+    }
     setShowConfirmModal(true);
   };
 
@@ -130,25 +134,18 @@ export default function RecurrentActivityForm({
     onSubmit(new Event("submit") as any);
   };
 
-  // NUEVO: tipo de imagen (archivo o url)
-  const [tipoImagen, setTipoImagen] = useState<'archivo' | 'url'>(
-    actividad.imagen && actividad.imagen.startsWith('http') ? 'url' : 'archivo'
-  );
-  // NUEVO: Vista previa de imagen seleccionada
+  // Vista previa de imagen seleccionada
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   useEffect(() => {
-    if (tipoImagen === 'archivo' && imagenFile) {
+    if (imagenFile) {
       const url = URL.createObjectURL(imagenFile);
       setPreviewUrl(url);
       return () => URL.revokeObjectURL(url);
-    } else if (tipoImagen === 'url' && actividad.imagen) {
-      setPreviewUrl(actividad.imagen);
-      return undefined;
     } else {
       setPreviewUrl(null);
       return undefined;
     }
-  }, [imagenFile, actividad.imagen, tipoImagen]);
+  }, [imagenFile]);
 
   // --- Vista previa helpers ---
   const formatearFecha = (fecha: string) => {
@@ -251,47 +248,13 @@ export default function RecurrentActivityForm({
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-lg font-medium mb-1">Imagen (opcional)</label>
-                  {/* NUEVO: Selector de tipo de imagen */}
-                  <div className="flex gap-4 mb-2">
-                    <label className="flex items-center gap-1">
-                      <input
-                        type="radio"
-                        name="tipoImagen"
-                        value="archivo"
-                        checked={tipoImagen === "archivo"}
-                        onChange={() => setTipoImagen("archivo")}
-                      />
-                      Archivo
-                    </label>
-                    <label className="flex items-center gap-1">
-                      <input
-                        type="radio"
-                        name="tipoImagen"
-                        value="url"
-                        checked={tipoImagen === "url"}
-                        onChange={() => setTipoImagen("url")}
-                      />
-                      URL
-                    </label>
-                  </div>
-                  {tipoImagen === "archivo" ? (
-                    <input
-                      type="file"
-                      name="imagen"
-                      accept="image/*"
-                      onChange={onChange}
-                      className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
-                    />
-                  ) : (
-                    <input
-                      type="text"
-                      name="imagen"
-                      value={actividad.imagen || ""}
-                      onChange={onChange}
-                      className="w-full border rounded-xl py-3 px-4 text-lg"
-                      placeholder="https://ejemplo.com/imagen.jpg"
-                    />
-                  )}
+                  <input
+                    type="file"
+                    name="imagen"
+                    accept="image/*"
+                    onChange={onChange}
+                    className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
+                  />
                   {/* Vista previa */}
                   {previewUrl && (
                     <div className="mt-2">
@@ -371,7 +334,7 @@ export default function RecurrentActivityForm({
                 <input
                   type="number"
                   name="capacidad_total"
-                  value={sinLimiteCapacidad ? "" : (actividad.capacidad_total === 999999 ? "" : actividad.capacidad_total ?? "")}
+                  value={sinLimiteCapacidad ? "" : (actividad.capacidad_total >= 99999 ? "" : actividad.capacidad_total ?? "")}
                   onChange={e => {
                     onChange({
                       target: {
@@ -558,7 +521,7 @@ export default function RecurrentActivityForm({
                   Categoría: {actividad.categoria || "[Categoría]"}
                 </div>
                 <div className="bg-gray-100 rounded-md px-2 md:px-3 py-1 text-xs md:text-sm text-gray-800 font-medium">
-                  Capacidad: {sinLimiteCapacidad || actividad.capacidad_total === 999999
+                  Capacidad: {sinLimiteCapacidad || actividad.capacidad_total >= 99999
                     ? "Sin límite"
                     : actividad.capacidad_total || "[Capacidad]"}
                 </div>

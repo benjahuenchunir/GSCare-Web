@@ -23,7 +23,7 @@ export default function ActividadInfoCard({ nombre, descripcion, imagen, capacid
         </p>
         {typeof capacidad_total !== "undefined" && (
           <div className="mt-4 text-gray-700 font-semibold">
-            Capacidad: {capacidad_total === 999999 ? "Sin límite" : capacidad_total}
+            Capacidad: {capacidad_total >= 99999 ? "Sin límite" : capacidad_total}
           </div>
         )}
       </div>

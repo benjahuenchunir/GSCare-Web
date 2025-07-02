@@ -79,9 +79,9 @@ export default function ActivityForm({
 
   useEffect(() => {
     setSinLimiteCapacidad(
-      actividad.capacidad_total === 999999 ||
       actividad.capacidad_total === null ||
-      actividad.capacidad_total === undefined
+      actividad.capacidad_total === undefined ||
+      actividad.capacidad_total >= 99999
     );
   }, [actividad.capacidad_total]);
 
@@ -90,27 +90,20 @@ export default function ActivityForm({
     setShowConfirmModal(true);
   };
 
-  // NUEVO: tipo de imagen (archivo o url)
-  const [tipoImagen, setTipoImagen] = useState<'archivo' | 'url'>(
-    actividad.imagen && actividad.imagen.startsWith('http') ? 'url' : 'archivo'
-  );
-  // NUEVO: Vista previa de imagen seleccionada
+  // Vista previa de imagen seleccionada
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   useEffect(() => {
-    if (tipoImagen === 'archivo' && imagenFile) {
+    if (imagenFile) {
       const url = URL.createObjectURL(imagenFile);
       setPreviewUrl(url);
       return () => {
         URL.revokeObjectURL(url);
       };
-    } else if (tipoImagen === 'url' && actividad.imagen) {
-      setPreviewUrl(actividad.imagen);
-      return undefined;
     } else {
       setPreviewUrl(null);
       return undefined;
     }
-  }, [imagenFile, actividad.imagen, tipoImagen]);
+  }, [imagenFile]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center px-4">
@@ -207,47 +200,13 @@ export default function ActivityForm({
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Imagen (opcional)</label>
-              {/* NUEVO: Selector de tipo de imagen */}
-              <div className="flex gap-4 mb-2">
-                <label className="flex items-center gap-1">
-                  <input
-                    type="radio"
-                    name="tipoImagen"
-                    value="archivo"
-                    checked={tipoImagen === "archivo"}
-                    onChange={() => setTipoImagen("archivo")}
-                  />
-                  Archivo
-                </label>
-                <label className="flex items-center gap-1">
-                  <input
-                    type="radio"
-                    name="tipoImagen"
-                    value="url"
-                    checked={tipoImagen === "url"}
-                    onChange={() => setTipoImagen("url")}
-                  />
-                  URL
-                </label>
-              </div>
-              {tipoImagen === "archivo" ? (
-                <input
-                  type="file"
-                  name="imagen"
-                  accept="image/*"
-                  onChange={onChange}
-                  className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
-                />
-              ) : (
-                <input
-                  type="text"
-                  name="imagen"
-                  value={actividad.imagen || ""}
-                  onChange={onChange}
-                  className="w-full border rounded-xl py-3 px-4 text-lg"
-                  placeholder="https://ejemplo.com/imagen.jpg"
-                />
-              )}
+              <input
+                type="file"
+                name="imagen"
+                accept="image/*"
+                onChange={onChange}
+                className="w-full border rounded-xl py-3 px-4 text-lg focus:ring-2 focus:ring-[#62CBC9] outline-none"
+              />
               {/* Vista previa */}
               {previewUrl && (
                 <div className="mt-2">
@@ -353,7 +312,7 @@ export default function ActivityForm({
               <input
                 type="number"
                 name="capacidad_total"
-                value={sinLimiteCapacidad ? "" : (actividad.capacidad_total === 999999 ? "" : actividad.capacidad_total ?? "")}
+                value={sinLimiteCapacidad ? "" : (actividad.capacidad_total >= 99999 ? "" : actividad.capacidad_total ?? "")}
                 onChange={e => {
                   onChange({
                     target: {
@@ -440,7 +399,7 @@ export default function ActivityForm({
                   Categoría: {actividad.categoria === "otros" ? categoriaOtra || "[Otra]" : actividad.categoria || "[Categoría]"}
                 </div>
                 <div className="bg-gray-100 rounded-md px-3 py-1 text-sm text-gray-800 font-medium">
-                  Capacidad: {sinLimiteCapacidad || actividad.capacidad_total === 999999
+                  Capacidad: {sinLimiteCapacidad || actividad.capacidad_total >= 99999
                     ? "Sin límite"
                     : actividad.capacidad_total || "[Capacidad]"}
                 </div>

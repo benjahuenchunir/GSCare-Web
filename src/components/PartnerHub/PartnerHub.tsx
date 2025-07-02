@@ -76,13 +76,21 @@ export default function PartnerHub({ view, setView, onActivityCreated }: Props) 
   const handleActividadChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    // Si es input file, manejar aparte
-    if (e.target.type === "file") {
+    const { name, value, type } = e.target;
+
+    if (type === "file") {
       const file = (e.target as HTMLInputElement).files?.[0] || null;
       setActividadImagen(file);
-      setActividad((prev) => ({ ...prev, imagen: "" })); // Limpiar campo imagen texto
+      if (file) {
+        // Si se selecciona un archivo, limpiar la URL de texto
+        setActividad((prev) => ({ ...prev, imagen: "" }));
+      }
     } else {
-      setActividad((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+      setActividad((prev) => ({ ...prev, [name]: value }));
+      if (name === "imagen") {
+        // Si se escribe en la URL, limpiar el archivo
+        setActividadImagen(null);
+      }
     }
   };
 
@@ -95,15 +103,21 @@ export default function PartnerHub({ view, setView, onActivityCreated }: Props) 
   const handleActividadRecurrenteChange = (
     e:
       | ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-      | { target: { name: string; value: any } }
+      | { target: { name: string; value: any; type?: string } }
   ) => {
-    // Si es input file, manejar aparte
-    if ("target" in e && (e.target as any).type === "file") {
-      const file = ((e.target as any) as HTMLInputElement).files?.[0] || null;
+    const { name, value, type } = e.target as any;
+
+    if (type === "file") {
+      const file = (e.target as HTMLInputElement).files?.[0] || null;
       setActividadRecImagen(file);
-      setActividadRecurrente((prev) => ({ ...prev, imagen: "" }));
+      if (file) {
+        setActividadRecurrente((prev) => ({ ...prev, imagen: "" }));
+      }
     } else {
-      setActividadRecurrente((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+      setActividadRecurrente((prev) => ({ ...prev, [name]: value }));
+      if (name === "imagen") {
+        setActividadRecImagen(null);
+      }
     }
   };
 
@@ -114,6 +128,9 @@ export default function PartnerHub({ view, setView, onActivityCreated }: Props) 
     setSuccess("");
 
     const required: (keyof ActividadForm)[] = ["nombre", "descripcion", "modalidad", "fecha", "hora_inicio", "hora_final"];
+    if (actividad.modalidad === "presencial") {
+      required.push("lugar", "comuna");
+    }
     const missing = required.filter((f) => !actividad[f]);
 
     if (missing.length > 0) {
@@ -128,20 +145,25 @@ export default function PartnerHub({ view, setView, onActivityCreated }: Props) 
 
       // --- NUEVO: Usar FormData para enviar imagen y campos ---
       const formData = new FormData();
-      Object.entries({
+      const actividadData: any = {
         ...actividad,
-        capacidad_total:
-          actividad.capacidad_total === null ||
-          actividad.capacidad_total === undefined
-            ? 999999
-            : actividad.capacidad_total,
+        capacidad_total: Number(actividad.capacidad_total) || 999999,
         id_creador_del_evento: userPartner.data.id,
-      }).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) formData.append(key, value as any);
-      });
+      };
+
       if (actividadImagen) {
         formData.append("imagen", actividadImagen);
+        delete actividadData.imagen; // Si hay archivo, no enviar la URL
+      } else if (!actividadData.imagen) {
+        // Si no hay archivo Y no hay URL, eliminar el campo
+        delete actividadData.imagen;
       }
+
+      Object.entries(actividadData).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          formData.append(key, value as string);
+        }
+      });
 
       await axios.post(
         `${import.meta.env.VITE_API_URL}/actividades`,
@@ -216,22 +238,29 @@ export default function PartnerHub({ view, setView, onActivityCreated }: Props) 
 
       // --- NUEVO: Usar FormData para bulk, incluyendo imagen si existe ---
       const formData = new FormData();
-      Object.entries({
+      const bulkData: any = {
         ...actividadRecurrente,
         capacidad_total: Number(actividadRecurrente.capacidad_total) || 999999,
         monday,
         id_creador_del_evento: userPartner.data.id,
-      }).forEach(([key, value]) => {
+      };
+
+      if (actividadRecImagen) {
+        formData.append("imagen", actividadRecImagen);
+        delete bulkData.imagen; // Si hay archivo, no enviar la URL
+      } else if (!bulkData.imagen) {
+        // Si no hay archivo Y no hay URL, eliminar el campo
+        delete bulkData.imagen;
+      }
+
+      Object.entries(bulkData).forEach(([key, value]) => {
         // Para arreglos/objetos, serializar a JSON
-        if (Array.isArray(value) || typeof value === "object") {
+        if (Array.isArray(value) || (typeof value === "object" && value !== null)) {
           formData.append(key, JSON.stringify(value));
         } else if (value !== undefined && value !== null) {
           formData.append(key, value as any);
         }
       });
-      if (actividadRecImagen) {
-        formData.append("imagen", actividadRecImagen);
-      }
 
       await axios.post(
         `${import.meta.env.VITE_API_URL}/actividades/bulk`,

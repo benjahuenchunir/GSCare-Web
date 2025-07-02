@@ -102,7 +102,7 @@ const ActivityPage: React.FC = () => {
       await Promise.all(
         grupoActividades.map(async (a) => {
           const asistentes = await getAssistantsCountByActivity(a.id);
-          cupos[a.id] = (a.capacidad_total ?? 999999) - asistentes;
+          cupos[a.id] = (a.capacidad_total ?? 0) >= 99999 ? 999999 : (a.capacidad_total ?? 0) - asistentes;
         })
       );
       setCuposDisponibles(cupos);
@@ -117,7 +117,7 @@ const ActivityPage: React.FC = () => {
     await Promise.all(
       grupoActividades.map(async (a) => {
         const asistentes = await getAssistantsCountByActivity(a.id);
-        cupos[a.id] = (a.capacidad_total ?? 999999) - asistentes;
+        cupos[a.id] = (a.capacidad_total ?? 0) >= 99999 ? 999999 : (a.capacidad_total ?? 0) - asistentes;
       })
     );
     setCuposDisponibles(cupos);
@@ -190,7 +190,7 @@ const ActivityPage: React.FC = () => {
         nombre={actividad.nombre}
         descripcion={actividad.descripcion}
         imagen={actividad.imagen ?? ""}
-        capacidad_total={actividad.capacidad_total ?? 999999}
+        capacidad_total={actividad.capacidad_total ?? 0}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -266,7 +266,7 @@ const ActivityPage: React.FC = () => {
             {grupoActividades.length > 0 ? (
               (() => {
                 const primeraActividad = grupoActividades[0];
-                if (primeraActividad.capacidad_total === null || primeraActividad.capacidad_total === 999999) {
+                if (primeraActividad.capacidad_total === null || primeraActividad.capacidad_total >= 99999) {
                   return <p className="text-green-700">Actividad sin límite</p>;
                 }
                 const cupos = cuposDisponibles[primeraActividad.id] ?? (primeraActividad.capacidad_total ?? 0);

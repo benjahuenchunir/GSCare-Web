@@ -125,7 +125,23 @@ export default function ProveedorPage() {
 
   const handleCreateBlock = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!servicioSeleccionado) return;
+    if (!servicioSeleccionado || !editServiceForm) return;
+    
+    // --- NUEVA VALIDACIÓN ---
+    // Obtener el día de la semana de la fecha seleccionada (0=Domingo, 1=Lunes, etc.)
+    const fechaSeleccionada = new Date(newBlockForm.fecha + 'T00:00:00');
+    const diaSemanaSeleccionado = fechaSeleccionada.getDay();
+    
+    // Obtener los días disponibles del servicio
+    const diasDisponibles = editServiceForm.dias_disponibles as unknown as number[];
+
+    // Comprobar si el día seleccionado está en la lista de días disponibles
+    if (!diasDisponibles.includes(diaSemanaSeleccionado)) {
+      setCreationError("No se puede crear un bloque en un día en que el servicio no está disponible.");
+      return;
+    }
+    // --- FIN VALIDACIÓN ---
+
     setIsCreating(true);
     setCreationError(null);
     try {
